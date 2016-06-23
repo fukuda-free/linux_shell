@@ -1,7 +1,4 @@
 #! /bin/sh
-
-
-
 ########################################################
 # railsのディレクトリ
 rails_dir="/var/www/rails/"
@@ -30,6 +27,41 @@ unicorn_pid="$rails_app_dir/tmp/pids/unicorn.pid"
 ########################################################
 
 ########################################################
+# TOPメニュー
+TOP_MENU()
+{
+  while true; do
+    cat << EOF
++--------------------------+
+| 【 RAILS MENU   】 v 2.0 |
++--------------------------+
+| [1]  development modeへ  |
+| [2]  production modeへ   |
+| [3]  gem modeへ          |
+| [e]  シェルを終了        |
++--------------------------+
+EOF
+
+	read -p "項目を選択してください >>" TOP_NUMBER  #入力された項目を読み込み、変数TOP_NUMBERに代入する
+	case "${TOP_NUMBER}" in  #変数KEYに合った内容でコマンドが実行される
+		"1")
+			DEV_MENU
+			break ;;
+		"2")
+			PRO_MENU
+			break ;;
+		"3")
+			GEM_MENU
+			break ;;
+		"e")
+			break ;;
+		*) echo "($LINENO)	>> キーが違います。" ;;
+		esac
+		read -p "ENTERを押してください。" BLANK
+	done
+}
+
+########################################################
 #  メニュー項目画面
 ########################################################
 DEV_MENU()
@@ -37,7 +69,7 @@ DEV_MENU()
   while true; do
     cat << EOF
 +--------------------------------+
-| 【 RAILS MENU dev_mode】 v 2.0 |
+|    【 RAILS MENU dev_mode】    |
 +--------------------------------+
 | [1]  nginx + unicorn 停止      |
 | [2]  nginx + unicorn 起動      |
@@ -52,8 +84,6 @@ DEV_MENU()
 +--------------------------------+
 EOF
 
-
-
 	read -p "項目を選択してください >>" KEY  #入力された項目を読み込み、変数KEYに代入する
 	case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
 		"1") FNC_ACTION ;;
@@ -66,23 +96,9 @@ EOF
 		"8") FNC_ACTION ;;
 		"9") FNC_ACTION ;;
 		"e") break ;;
-		"100") FNC_ACTION ;;
-		"101") FNC_ACTION ;;
-		"102") FNC_ACTION ;;
-		"103") FNC_ACTION ;;
-		"104") FNC_ACTION ;;
-		"105") FNC_ACTION ;;
-		"201") FNC_ACTION ;;
-		"202") FNC_ACTION ;;
-		"203") FNC_ACTION ;;
-		"204") FNC_ACTION ;;
-		"205") FNC_ACTION ;;
 		*) echo "($LINENO)	>> キーが違います。" ;;
-
 		esac
-
 		read -p "ENTERを押してください。" BLANK
-
 	done
 }
 
@@ -127,7 +143,6 @@ FNC_4(){
 	echo "($LINENO)	>> [4]  DB + テーブル 再構築"
 
 	# SQLバックアップ
-	# ALL_MYSQL_BK
 	DEV_MYSQL_BK
 
 	echo "($LINENO)	>> DB 再構築"
@@ -183,130 +198,7 @@ FNC_9(){
 	return 0
 }
 
-########################################################
-# [100] nginx + unicorn 停止
-FNC_100(){
-	echo "($LINENO)	>> 本番環境 nginx + unicorn 停止"
-	NGINX_STOP
-
-	return 0
-}
-
-########################################################
-# [101] nginx + unicorn 起動
-FNC_101(){
-	echo "($LINENO)	>> 本番環境 nginx + unicorn 起動"
-	PRO_LOG_BK
-	NGINX_PRO_START
-	return 0
-}
-
-########################################################
-# [102] DB + テーブル 構築
-FNC_102(){
-	echo "($LINENO)	>> 本番環境 テーブル 構築"
-	PRO_LOG_BK
-	DB_PRO_MIGRATE
-	return 0
-}
-
-########################################################
-# [103] キャッシュの削除
-FNC_103(){
-	echo "($LINENO)	>> キャッシュの削除を行ないます"
-	PRO_LOG_BK
-	CACHE_CREAE
-	return 0
-}
-
-########################################################
-# [104] コンパイル
-FNC_104(){
-	PRO_LOG_BK
-	CACHE_CREAE
-	PRECOMPILE
-	return 0
-}
-
-########################################################
-# [105] DB + テーブル 再構築
-FNC_105(){
-	echo "($LINENO)	>> 本番環境 テーブル 再構築"
-
-	# ログのバックアップ
-	PRO_LOG_BK
-
-	# 全体バックアップ
-	# ALL_MYSQL_BK
-	PRO_MYSQL_BK
-
-	bundle exec rake db:migrate:reset RAILS_ENV=production
-
-	echo "($LINENO)	>> seed用yml 実行（heart_seed）"
-	CATALOGS=production bundle exec rake db:seed RAILS_ENV=production
-
-	# 復元はこちら
-	# mysql -u root -p < dump.sql
-
-	return 0
-}
-########################################################
-
-########################################################
-# rails_best_practices 実行
-FNC_201(){
-	echo "($LINENO)	>> rails_best_practices 実行します"
-	bundle exec rails_best_practices -f html .
-
-	return 0   #正常終了は戻り値が0
-}
-########################################################
-
-########################################################
-# delayed_job 再起動
-FNC_202(){
-	echo "($LINENO)	>> delayed_job 停止"
-	bundle exec bin/delayed_job stop
-
-	echo "($LINENO)	>> delayed_job ジョブクリア"
-	bundle exec rake jobs:clear
-
-	echo "($LINENO)	>> delayed_job 起動"
-	bundle exec bin/delayed_job start
-
-	return 0   #正常終了は戻り値が0
-}
-########################################################
-
-########################################################
-# i18n_generators 実行
-FNC_203(){
-	echo "($LINENO)	>> i18n_generators 実行"
-	bundle exec rails g i18n ja
-
-	return 0   #正常終了は戻り値が0
-}
-########################################################
-
-########################################################
-# whenever 実行
-FNC_204(){
-	echo "($LINENO)	>> whenever 削除"
-	bundle exec whenever --clear-crontab
-	echo "($LINENO)	>> whenever 登録"
-	bundle exec whenever --update-crontab
-}
-########################################################
-
-########################################################
-# bower install
-FNC_205(){
-	echo "($LINENO)	>> DB + テーブル 構築"
-	BOWER_INSTALL
-	return 0
-}
-
-########################################################
+ #######################################################
 # 共通メソッド
 # nginx 停止
 NGINX_STOP(){
@@ -339,17 +231,7 @@ NGINX_PRO_START(){
 	SECRET_KEY_BASE=$(bundle exec rake secret) bundle exec unicorn -D -c config/unicorn.rb -E production
 
 	echo "($LINENO)	>> nginx 起動"
-	 service nginx start
-}
-
-# コンパイル
-PRECOMPILE(){
-	echo "($LINENO)	>> 古いコンパイルファイル 削除"
-	###  rm -rf public/assets
-	bundle exec rake assets:clean RAILS_ENV=production
-
-	echo "($LINENO)	>> assets コンパイル 実行"
-	bundle exec rake assets:precompile RAILS_ENV=production
+	service nginx start
 }
 
 # 開発用ログをバックアップ
@@ -380,61 +262,10 @@ DEV_LOG_BK(){
 	bundle exec rake log:clear
 }
 
-# 本番用ログをバックアップ
-PRO_LOG_BK(){
-	echo "($LINENO)	>> production ログ バックアップ"
-	 cp -p $rails_app_dir/log/production.log $rails_app_dir/log/production.log_$(date +%Y%m%d%H%M%S)
-
-	# log_bk del ##########################
-	all_file="*"
-
-	cd $rails_dir$app_name/log
-
-	# production
-	rails_env_bk="production.log_"
-	cnt=` ls $rails_app_dir/log/$rails_env_bk$all_file | wc -l`
-
-	#ファイル数が設定値より大きいか比較
-	if [ $cnt -gt $log_cnt_max ]; then
-		echo "($LINENO)	>> production ログ バックアップ 過剰分削除"
-		 ls -tr $rails_app_dir/log/$rails_env_bk$all_file | head -$(($cnt-$log_cnt_max)) | xargs rm -f
-	else
-		echo "($LINENO)	>> production ログ バックアップ 保存"
-	fi
-
-	cd $rails_dir$app_name
-
-	echo "($LINENO)	>> ログ 初期化"
-	bundle exec rake log:clear
-}
-
 # 開発環境DB、テーブル構築
 DB_DEV_MIGRATE(){
 	bundle exec rake db:create:all
 	bundle exec rake db:migrate
-  echo "($LINENO)	>> annotate（gem） 起動"
-	bundle exec annotate
-
-	echo "($LINENO)	>> seed用ymlファイル 削除（heart_seed）"
-	rm -r -f $rails_app_dir/db/seeds/*.yml
-
-	echo "($LINENO)	>> seed用ymlファイル 作成（heart_seed）"
-	bundle exec rake heart_seed:xls
-
-	echo "($LINENO)	>> seedファイル 実行"
-	bundle exec rake db:seed
-}
-
-# 本番環境DB＋テーブル構築
-DB_PRO_MIGRATE(){
-	bundle exec rake db:create:all
-	bundle exec rake db:migrate RAILS_ENV=production
-
-  echo "($LINENO)	>> seed用ymlファイル 削除（heart_seed）"
-	rm -r -f $rails_app_dir/db/seeds/*.yml
-
-	echo "($LINENO)	>> seed用ymlファイル 作成（heart_seed）"
-	bundle exec rake heart_seed:xls
 
 	echo "($LINENO)	>> seedファイル 実行"
 	bundle exec rake db:seed
@@ -445,61 +276,6 @@ CACHE_CREAE(){
 	echo "($LINENO)	>> キャッシュ クリア"
 	bundle exec rake tmp:clear
 }
-
-# bower インストール
-BOWER_INSTALL(){
-	echo "($LINENO)	>> bower install"
-	rake bower:install['--allow-root']
-}
-
-# # 全てのDBデータをバックアップ
-# ALL_MYSQL_BK(){
-# 	echo "($LINENO)	>> DBのバックアップファイルを構築します。"
-# 	if [ -e ../mysql_bk ]; then
-# 		# フォルダがある場合
-# 		echo "($LINENO)	>> フォルダが存在します"
-# 	else
-# 		# フォルダがない場合
-# 		mkdir ../mysql_bk
-# 	fi
-
-# 	if [ -e $mysql_bk_dr_cp ]; then
-# 		# フォルダがある場合
-# 		echo "($LINENO)	>> フォルダが存在します"
-# 	else
-# 		# フォルダがない場合
-# 		mkdir -p $mysql_bk_dr_cp
-# 	fi
-
-# 	# 全体##########################
-# 	fn="/mysql_bk_"
-# 	all_file="*"
-
-# 	 mysqldump --user=$mysql_development_user --password="$mysql_development_pass" -x --all-databases > $mysql_bk_dr/mysql_bk_$(date +%Y%m%d%H%M%S).sql
-
-# 	 ls $mysql_bk_dr$fn$all_file | wc -l
-
-# 	cnt=` ls $mysql_bk_dr$fn$all_file | wc -l`
-# 	echo "($LINENO)	>> 全体のバックアップ数 = $cnt"
-
-# 	cd $mysql_bk_dr
-# 	#ファイル数が設定値より大きいか比較
-# 	if [ $cnt -gt $log_cnt_max ]; then
-# 		echo "($LINENO)	>> all_DB 削除"
-# 		 ls -tr $mysql_bk_dr | head -$(($cnt-$log_cnt_max)) | xargs rm -f
-# 	else
-# 		echo "($LINENO)	>> all_DB 保存"
-# 	fi
-
-# 	cd $rails_dir$app_name
-
-# 	 rm -rf $mysql_bk_dr_cp/*
-# 	cp -r -f $mysql_bk_dr $mysql_bk_dr_cp
-
-
-# 	# 復元はこちら
-# 	# mysql -u root -p < dump.sql
-# }
 
 # 開発環境のDBバックアップ
 DEV_MYSQL_BK(){
@@ -535,42 +311,7 @@ DEV_MYSQL_BK(){
 	cd $rails_dir$app_name
 }
 
-# 開発環境DBバックアップ
-PRO_MYSQL_BK(){
-	echo "($LINENO)	>> DBのバックアップファイルを構築します。"
-	if [ -e ../mysql_bk ]; then
-		# フォルダがある場合
-		echo "($LINENO)	>> フォルダが存在します"
-	else
-		# フォルダがない場合
-		mkdir ../mysql_bk
-	fi
-
-	# production ##########################
-	rails_env="_production"
-	rails_env_bk="_mysql_bk_"
-	all_file="*"
-
-	 mysqldump --user=$mysql_production_user --password="$mysql_production_pass"  $app_name$rails_env > $mysql_bk_dr/$app_name$rails_env$rails_env_bk$(date +%Y%m%d%H%M%S).sql
-
-	cnt=` ls $mysql_bk_dr/$app_name$rails_env$rails_env_bk$all_file | wc -l`
-
-	echo "バックアップ数 = $cnt"
-	echo "バックアップ設定数 = $log_cnt_max"
-
-	#ファイル数が設定値より大きいか比較
-	cd $mysql_bk_dr
-	if [ $cnt -gt $log_cnt_max ]; then
-		echo "($LINENO)	>> development_db 削除"
-		ls -tr $mysql_bk_dr/$app_name$rails_env$rails_env_bk$all_file | head -$(($cnt-$log_cnt_max)) | xargs rm -rf
-	else
-		echo "($LINENO)	>> development_db 保存"
-	fi
-	cd $rails_dir$app_name
-}
-
-
 ########################################################
 #   メイン
 ########################################################
-DEV_MENU      #関数DEV_MENUを呼ぶ
+TOP_MENU      #関数TOP_MENUを呼ぶ
