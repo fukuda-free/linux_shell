@@ -1,22 +1,14 @@
-
-########################################################
-# Rails メニュー
-# 作成者  fukuda
-# 作成日  2015/10/27
-########################################################
-
+#! /bin/sh
 ########################################################
 # railsのディレクトリ
 rails_dir="/var/www/rails/"
 # rails_app名
-app_name="TYM"
+app_name=""
 # rails_appディレクトリ
 rails_app_dir=$rails_dir$app_name
 
-########################################################
 # mysqlデータのバックアップ数
 log_cnt_max=10
-
 # mysqlデータのバックアップ先
 mysql_bk_dr="/var/www/rails/mysql_bk/"
 
@@ -30,9 +22,9 @@ mysql_production_user="root"
 # mysql production pass
 mysql_production_pass=""
 
-########################################################
 # unicorn_pid
 unicorn_pid="$rails_app_dir/tmp/pids/unicorn.pid"
+########################################################
 
 ########################################################
 #  メニュー項目画面
