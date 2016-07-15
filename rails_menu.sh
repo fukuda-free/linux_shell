@@ -34,7 +34,7 @@ TOP_MENU()
   while true; do
     cat << EOF
 +--------------------------+
-| 【 RAILS MENU   】 v 2.0 |
+| 【 RAILS MENU   】 v 2.1 |
 +--------------------------+
 | [1]  development modeへ  |
 | [2]  production modeへ   |
@@ -131,6 +131,7 @@ DEV_MENU_2(){
 DEV_MENU_3(){
 	echo "($LINENO)	>> DB + テーブル 構築"
 	DB_DEV_MIGRATE
+	bundle exec annotate
 	return 0
 }
 
@@ -147,6 +148,7 @@ DEV_MENU_4(){
   # 開発DB作成
   DB_DEV_MIGRATE
 
+  bundle exec annotate
 	return 0
 }
 
@@ -396,6 +398,143 @@ PRO_MYSQL_BK(){
 }
 
 ########################################################
+#  GEMメニュー項目画面
+########################################################
+GEM_MENU()
+{
+  while true; do
+    cat << EOF
++--------------------------------+
+|    【 RAILS MENU gem_mode】    |
++--------------------------------+
+| [1] bower install              |
+| [2] heart_seed setting         |
+| [3] heart_seed save            |
+| [4] 工事中                     |
+| [5] 工事中                     |
+| [6] 工事中                     |
+| [7] 工事中                     |
+| [8] 工事中                     |
+| [9] 工事中                     |
+| [e]  シェルを終了              |
++--------------------------------+
+EOF
+
+	read -p "項目を選択してください >>" KEY  #入力された項目を読み込み、変数KEYに代入する
+	case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+		"1") GEM_ACTION ;;
+		"2") GEM_ACTION ;;
+		"3") GEM_ACTION ;;
+		# "4") GEM_ACTION ;;
+		# "5") GEM_ACTION ;;
+		# "6") GEM_ACTION ;;
+		# "7") GEM_ACTION ;;
+		# "8") GEM_ACTION ;;
+		# "9") GEM_ACTION ;;
+		"e") break ;;
+		*) echo "($LINENO)	>> キーが違います。" ;;
+		esac
+		read -p "ENTERを押してください。" BLANK
+	done
+}
+
+# GEM_ACTION 共通メソッド
+GEM_ACTION(){
+	GEM_MENU_${KEY}
+	if [ $? != 0 ]; then
+		 echo "($LINENO)	>> GEM_MENU_${KEY}で異常が発生しました"
+	fi
+}
+
+GEM_MENU_1(){
+  echo "($LINENO) >> bower install"
+	BOWER_INSTALL
+  return 0   #正常終了は戻り値が0
+}
+
+GEM_MENU_2(){
+  echo "($LINENO) >> [2] heart_seed setting"
+  HEART_SEED_SETTING
+}
+
+GEM_MENU_3(){
+  echo "($LINENO) >> [3] heart_seed save"
+  HEART_SEED_SAVE
+}
+
+
+# GEM_MENU_4(){
+
+# }
+
+# GEM_MENU_5(){
+
+# }
+
+# GEM_MENU_6(){
+
+# }
+
+# GEM_MENU_7(){
+
+# }
+
+# GEM_MENU_8(){
+
+# }
+
+# bower インストール
+BOWER_INSTALL(){
+  bundle exec rake bower:install['--allow-root']
+}
+
+HEART_SEED_SETTING(){
+  bundle exec rake heart_seed:init
+}
+
+HEART_SEED_SAVE(){
+  bundle exec rake heart_seed:xls
+  bundle exec rake heart_seed:db:seed
+}
+
+# # rails_best_practices 実行
+# BEST_PRACTICES(){
+# 	echo "($LINENO)	>> rails_best_practices 実行します"
+# 	bundle exec rails_best_practices -f html .
+
+# 	return 0   #正常終了は戻り値が0
+# }
+
+# # delayed_job 再起動
+# DELAYED_JOB_RESTART(){
+# 	echo "($LINENO)	>> delayed_job 停止"
+# 	bundle exec bin/delayed_job -n 2 stop
+
+# 	echo "($LINENO)	>> delayed_job ジョブクリア"
+# 	bundle exec rake jobs:clear
+
+# 	echo "($LINENO)	>> delayed_job 起動"
+# 	bundle exec bin/delayed_job start
+
+# 	return 0   #正常終了は戻り値が0
+# }
+
+# # i18n_generators 実行
+# I18N_GENERAT(){
+# 	echo "($LINENO)	>> i18n_generators 実行"
+# 	bundle exec rails g i18n ja
+
+# 	return 0   #正常終了は戻り値が0
+# }
+
+# # whenever 実行
+# WHENEVER_RESTART(){
+# 	echo "($LINENO)	>> whenever 削除"
+# 	bundle exec whenever --clear-crontab
+# 	echo "($LINENO)	>> whenever 登録"
+# 	bundle exec whenever --update-crontab
+# }
+=======
 # GEM
 ########################################################
 # bower インストール
