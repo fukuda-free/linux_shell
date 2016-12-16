@@ -36,7 +36,7 @@ TOP_MENU()
   while true; do
     cat << EOF
 +--------------------------+
-| 【 RAILS MENU   】 v 2.7 |
+| 【 RAILS MENU   】 v 2.8 |
 +--------------------------+
 | [1]  development modeへ  |
 | [2]  production modeへ   |
@@ -145,7 +145,7 @@ DEV_MENU_4(){
 	DEV_MYSQL_BK
 
 	echo "($LINENO)	>> DB 再構築"
-	bundle exec rake db:drop RAILS_ENV=development
+	 RAILS_ENV=development bundle exec rake db:drop
 
   # 開発DB作成
   DB_DEV_MIGRATE
@@ -295,7 +295,7 @@ PRO_MENU_99(){
 	PRO_MYSQL_BK
 
 	echo "($LINENO)	>> DB 再構築"
-	bundle exec rake db:drop RAILS_ENV=production
+	RAILS_ENV=production bundle exec rake db:drop
 
   # 開発DB作成
   DB_PRO_MIGRATE
@@ -411,17 +411,17 @@ CACHE_CREAE(){
 PRECOMPILE(){
 	echo "($LINENO)	>> 古いコンパイルファイル 削除"
 	rm -rf public/assets
-	bundle exec rake assets:clean RAILS_ENV=production
+	RAILS_ENV=production bundle exec rake assets:clean
 
 	echo "($LINENO)	>> assets コンパイル 実行"
-	bundle exec rake assets:precompile RAILS_ENV=production
+	RAILS_ENV=production bundle exec rake assets:precompile
 }
 
 
 # 開発環境DB、テーブル構築
 DB_DEV_MIGRATE(){
-	bundle exec rake db:create RAILS_ENV=development
-	bundle exec rake db:migrate RAILS_ENV=development
+	RAILS_ENV=development bundle exec rake db:create
+	RAILS_ENV=development bundle exec rake db:migrate
 
 	echo "($LINENO)	>> seedファイル 実行"
 	bundle exec rake db:seed
@@ -429,8 +429,8 @@ DB_DEV_MIGRATE(){
 
 # 本番環境DB＋テーブル構築
 DB_PRO_MIGRATE(){
-	bundle exec rake db:create RAILS_ENV=production
-	bundle exec rake db:migrate RAILS_ENV=production
+	RAILS_ENV=production bundle exec rake db:create
+	RAILS_ENV=production bundle exec rake db:migrate
 
   echo "($LINENO)	>> seed用ymlファイル 削除（heart_seed）"
 	rm -r -f $rails_app_dir/db/seeds/*.yml
@@ -440,7 +440,7 @@ DB_PRO_MIGRATE(){
 
 	echo "($LINENO)	>> seedファイル 実行"
 	# bundle exec rake db:seed
-	bundle exec rake db:seed RAILS_ENV=production
+	RAILS_ENV=production bundle exec rake db:seed
 }
 
 
@@ -689,18 +689,18 @@ DELAYED_JOB_PRO_RESTART(){
 	echo "($LINENO)	>> delayed_job 停止"
 	source ~/.bash_profile
 	# bundle exec RAILS_ENV=production bin/delayed_job -n 2 stop
-	bin/delayed_job -n 2 stop RAILS_ENV=production
+	RAILS_ENV=production bin/delayed_job -n 2 stop
 
 	echo "($LINENO)	>> delayed_job ジョブクリア"
-	bundle exec rake jobs:clear RAILS_ENV=production
+	RAILS_ENV=production bundle exec rake jobs:clear
 
 	echo "($LINENO)	>> delayed_job 起動"
 	# bundle exec RAILS_ENV=production bin/delayed_job -n 2 start
-	bin/delayed_job -n 2 start RAILS_ENV=production
+	RAILS_ENV=production bin/delayed_job -n 2 start
 
 	# 諄いが、念の為に再起動
 	# bundle exec RAILS_ENV=production bin/delayed_job -n 2 restart
-	bin/delayed_job -n 2 restart RAILS_ENV=production
+	RAILS_ENV=production bin/delayed_job -n 2 restart
 	return 0   #正常終了は戻り値が0
 }
 
