@@ -3,7 +3,7 @@
 # railsのディレクトリ
 rails_dir="/var/www/rails/"
 # rails_app名
-app_name="qa_in_company"
+app_name="ai_q"
 # rails_appディレクトリ
 rails_app_dir=$rails_dir$app_name
 
@@ -35,14 +35,14 @@ TOP_MENU()
 {
   while true; do
     cat << EOF
-+--------------------------+
-| 【 RAILS MENU   】 v 2.8 |
-+--------------------------+
-| [1]  development modeへ  |
-| [2]  production modeへ   |
-| [3]  gem modeへ          |
-| [e]  シェルを終了        |
-+--------------------------+
++---------------------------+
+| 【 RAILS MENU   】 v 2.10 |
++---------------------------+
+| [1]  development modeへ   |
+| [2]  production modeへ    |
+| [3]  gem modeへ           |
+| [e]  シェルを終了         |
++---------------------------+
 EOF
 
 	read -p "項目を選択してください >>" TOP_NUMBER  #入力された項目を読み込み、変数TOP_NUMBERに代入する
@@ -173,7 +173,7 @@ DEV_MENU_6(){
 DEV_MENU_7(){
 	echo "($LINENO)	>> bundle install 実行します"
 	# bundle exec bundle install --path vendor/bundle
-	bundle install --path vendor/bundle
+	bundle install --path vendor/bundle --jobs=4
 	return 0
 }
 
@@ -182,7 +182,7 @@ DEV_MENU_8(){
 	echo "($LINENO)	>> bundle install 再実行します"
 	sudo rm -rf vendor/bundle
 	# bundle exec bundle install --path vendor/bundle
-	bundle install --path vendor/bundle
+	bundle install --path vendor/bundle --jobs=4
 	return 0
 }
 
@@ -210,6 +210,7 @@ PRO_MENU()
 | [4]  キャッシュの削除          |
 | [5]  コンパイル                |
 | [6]  delayed_job の再起動      |
+| [7]  rails console 実行        |
 | [99] DB + テーブル 再構築      |
 | [e]  シェルを終了              |
 +--------------------------------+
@@ -223,6 +224,7 @@ EOF
 		"4")  PRO_ACTION ;;
 		"5")  PRO_ACTION ;;
 		"6")  PRO_ACTION ;;
+		"7")  PRO_ACTION ;;
 		"99") PRO_ACTION ;;
 		"e") break ;;
 		*) echo "($LINENO)	>> キーが違います。" ;;
@@ -279,11 +281,19 @@ PRO_MENU_5(){
 	return 0
 }
 
-# [5]  コンパイル
+# [5]  delayed_job の再起動
 PRO_MENU_6(){
 	echo "($LINENO)	>> delayed_job(production)を再稼働します"
 	DELAYED_JOB_PRO_RESTART
 	return 0
+}
+
+
+# [7]  rails console 実行
+PRO_MENU_7(){
+	echo "($LINENO)	>> rails console 実行"
+	RAILS_ENV=production bundle exec rails console
+	return 0   #正常終了は戻り値が0
 }
 
 
