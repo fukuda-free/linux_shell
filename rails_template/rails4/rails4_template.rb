@@ -53,7 +53,7 @@ def my_address
 end
 
 def bundle_install
-  run "bundle install --path vendor/bundle"
+  run "bundle install --path vendor/bundle --jobs=4"
 end
 
 def config_app_setting
@@ -670,10 +670,10 @@ end
 
 def gem_thml_template_select
   if yes?('erbのテンプレートを変更しますか？(y/n)')
-  	puts '何を利用しますか？'
-  	puts '> [1] haml'
-  	# puts '> [2] slim'
-  	html_template_num = ask "番号を入力してください:"
+    puts '何を利用しますか？'
+    puts '> [1] haml'
+    # puts '> [2] slim'
+    html_template_num = ask "番号を入力してください:"
 
     case html_template_num
     when '1'
@@ -746,14 +746,14 @@ gem_thml_template_select
 
 # html template
 if yes?('アプリケーションサーバーを使いますか？(y/n)')
-	puts '何を利用しますか？'
-	puts '> [1] unicorn'
-	# puts '> [2] thin'
-	app_server_num = ask "番号を入力してください"
+  puts '何を利用しますか？'
+  puts '> [1] unicorn'
+  # puts '> [2] thin'
+  app_server_num = ask "番号を入力してください"
 
   case app_server_num
   when '1'
-  	# unicorn
+    # unicorn
     gem_replacement("Gemfile" , "# gem 'unicorn'" , "gem 'unicorn'")
     bundle_install
 
@@ -773,31 +773,31 @@ end
 
 # bower-rails
 if yes?('bower-rails(javaScript管理) 使いますか？(y/n)')
-	# gem 'bower-rails'
-	gem_replacement("Gemfile" , "# gem 'bower-rails'" , "gem 'bower-rails'")
+  # gem 'bower-rails'
+  gem_replacement("Gemfile" , "# gem 'bower-rails'" , "gem 'bower-rails'")
 
-	run "rpm -ivh http://ftp.riken.jp/Linux/fedora/epel/6/x86_64/epel-release-6-8.noarch.rpm"
-	run "yum -y install nodejs npm --enablerepo=epel"
-	run "npm install -g bower"
+  run "rpm -ivh http://ftp.riken.jp/Linux/fedora/epel/6/x86_64/epel-release-6-8.noarch.rpm"
+  run "yum -y install nodejs npm --enablerepo=epel"
+  run "npm install -g bower"
 
-	run "bundle install --path vendor/bundle"
-	run "rails g bower_rails:initialize"
+  run "bundle install --path vendor/bundle"
+  run "rails g bower_rails:initialize"
 end
 
 # carrierwave
 if yes?('carrierwave(画像ファイル関係) 使いますか？(y/n)')
-	gem_replacement("Gemfile" , "# gem 'rmagick'" , "gem 'rmagick'")
-	gem_replacement("Gemfile" , "# gem 'mini_magick'" , "gem 'mini_magick'")
-	gem_replacement("Gemfile" , "# gem 'carrierwave'" , "gem 'carrierwave'")
+  gem_replacement("Gemfile" , "# gem 'rmagick'" , "gem 'rmagick'")
+  gem_replacement("Gemfile" , "# gem 'mini_magick'" , "gem 'mini_magick'")
+  gem_replacement("Gemfile" , "# gem 'carrierwave'" , "gem 'carrierwave'")
 
-	run "sudo yum -y install ImageMagick ImageMagick-devel"
+  run "sudo yum -y install ImageMagick ImageMagick-devel"
 end
 
 # streamio-ffmpeg
 if yes?('ffmpeg(動画関係) 使いますか？(y/n)')
-	gem_replacement("Gemfile" , "# gem 'streamio-ffmpeg'" , "gem 'streamio-ffmpeg'")
+  gem_replacement("Gemfile" , "# gem 'streamio-ffmpeg'" , "gem 'streamio-ffmpeg'")
   linux_ffmpeg_install
-	run "bundle install --path vendor/bundle"
+  run "bundle install --path vendor/bundle"
 end
 
 # Kaminari config
