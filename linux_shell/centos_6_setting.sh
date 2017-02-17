@@ -11,7 +11,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +-----------------------------------------+
-|                【 MENU 】         v 3.1 |
+|                【 MENU 】         v 4.0 |
 +-----------------------------------------+
 | [1]  開発用としてiptableとselinuxを解除 |
 | [2]  ruby をインストール                |
@@ -19,6 +19,7 @@ FNC_MENU(){
 | [4]  node.js をインストール             |
 | [5]  ffmpeg をインストール              |
 | [6]  redis をインストール               |
+| [7]  mysql 5.11 -> 5.7 + utf8mb4        |
 | [e]  シェルを終了                       |
 +-----------------------------------------+
 EOF
@@ -32,6 +33,7 @@ EOF
     "4") FNC_ACTION ;;
     "5") FNC_ACTION ;;
     "6") FNC_ACTION ;;
+    "7") FNC_ACTION ;;
     "e") break ;;
     *) echo "($LINENO)  >> キーが違います。" ;;
     esac
@@ -83,7 +85,7 @@ FNC_3(){
 ########################################################
 #  [4]
 FNC_4(){
-  echo "($LINENO) >> [4]  node.js をインストール(テスト中)"
+  echo "($LINENO) >> [4]  node.js をインストール"
   RUN_CHECK
   DEVELOP_PACKAGE_INSTALL
   NODE_INSTALL_CHECK
@@ -93,7 +95,7 @@ FNC_4(){
 ########################################################
 #  [5]
 FNC_5(){
-  echo "($LINENO) >> [5]  ffmpeg をインストール(テスト中)"
+  echo "($LINENO) >> [5]  ffmpeg をインストール"
   RUN_CHECK
   FFMPEG_INSTALL
   # DEVELOP_PACKAGE_INSTALL
@@ -104,11 +106,22 @@ FNC_5(){
 ########################################################
 #  [6]
 FNC_6(){
-  echo "($LINENO) >> [6]  redis をインストール(テスト中)"
+  echo "($LINENO) >> [6]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
   return 0
 }
+
+
+########################################################
+#  [7]
+FNC_7(){
+  echo "($LINENO) >> [7]  mysql 5.11 -> 5.7 + utf8mb4"
+  RUN_CHECK
+  MYSQL_VERSION_UP
+  return 0
+}
+
 ########################################################
 #  各種の呼び出し処理
 # 確認処理
@@ -564,6 +577,65 @@ REDIS_INSTALL(){
   echo 'redis のバージョンは以下となります'
   redis-server --version
 }
+
+
+MYSQL_VERSION_UP(){
+  cat /etc/centos-release
+  mysql --version
+
+  service mysqld stop
+  yum remove -y mysql*
+  yum -y install http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm
+  yum-config-manager --disable mysql55-community
+  yum-config-manager --enable mysql56-community
+  yum install -y mysql mysql-devel mysql-server mysql-utilities
+  service mysqld start
+  mysql_upgrade -u root
+  mysql --version
+
+  service mysqld stop
+  yum remove -y mysql*
+  yum -y install http://dev.mysql.com/get/mysql-community-release-el6-5.noarch.rpm
+  yum-config-manager --disable mysql56-community
+  yum-config-manager --enable mysql57-community-dmr
+  yum install -y mysql mysql-devel mysql-server mysql-utilities
+
+  echo 'character-set-server=utf8mb4' >> /etc/my.cnf
+  echo '' >> /etc/my.cnf
+  echo '[client]' >> /etc/my.cnf
+  echo 'default-character-set=utf8mb4' >> /etc/my.cnf
+
+  service mysqld start
+  mysql_upgrade -u root
+  service mysqld restart
+  mysql --version
+
+  echo "今から投入済みのデータの文字コードを変更します"
+  mysql -e "show databases" >> database_list.text
+
+  cat database_list.text | while read line
+  do
+    if [ "$line" = "Database" -o "$line" = "information_schema" -o "$line" = "mysql" -o "$line" = "performance_schema" -o "$line" = "sys" -o "$line" = "test" ]; then
+      echo "$line font change no"
+    else
+      echo "$line font change utf8 => utf8mb4"
+      mysql -e "alter database $line character set utf8mb4;"
+      (mysql "$line" -e "show tables" --batch --skip-column-names | xargs -I{} echo 'alter table `'{}'` convert to character set utf8mb4;') > alters.sql
+    fi
+  done
+
+  cat alters.sql | while read line
+  do
+    echo "$line"
+  done
+
+  rm -rf database_list.text
+  rm -rf alters.sql
+
+  echo 'MySQL のバージョンは以下となります'
+  mysql --version
+}
+
 ########################################################
 #  エンド処理
 FNC_MENU      #関数FNC_MENUを呼ぶ
