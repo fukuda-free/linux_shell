@@ -20,6 +20,7 @@ FNC_MENU(){
 | [5]  ffmpeg をインストール              |
 | [6]  redis をインストール               |
 | [7]  mysql 5.11 -> 5.7 + utf8mb4        |
+| [8]  5.7 をインストール                 |
 | [e]  シェルを終了                       |
 +-----------------------------------------+
 EOF
@@ -34,6 +35,7 @@ EOF
     "5") FNC_ACTION ;;
     "6") FNC_ACTION ;;
     "7") FNC_ACTION ;;
+    "8") FNC_ACTION ;;
     "e") break ;;
     *) echo "($LINENO)  >> キーが違います。" ;;
     esac
@@ -118,7 +120,17 @@ FNC_6(){
 FNC_7(){
   echo "($LINENO) >> [7]  mysql 5.11 -> 5.7 + utf8mb4"
   RUN_CHECK
-  MYSQL_VERSION_UP
+  MYSQL_51_2_57_VERSION_UP
+  return 0
+}
+
+
+########################################################
+#  [7]
+FNC_8(){
+  echo "($LINENO) >> [8]  5.7 をインストール"
+  RUN_CHECK
+  MYSQL_57_INSTALL
   return 0
 }
 
@@ -579,7 +591,7 @@ REDIS_INSTALL(){
 }
 
 
-MYSQL_VERSION_UP(){
+MYSQL_51_2_57_VERSION_UP(){
   cat /etc/centos-release
   mysql --version
 
@@ -631,6 +643,24 @@ MYSQL_VERSION_UP(){
 
   rm -rf database_list.text
   rm -rf alters.sql
+
+  echo 'MySQL のバージョンは以下となります'
+  mysql --version
+}
+
+
+MYSQL_57_INSTALL(){
+  # デジタル署名をインポートする
+  sudo rpm --import http://dev.mysql.com/doc/refman/5.7/en/checking-gpg-signature.html
+
+  # yumリポジトリの設定をインストールする
+  sudo rpm -ihv http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
+
+  # yumリポジトリをlistする
+  yum --disablerepo=\* --enablerepo='mysql57-community*' list available
+
+  # MySQL Server 5.7をインストールする
+  sudo yum --enablerepo='mysql57-community*' install -y mysql-community-server
 
   echo 'MySQL のバージョンは以下となります'
   mysql --version
