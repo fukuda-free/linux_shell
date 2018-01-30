@@ -11,19 +11,21 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +-----------------------------------------+
-|                【 MENU 】         v 4.0 |
+|                【 MENU 】         v 4.1 |
 +-----------------------------------------+
 | [1]  開発用としてiptableとselinuxを解除 |
 | [2]  ruby をインストール                |
 | [3]  rails をインストール               |
 | [4]  node.js をインストール             |
-| [5]  ffmpeg をインストール              |
-| [6]  redis をインストール               |
-| [7]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |
-| [8]  5.7 をインストール                 |
+| [5]  ffmpeg（のみ） をインストール      |（検証中）
+| [6]  ImageMagick をインストール         |（検証中）
+| [7]  mecab をインストール               |（検証中）
 | [e]  シェルを終了                       |
 +-----------------------------------------+
 EOF
+# | [6]  redis をインストール               |（検証中）
+# | [7]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
+# | [8]  5.7 をインストール                 |（検証中）
 
   #入力された項目を読み込み、変数KEYに代入する
   read -p "項目を選択してください >>" KEY
@@ -35,7 +37,7 @@ EOF
     "5") FNC_ACTION ;;
     "6") FNC_ACTION ;;
     "7") FNC_ACTION ;;
-    "8") FNC_ACTION ;;
+    # "8") FNC_ACTION ;;
     "e") break ;;
     *) echo "($LINENO)  >> キーが違います。" ;;
     esac
@@ -91,6 +93,12 @@ FNC_4(){
   RUN_CHECK
   DEVELOP_PACKAGE_INSTALL
   NODE_INSTALL_CHECK
+  yum -y install npm --enablerepo=epel
+  echo 'npm のバージョンは以下となります'
+  npm -v
+  npm install -g yarn
+  echo 'yarn のバージョンは以下となります'
+  yarn -v
   return 0
 }
 
@@ -108,31 +116,52 @@ FNC_5(){
 ########################################################
 #  [6]
 FNC_6(){
-  echo "($LINENO) >> [6]  redis をインストール"
+  echo "($LINENO) >> [6]  ImageMagick をインストール"
   RUN_CHECK
-  REDIS_INSTALL
+  yum -y install ImageMagick
+  yum -y install ImageMagick-devel
   return 0
 }
-
 
 ########################################################
 #  [7]
 FNC_7(){
-  echo "($LINENO) >> [7]  mysql 5.11 -> 5.7 + utf8mb4"
+  echo "($LINENO) >> [7]  mecab をインストール"
   RUN_CHECK
-  MYSQL_51_2_57_VERSION_UP
+  sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+  sudo yum install -y mecab mecab-ipadic
+  MECAB_IPADIC_INSTALL
   return 0
 }
 
+# ########################################################
+# #  [6]
+# FNC_6(){
+#   echo "($LINENO) >> [6]  redis をインストール"
+#   RUN_CHECK
+#   REDIS_INSTALL
+#   return 0
+# }
 
-########################################################
-#  [7]
-FNC_8(){
-  echo "($LINENO) >> [8]  5.7 をインストール"
-  RUN_CHECK
-  MYSQL_57_INSTALL
-  return 0
-}
+
+# ########################################################
+# #  [7]
+# FNC_7(){
+#   echo "($LINENO) >> [7]  mysql 5.11 -> 5.7 + utf8mb4"
+#   RUN_CHECK
+#   MYSQL_51_2_57_VERSION_UP
+#   return 0
+# }
+
+
+# ########################################################
+# #  [7]
+# FNC_8(){
+#   echo "($LINENO) >> [8]  5.7 をインストール"
+#   RUN_CHECK
+#   MYSQL_57_INSTALL
+#   return 0
+# }
 
 ########################################################
 #  各種の呼び出し処理
@@ -367,7 +396,7 @@ NODE_INSTALL_CHECK(){
 +----------------------------------------+
 | nodejsを何経由でインストールしますか？ |
 +----------------------------------------+
-| > [1] yum                              |
+| > [1] yum (推奨)                       |
 | > [2] nvm                              |
 | > [3] nodebrew                         |
 +----------------------------------------+
@@ -376,10 +405,7 @@ EOF
   read -p "項目を選択してください >>" KEY
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1")
-      sudo yum install -y epel-release
-      sudo yum install -y nodejs
-      # yum install -y npm --enablerepo=epel
-      node -v
+      NODE_YUM_VERSION_INSTALL_CHECK
       break ;;
     "2")
       NVM_INSTALL
@@ -390,6 +416,65 @@ EOF
       NODEBLEW_INSTALL
       NODEBLEW_RUBY_VERSION_CHECK
       NODEBLEW_RUBY_INSTALL
+      break ;;
+    *) echo "($LINENO)  >> キーが違います。" ;;
+    esac
+  done
+}
+
+
+NODE_YUM_VERSION_INSTALL_CHECK(){
+  while true; do
+    cat << EOF
++-----------------------------------------------------+
+|       どのバージョンをインストールしますか？        |
++-----------------------------------------------------+
+| > [1] CentOSのデフォルトのnode.jsをインストールする |
+| > [2] node 5.Xをインストール                        |
+| > [3] node 6.Xをインストール                        |
+| > [4] node 7.Xをインストール                        |
+| > [5] node 8.Xをインストール                        |
+| > [6] node 9.Xをインストール                        |
++-----------------------------------------------------+
+EOF
+
+  read -p "項目を選択してください >>" KEY
+  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+    "1")
+      sudo yum install -y epel-release
+      sudo yum install -y nodejs npm --enablerepo=epel
+      # yum install -y npm --enablerepo=epel
+      node -v
+      break ;;
+    "2")
+      curl -sL https://rpm.nodesource.com/setup_5.x | bash -
+      yum install -y nodejs gcc-c++ make
+      echo 'node.js のバージョンは以下となります'
+      node -v
+      break ;;
+    "3")
+      curl -sL https://rpm.nodesource.com/setup_6.x | bash -
+      yum install -y nodejs gcc-c++ make
+      echo 'node.js のバージョンは以下となります'
+      node -v
+      break ;;
+    "4")
+      curl -sL https://rpm.nodesource.com/setup_7.x | bash -
+      yum install -y nodejs gcc-c++ make
+      echo 'node.js のバージョンは以下となります'
+      node -v
+      break ;;
+    "5")
+      curl -sL https://rpm.nodesource.com/setup_8.x | bash -
+      yum install -y nodejs gcc-c++ make
+      echo 'node.js のバージョンは以下となります'
+      node -v
+      break ;;
+    "6")
+      curl -sL https://rpm.nodesource.com/setup_9.x | bash -
+      yum install -y nodejs gcc-c++ make
+      echo 'node.js のバージョンは以下となります'
+      node -v
       break ;;
     *) echo "($LINENO)  >> キーが違います。" ;;
     esac
@@ -473,110 +558,59 @@ NODEBLEW_RUBY_INSTALL(){
 }
 
 FFMPEG_INSTALL(){
-  # パッケージ
-  yum update -y
-  yum install autoconf automake cmake freetype-devel gcc gcc-c++ git libtool make mercurial nasm pkgconfig zlib-devel -y
-
-  # source code new directory to put all of the
-  mkdir ~/ffmpeg_sources
-
-  # Yasm
-  cd ~/ffmpeg_sources
-  git clone --depth 1 git://github.com/yasm/yasm.git
-  cd yasm
-  autoreconf -fiv
-  ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin"
-  make
-  make install
-  make distclean
-
-  # libx264
-  cd ~/ffmpeg_sources
-  git clone --depth 1 git://git.videolan.org/x264
-  cd x264
-  PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static
-  make
-  make install
-  make distclean
-
-  # libx265
-  cd ~/ffmpeg_sources
-  hg clone https://bitbucket.org/multicoreware/x265
-  cd ~/ffmpeg_sources/x265/build/linux
-  cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source
-  make
-  make install
-
-  # libfdk_aac
-  cd ~/ffmpeg_sources
-  git clone --depth 1 git://git.code.sf.net/p/opencore-amr/fdk-aac
-  cd fdk-aac
-  autoreconf -fiv
-  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared
-  make
-  make install
-  make distclean
-
-  # libmp3lame
-  cd ~/ffmpeg_sources
-  curl -L -O http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
-  tar xzvf lame-3.99.5.tar.gz
-  cd lame-3.99.5
-  ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --disable-shared --enable-nasm
-  make
-  make install
-  make distclean
-
-  # libopus
-  cd ~/ffmpeg_sources
-  git clone git://git.opus-codec.org/opus.git
-  cd opus
-  autoreconf -fiv
-  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared
-  make
-  make install
-  make distclean
-
-  # libogg
-  cd ~/ffmpeg_sources
-  curl -O http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz
-  tar xzvf libogg-1.3.2.tar.gz
-  cd libogg-1.3.2
-  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared
-  make
-  make install
-  make distclean
-
-  # libvorbis
-  cd ~/ffmpeg_sources
-  curl -O http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.4.tar.gz
-  tar xzvf libvorbis-1.3.4.tar.gz
-  cd libvorbis-1.3.4
-  LDFLAGS="-L$HOME/ffmeg_build/lib" CPPFLAGS="-I$HOME/ffmpeg_build/include" ./configure --prefix="$HOME/ffmpeg_build" --with-ogg="$HOME/ffmpeg_build" --disable-shared
-  make
-  make install
-  make distclean
-
-  # libvpx
-  cd ~/ffmpeg_sources
-  git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git
-  cd libvpx
-  ./configure --prefix="$HOME/ffmpeg_build" --disable-examples
-  make
-  make install
-  make clean
-
   # FFmpeg
-  cd ~/ffmpeg_sources
-  git clone --depth 1 git://source.ffmpeg.org/ffmpeg
-  cd ffmpeg
-  PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --extra-cflags="-I$HOME/ffmpeg_build/include" --extra-ldflags="-L$HOME/ffmpeg_build/lib" --bindir="$HOME/bin" --pkg-config-flags="--static" --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265
-  make
-  make install
-  make distclean
+  echo 'FFmpeg  インストール'
+  sudo yum install epel-release -y
+  sudo yum update -y
+  sudo rpm -Uvh http://li.nux.ro/download/nux/dextop/el6/x86_64/nux-dextop-release-0-2.el6.nux.noarch.rpm
+  sudo yum install ffmpeg ffmpeg-devel -y
+  echo 'FFmpeg  インストール  完了'
 
+  echo 'ffmpeg のバージョンは以下となります'
   ffmpeg -version
+
+  # update
 }
+
+
+MECAB_IPADIC_INSTALL(){
+  while true; do
+    cat << EOF
++--------------------------------+
+|  どの辞書を利用しますか？      |
++--------------------------------+
+| > [1] デフォルトのipadic       |
+| > [2] githubのipadic-neologd   |
++--------------------------------+
+EOF
+
+  read -p "項目を選択してください >>" KEY
+  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+    "1")
+      sudo yum install -y mecab mecab-ipadic
+      echo 'mecab のバージョンは以下となります'
+      mecab --version
+      break ;;
+    "2")
+      sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+      sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
+
+      WORKING=/tmp/mecabdic
+      mkdir -p $WORKING
+      cd $WORKING
+      git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+
+      cd mecab-ipadic-neologd
+      ./bin/install-mecab-ipadic-neologd -n
+      echo 'mecab のバージョンは以下となります'
+      mecab --version
+      break ;;
+    *) echo "($LINENO)  >> キーが違います。" ;;
+    esac
+  done
+}
+
+
 
 REDIS_INSTALL(){
   wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
@@ -661,6 +695,7 @@ MYSQL_57_INSTALL(){
 
   # MySQL Server 5.7をインストールする
   sudo yum --enablerepo='mysql57-community*' install -y mysql-community-server
+  yum install mysql-devel
 
   echo 'MySQL のバージョンは以下となります'
   mysql --version
