@@ -129,7 +129,12 @@ FNC_7(){
   echo "($LINENO) >> [7]  mecab をインストール"
   RUN_CHECK
   sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-  sudo yum install -y mecab mecab-ipadic
+  sudo yum install -y mecab mecab-devel
+  sudo yum install -y mecab-ipadic
+  echo 'mecab のバージョンは以下となります'
+  mecab --version
+  echo 'mecab の動作検証'
+  echo 'すもももももももものうち' | mecab
   MECAB_IPADIC_INSTALL
   return 0
 }
@@ -580,36 +585,55 @@ FFMPEG_INSTALL(){
 MECAB_IPADIC_INSTALL(){
   while true; do
     cat << EOF
-+------------------------------------+
-|  どの辞書をインストールしますか？  |
-+------------------------------------+
-| > [1] デフォルトのipadic           |
-| > [2] githubのipadic-neologd       |
-| > [e] 終了する                     |
-+------------------------------------+
++------------------------------------------+
+|  ipadic-neologdをインストールしますか？  |
++------------------------------------------+
+| > [y] yes                                |
+| > [e] 終了する                           |
++------------------------------------------+
 EOF
 
   read -p "項目を選択してください >>" KEY
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      sudo yum install -y mecab mecab-ipadic
-      echo 'mecab のバージョンは以下となります'
-      mecab --version
-      break ;;
-    "2")
+    "y")
+      echo '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
+      #path 登録
+      echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
+      source ~/.bash_profile
+
+      # 必要パッケージのインストール
       sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
       sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
 
+      # 辞書の取得
       WORKING=/tmp/mecabdic
       mkdir -p $WORKING
       cd $WORKING
       git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
 
+      # インストール
       cd mecab-ipadic-neologd
       ./bin/install-mecab-ipadic-neologd -n
+
       echo 'mecab のバージョンは以下となります'
       mecab --version
+
+      echo 'mecab の動作テスト'
+      echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
+
+
+      echo 'もし、可動しなかった場合、下記で表示されたパスを登録してください'
+      sudo find / -name libmecab.so*
+      echo 'echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+      echo '                        ------------------------'
+      echo '                        ここを書き換えてください'
+      echo 'source ~/.bash_profile'
+
+      echo 'mecab-ipadic-neologd のインストール先は、以下の通りです'
+      echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
+
       break ;;
+    "e")  break ;;
     *) echo "($LINENO)  >> キーが違います。" ;;
     esac
   done
