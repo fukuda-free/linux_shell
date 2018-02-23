@@ -2,8 +2,39 @@
 ########################################################
 # Ruby On Rails 環境構築用シェル
 # 作成者  fukuda
-# 作成日  2016/01/06
+# 更新日  2018/01/31
 ########################################################
+
+# echoの装飾用
+ESC="\e["
+ESCEND=m
+COLOR_OFF=${ESC}${ESCEND}
+
+echoComment() {
+  # 文字色：Black Bold(灰色)
+  echo -en "${ESC}30;1${ESCEND}"
+  echo "${1}"
+  echo -en "${COLOR_OFF}"
+}
+echoGreen() {
+  # 文字色：green
+  echo -en "${ESC}32${ESCEND}"
+  echo "${1}" | tee -a ${LOG}
+  echo -en "${COLOR_OFF}"
+}
+echoRed() {
+  # 文字色：Red
+  echo -en "${ESC}31${ESCEND}"
+  echo "${1}" | tee -a ${LOG}
+  echo -en "${COLOR_OFF}"
+}
+echoYellow() {
+  # 文字色：Yellow
+  echo -en "${ESC}33${ESCEND}"
+  echo "${1}" | tee -a ${LOG}
+  echo -en "${COLOR_OFF}"
+}
+
 
 ########################################################
 #  メニュー項目画面
@@ -11,19 +42,21 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +-----------------------------------------+
-|                【 MENU 】         v 4.0 |
+|                【 MENU 】         v 4.6 |
 +-----------------------------------------+
 | [1]  開発用としてiptableとselinuxを解除 |
 | [2]  ruby をインストール                |
-| [3]  rails をインストール               |
-| [4]  node.js をインストール             |
-| [5]  ffmpeg をインストール              |
-| [6]  redis をインストール               |
-| [7]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |
-| [8]  5.7 をインストール                 |
+| [3]  rails をインストール               |（検証中）
+| [4]  node.js をインストール             |（検証中）
+| [5]  ffmpeg（のみ） をインストール      |（検証中）
+| [6]  ImageMagick をインストール         |（検証中）
+| [7]  mecab をインストール               |（検証中）
+| [8]  redis をインストール               |（検証中）
 | [e]  シェルを終了                       |
 +-----------------------------------------+
 EOF
+# | [7]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
+# | [8]  5.7 をインストール                 |（検証中）
 
   #入力された項目を読み込み、変数KEYに代入する
   read -p "項目を選択してください >>" KEY
@@ -37,7 +70,7 @@ EOF
     "7") FNC_ACTION ;;
     "8") FNC_ACTION ;;
     "e") break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
     read -p "ENTERを押してください。" BLANK
   done
@@ -48,29 +81,29 @@ EOF
 FNC_ACTION(){
   FNC_${KEY}
   if [ $? != 0 ]; then
-     echo "($LINENO)  >> FNC_${KEY}で異常が発生しました"
+     echoRed "($LINENO)  >> FNC_${KEY}で異常が発生しました"
   fi
 }
 
 ########################################################
 #  [1]
 FNC_1(){
-  echo "($LINENO) >> [1]  開発用としてiptableとselinuxを解除"
+  echoGreen "($LINENO) >> [1]  開発用としてiptableとselinuxを解除"
   /etc/rc.d/init.d/iptables stop
   chkconfig iptables off
   chkconfig --list iptables
   setenforce 0
   # sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
   chkconfig kdump off
-  echo "開発用パッケージをインストールします"
+  echoGreen "開発用パッケージをインストールします"
   sudo yum -y groupinstall "Base" "Development tools"
+  GIT_VERSION_INSTALL
   return 0
 }
-
-########################################################
+#######################################################
 #  [2]
 FNC_2(){
-  echo "($LINENO) >> [2]  ruby をインストール"
+  echoGreen "($LINENO) >> [2]  ruby をインストール"
   RUBY_INSTALL_SELECT
   return 0
 }
@@ -78,7 +111,7 @@ FNC_2(){
 ########################################################
 #  [3]
 FNC_3(){
-  echo "($LINENO) >> [3]  rails をインストール"
+  echoGreen "($LINENO) >> [3]  rails をインストール"
   RUN_CHECK
   RAILS_VERSION_CHECK
   return 0
@@ -87,17 +120,26 @@ FNC_3(){
 ########################################################
 #  [4]
 FNC_4(){
-  echo "($LINENO) >> [4]  node.js をインストール"
+  echoGreen "($LINENO) >> [4]  node.js をインストール"
   RUN_CHECK
   DEVELOP_PACKAGE_INSTALL
   NODE_INSTALL_CHECK
+  yum -y install npm --enablerepo=epel
+  npm install -g yarn
+
+  echoGreen 'node.js のバージョンは以下となります'
+  node -v
+  echoGreen 'npm のバージョンは以下となります'
+  npm -v
+  echoGreen 'yarn のバージョンは以下となります'
+  yarn -v
   return 0
 }
 
 ########################################################
 #  [5]
 FNC_5(){
-  echo "($LINENO) >> [5]  ffmpeg をインストール"
+  echoGreen "($LINENO) >> [5]  ffmpeg をインストール"
   RUN_CHECK
   FFMPEG_INSTALL
   # DEVELOP_PACKAGE_INSTALL
@@ -108,31 +150,57 @@ FNC_5(){
 ########################################################
 #  [6]
 FNC_6(){
-  echo "($LINENO) >> [6]  redis をインストール"
+  echoGreen "($LINENO) >> [6]  ImageMagick をインストール"
+  RUN_CHECK
+  yum -y install ImageMagick
+  yum -y install ImageMagick-devel
+  return 0
+}
+
+########################################################
+#  [7]
+FNC_7(){
+  echoGreen "($LINENO) >> [7]  mecab をインストール"
+  RUN_CHECK
+  sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+  sudo yum install -y mecab mecab-devel
+  sudo yum install -y mecab-ipadic
+  echoGreen 'mecab のバージョンは以下となります'
+  mecab --version
+  echoYellow 'mecab の動作検証'
+  echo 'すもももももももものうち' | mecab
+  MECAB_IPADIC_INSTALL
+  return 0
+}
+
+########################################################
+#  [8]
+FNC_8(){
+  echoGreen "($LINENO) >> [8]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
   return 0
 }
 
 
-########################################################
-#  [7]
-FNC_7(){
-  echo "($LINENO) >> [7]  mysql 5.11 -> 5.7 + utf8mb4"
-  RUN_CHECK
-  MYSQL_51_2_57_VERSION_UP
-  return 0
-}
+# ########################################################
+# #  [7]
+# FNC_7(){
+#   echo "($LINENO) >> [7]  mysql 5.11 -> 5.7 + utf8mb4"
+#   RUN_CHECK
+#   MYSQL_51_2_57_VERSION_UP
+#   return 0
+# }
 
 
-########################################################
-#  [7]
-FNC_8(){
-  echo "($LINENO) >> [8]  5.7 をインストール"
-  RUN_CHECK
-  MYSQL_57_INSTALL
-  return 0
-}
+# ########################################################
+# #  [7]
+# FNC_8(){
+#   echo "($LINENO) >> [8]  5.7 をインストール"
+#   RUN_CHECK
+#   MYSQL_57_INSTALL
+#   return 0
+# }
 
 ########################################################
 #  各種の呼び出し処理
@@ -159,7 +227,7 @@ EOF
 
 # 必要パッケージのインストール処理
 DEVELOP_PACKAGE_INSTALL(){
-  echo 'パッケージを最新にします。パスワードを聞かれることがあります。'
+  echoGreen 'パッケージを最新にします。パスワードを聞かれることがあります。'
   sudo -v
   sudo yum update -y
   sudo yum install -y zlib
@@ -181,6 +249,43 @@ DEVELOP_PACKAGE_INSTALL(){
   sudo yum -y install yum-cron
 }
 
+GIT_VERSION_INSTALL(){
+  while true; do
+    cat << EOF
++---------------------------------------------+
+| どのバージョンのGITをインストールしますか？ |
++---------------------------------------------+
+| > [1] 2系 (最新バージョン)                  |
+| > [2] 1.7 (centOS6系 デフォルト)            |
+| > [e]  シェルを終了                         |
++---------------------------------------------+
+EOF
+
+  read -p "項目を選択してください >>" KEY
+  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+    "1")
+      yum install -y git
+      sudo yum -y remove git
+      curl -s https://setup.ius.io/ | bash
+      yum install -y git2u
+      git clone git://git.kernel.org/pub/scm/git/git.git
+
+      echoGreen 'git のバージョンは以下となります'
+      git --version
+      break ;;
+    "2")
+      yum install -y git
+      echoGreen 'git のバージョンは以下となります'
+      git --version
+      break ;;
+    "e") break ;;
+    *)   echo "($LINENO)  >> キーが違います。" ;;
+    esac
+  done
+
+}
+
+
 RUBY_INSTALL_SELECT(){
   while true; do
     cat << EOF
@@ -195,7 +300,7 @@ EOF
   read -p "項目を選択してください >>" KEY
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1")
-      echo "($LINENO) >> [2]  rvm で rubyをインストール"
+      echoGreen "($LINENO) >> [2]  rvm で rubyをインストール"
       RUN_CHECK
       DEVELOP_PACKAGE_INSTALL
       RVM_INSTALL
@@ -203,14 +308,14 @@ EOF
       RVM_RUBY_INSTALL
       break ;;
     "2")
-      echo "($LINENO) >> [3]  rbenv で rubyをインストール"
+      echoGreen "($LINENO) >> [3]  rbenv で rubyをインストール"
       RUN_CHECK
       DEVELOP_PACKAGE_INSTALL
       RBENV_INSTALL
       RBENV_RUBY_VERSION_CHECK
       RBENV_RUBY_INSTALL
       break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -246,7 +351,7 @@ EOF
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") rvm list known ;;
     "2") break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -257,13 +362,14 @@ RVM_RUBY_INSTALL(){
   rvm install $ans
   rvm use $ans --default
 
-  echo 'ruby のバージョンは以下となります'
+  echoGreen 'ruby のバージョンは以下となります'
   ruby -v
 }
 
 # rbenvのインストール
 RBENV_INSTALL(){
-  sudo yum -y install git
+  GIT_VERSION_INSTALL
+
   git clone git://github.com/sstephenson/rbenv.git /usr/local/src/rbenv
   echo 'export RBENV_ROOT="/usr/local/src/rbenv"' >> /etc/profile.d/rbenv.sh
   echo 'export PATH="${RBENV_ROOT}/bin:${PATH}"' >> /etc/profile.d/rbenv.sh
@@ -272,7 +378,7 @@ RBENV_INSTALL(){
   git clone git://github.com/sstephenson/ruby-build.git /usr/local/src/rbenv/plugins/ruby-build
   ls /usr/local/src/rbenv/plugins/ruby-build/bin/
 
-  echo 'rbenv のバージョンは以下となります'
+  echoGreen 'rbenv のバージョンは以下となります'
   rbenv -v
 }
 
@@ -291,7 +397,7 @@ EOF
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") rbenv install --list ;;
     "2") break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -303,52 +409,56 @@ RBENV_RUBY_INSTALL(){
   rbenv rehash
   rbenv global $ans
 
-  echo 'ruby のバージョンは以下となります'
+  echoGreen 'ruby のバージョンは以下となります'
   ruby -v
 }
 
 RAILS_VERSION_CHECK(){
   while true; do
     cat << EOF
-|------------------------------------------|
++------------------------------------------+
 | Rails のバージョンはどれを利用しますか？ |
-|------------------------------------------|
-| > [1] 3.2.22                             |
++------------------------------------------+
+| > [1] 3.2.22.5                           |
 | > [2] 4.0.13                             |
-| > [3] 4.1.15                             |
-| > [4] 4.2.6                              |
-| > [5] 最新                               |
-| > [6] バージョン検索                     |
-| > [7] 手動入力                           |
-|------------------------------------------|
+| > [3] 4.1.16                             |
+| > [4] 4.2.10                             |
+| > [5] 5.1.4                              |
+| > [6] 最新                               |
+| > [7] バージョン検索                     |
+| > [8] 手動入力                           |
++------------------------------------------+
 EOF
 
   read -p "項目を選択してください >>" KEY
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1")
-      RAILS_INSTALL 3.2.22
+      RAILS_INSTALL 3.2.22.5
       break ;;
     "2")
       RAILS_INSTALL 4.0.13
       break ;;
     "3")
-      RAILS_INSTALL 4.1.15
+      RAILS_INSTALL 4.1.16
       break ;;
     "4")
-      RAILS_INSTALL 4.2.6
+      RAILS_INSTALL 4.2.10
       break ;;
     "5")
-      gem install rails --pre
+      RAILS_INSTALL 5.1.4
       break ;;
     "6")
-      gem query -ra -n  "^rails$" ;;
+      gem install rails --pre
+      break ;;
     "7")
+      gem query -ra -n  "^rails$" ;;
+    "8")
       echo -n "バージョン : "
       read ans
       RAILS_INSTALL $ans
       break ;;
     *)
-      echo "($LINENO)  >> キーが違います。" ;;
+      echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -357,7 +467,7 @@ RAILS_INSTALL(){
   gem install rack
   gem install rails -v  $1
 
-  echo 'rails のバージョンは以下となります'
+  echoGreen 'rails のバージョンは以下となります'
   rails -v
 }
 
@@ -367,7 +477,7 @@ NODE_INSTALL_CHECK(){
 +----------------------------------------+
 | nodejsを何経由でインストールしますか？ |
 +----------------------------------------+
-| > [1] yum                              |
+| > [1] yum (推奨)                       |
 | > [2] nvm                              |
 | > [3] nodebrew                         |
 +----------------------------------------+
@@ -376,10 +486,7 @@ EOF
   read -p "項目を選択してください >>" KEY
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1")
-      sudo yum install -y epel-release
-      sudo yum install -y nodejs
-      # yum install -y npm --enablerepo=epel
-      node -v
+      NODE_YUM_VERSION_INSTALL_CHECK
       break ;;
     "2")
       NVM_INSTALL
@@ -391,13 +498,64 @@ EOF
       NODEBLEW_RUBY_VERSION_CHECK
       NODEBLEW_RUBY_INSTALL
       break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    esac
+  done
+}
+
+
+NODE_YUM_VERSION_INSTALL_CHECK(){
+  while true; do
+    cat << EOF
++-----------------------------------------------------+
+|       どのバージョンをインストールしますか？        |
++-----------------------------------------------------+
+| > [1] CentOSのデフォルトのnode.jsをインストールする |
+| > [2] node 5.Xをインストール                        |
+| > [3] node 6.Xをインストール                        |
+| > [4] node 7.Xをインストール                        |
+| > [5] node 8.Xをインストール                        |
+| > [6] node 9.Xをインストール                        |
++-----------------------------------------------------+
+EOF
+
+  read -p "項目を選択してください >>" KEY
+  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+    "1")
+      sudo yum install -y epel-release
+      sudo yum install -y nodejs npm --enablerepo=epel
+      node -v
+      break ;;
+    "2")
+      curl -sL https://rpm.nodesource.com/setup_5.x | bash -
+      yum install -y nodejs gcc-c++ make
+      break ;;
+    "3")
+      curl -sL https://rpm.nodesource.com/setup_6.x | bash -
+      yum install -y nodejs gcc-c++ make
+      break ;;
+    "4")
+      curl -sL https://rpm.nodesource.com/setup_7.x | bash -
+      yum install -y nodejs gcc-c++ make
+      break ;;
+    "5")
+      curl -sL https://rpm.nodesource.com/setup_8.x | bash -
+      yum install -y nodejs gcc-c++ make
+      break ;;
+    "6")
+      curl -sL https://rpm.nodesource.com/setup_9.x | bash -
+      yum install -y gcc-c++ make
+      yum install -y nodejs
+
+      break ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
 
 NVM_INSTALL(){
-  sudo yum -y install git
+  GIT_VERSION_INSTALL
+
   git clone git://github.com/creationix/nvm.git ~/.nvm
   source ~/.nvm/nvm.sh
   nvm version
@@ -418,7 +576,7 @@ EOF
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") nvm ls-remote ;;
     "2") break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -430,7 +588,7 @@ NVM_RUBY_INSTALL(){
   nvm alias default v$ans
   # yum install -y npm
 
-  echo 'node のバージョンは以下となります'
+  echoGreen 'node のバージョンは以下となります'
   node -v
 }
 
@@ -456,7 +614,7 @@ EOF
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") nodebrew ls-remote ;;
     "2") break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -468,125 +626,95 @@ NODEBLEW_RUBY_INSTALL(){
   nodebrew use v$ans
   # yum install -y npm
 
-  echo 'node のバージョンは以下となります'
+  echoGreen 'node のバージョンは以下となります'
   node -v
 }
 
 FFMPEG_INSTALL(){
-  # パッケージ
-  yum update -y
-  yum install autoconf automake cmake freetype-devel gcc gcc-c++ git libtool make mercurial nasm pkgconfig zlib-devel -y
-
-  # source code new directory to put all of the
-  mkdir ~/ffmpeg_sources
-
-  # Yasm
-  cd ~/ffmpeg_sources
-  git clone --depth 1 git://github.com/yasm/yasm.git
-  cd yasm
-  autoreconf -fiv
-  ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin"
-  make
-  make install
-  make distclean
-
-  # libx264
-  cd ~/ffmpeg_sources
-  git clone --depth 1 git://git.videolan.org/x264
-  cd x264
-  PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static
-  make
-  make install
-  make distclean
-
-  # libx265
-  cd ~/ffmpeg_sources
-  hg clone https://bitbucket.org/multicoreware/x265
-  cd ~/ffmpeg_sources/x265/build/linux
-  cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source
-  make
-  make install
-
-  # libfdk_aac
-  cd ~/ffmpeg_sources
-  git clone --depth 1 git://git.code.sf.net/p/opencore-amr/fdk-aac
-  cd fdk-aac
-  autoreconf -fiv
-  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared
-  make
-  make install
-  make distclean
-
-  # libmp3lame
-  cd ~/ffmpeg_sources
-  curl -L -O http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
-  tar xzvf lame-3.99.5.tar.gz
-  cd lame-3.99.5
-  ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --disable-shared --enable-nasm
-  make
-  make install
-  make distclean
-
-  # libopus
-  cd ~/ffmpeg_sources
-  git clone git://git.opus-codec.org/opus.git
-  cd opus
-  autoreconf -fiv
-  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared
-  make
-  make install
-  make distclean
-
-  # libogg
-  cd ~/ffmpeg_sources
-  curl -O http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz
-  tar xzvf libogg-1.3.2.tar.gz
-  cd libogg-1.3.2
-  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared
-  make
-  make install
-  make distclean
-
-  # libvorbis
-  cd ~/ffmpeg_sources
-  curl -O http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.4.tar.gz
-  tar xzvf libvorbis-1.3.4.tar.gz
-  cd libvorbis-1.3.4
-  LDFLAGS="-L$HOME/ffmeg_build/lib" CPPFLAGS="-I$HOME/ffmpeg_build/include" ./configure --prefix="$HOME/ffmpeg_build" --with-ogg="$HOME/ffmpeg_build" --disable-shared
-  make
-  make install
-  make distclean
-
-  # libvpx
-  cd ~/ffmpeg_sources
-  git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git
-  cd libvpx
-  ./configure --prefix="$HOME/ffmpeg_build" --disable-examples
-  make
-  make install
-  make clean
-
   # FFmpeg
-  cd ~/ffmpeg_sources
-  git clone --depth 1 git://source.ffmpeg.org/ffmpeg
-  cd ffmpeg
-  PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --extra-cflags="-I$HOME/ffmpeg_build/include" --extra-ldflags="-L$HOME/ffmpeg_build/lib" --bindir="$HOME/bin" --pkg-config-flags="--static" --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265
-  make
-  make install
-  make distclean
+  echo 'FFmpeg  インストール'
+  sudo yum install epel-release -y
+  sudo yum update -y
+  sudo rpm -Uvh http://li.nux.ro/download/nux/dextop/el6/x86_64/nux-dextop-release-0-2.el6.nux.noarch.rpm
+  sudo yum install ffmpeg ffmpeg-devel -y
+  echoGreen 'FFmpeg  インストール  完了'
 
+  echo 'ffmpeg のバージョンは以下となります'
   ffmpeg -version
+
+  # update
+}
+
+
+MECAB_IPADIC_INSTALL(){
+  while true; do
+    cat << EOF
++------------------------------------------+
+|  ipadic-neologdをインストールしますか？  |
++------------------------------------------+
+| > [y] yes                                |
+| > [e] 終了する                           |
++------------------------------------------+
+EOF
+
+  read -p "項目を選択してください >>" KEY
+  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+    "y")
+      echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
+      #path 登録
+      echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
+      source ~/.bash_profile
+      sudo ./configure --with-charset=utf8
+
+      # 必要パッケージのインストール
+      sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+      # sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
+      sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
+      GIT_VERSION_INSTALL
+
+      git clone git://git.kernel.org/pub/scm/git/git.git
+
+      # 辞書の取得
+      WORKING=/tmp/mecabdic
+      mkdir -p $WORKING
+      cd $WORKING
+      git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+
+      # インストール
+      cd mecab-ipadic-neologd
+      ./bin/install-mecab-ipadic-neologd -n
+
+      echoGreen 'mecab のバージョンは以下となります'
+      mecab --version
+
+      echoGreen 'mecab の動作テスト'
+      echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
+
+      echoYellow '---------------------------------------------------------------------------------'
+      echoYellow 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
+      sudo find / -name libmecab.so*
+      echoYellow ''
+      echoYellow 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+      echoYellow '                                    ------------------------'
+      echoYellow '                                    ここを書き換えてください'
+      echoYellow 'コマンド②：source ~/.bash_profile'
+      echoYellow '---------------------------------------------------------------------------------'
+      echoYellow ''
+      echoYellow 'mecab-ipadic-neologd のインストール先は、以下の通りです'
+      echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
+
+      break ;;
+    "e")  break ;;
+    *) echo "($LINENO)  >> キーが違います。" ;;
+    esac
+  done
 }
 
 REDIS_INSTALL(){
-  wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-  wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-  sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm
-  sudo yum --enablerepo=remi,epel install redis -y
-  sudo service redis start
-  sudo chkconfig redis on
+  sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+  sudo yum -y --enablerepo=remi install redis
 
-  echo 'redis のバージョンは以下となります'
+  echoGreen 'redis のバージョンは以下となります'
   redis-server --version
 }
 
@@ -661,6 +789,7 @@ MYSQL_57_INSTALL(){
 
   # MySQL Server 5.7をインストールする
   sudo yum --enablerepo='mysql57-community*' install -y mysql-community-server
+  yum install mysql-devel
 
   echo 'MySQL のバージョンは以下となります'
   mysql --version
