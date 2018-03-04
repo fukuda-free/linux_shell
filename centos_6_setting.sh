@@ -42,7 +42,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +-----------------------------------------+
-|                【 MENU 】         v 4.6 |
+|                【 MENU 】         v 4.7 |
 +-----------------------------------------+
 | [1]  開発用としてiptableとselinuxを解除 |
 | [2]  ruby をインストール                |
@@ -97,7 +97,7 @@ FNC_1(){
   chkconfig kdump off
   echoGreen "開発用パッケージをインストールします"
   sudo yum -y groupinstall "Base" "Development tools"
-  GIT_VERSION_INSTALL
+  GIT_INSTALL
   return 0
 }
 #######################################################
@@ -220,7 +220,7 @@ EOF
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") break ;;
     "2") FNC_MENU ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+    *)   echo "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -249,23 +249,49 @@ DEVELOP_PACKAGE_INSTALL(){
   sudo yum -y install yum-cron
 }
 
+GIT_INSTALL(){
+  if type git >/dev/null 2>&1; then
+    # echo 'git install OK'
+    echoGreen '現在、以下のGITのバージョンがインストールされています'
+    git --version
+
+    read -p "バージョンを変更しますか？（yes or no） >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "y" | "yes")
+        sudo yum -y remove git
+        GIT_VERSION_INSTALL
+                break ;;
+      "n" | "no")
+        echo "インストールを行わず、次のステップに移ります" ;;
+        # break ;;
+      *)
+        echo "($LINENO)  >> キーが違います。" ;;
+      esac
+
+      # break ;;
+  else
+    echoGreen 'gitがインストールされていませんでした'
+    GIT_VERSION_INSTALL
+  fi
+}
+
 GIT_VERSION_INSTALL(){
   while true; do
     cat << EOF
-+---------------------------------------------+
-| どのバージョンのGITをインストールしますか？ |
-+---------------------------------------------+
-| > [1] 2系 (最新バージョン)                  |
-| > [2] 1.7 (centOS6系 デフォルト)            |
-| > [e]  シェルを終了                         |
-+---------------------------------------------+
++----------------------------------------+
+| GITをインストールします                |
+| どのバージョンをインストールしますか？ |
++----------------------------------------+
+| > [1] 2系 (最新バージョン)             |
+| > [2] 1.7 (centOS6系 デフォルト)       |
++----------------------------------------+
 EOF
 
   read -p "項目を選択してください >>" KEY
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1")
-      yum install -y git
-      sudo yum -y remove git
+      # yum install -y git
+      # sudo yum -y remove git
       curl -s https://setup.ius.io/ | bash
       yum install -y git2u
       git clone git://git.kernel.org/pub/scm/git/git.git
@@ -278,7 +304,6 @@ EOF
       echoGreen 'git のバージョンは以下となります'
       git --version
       break ;;
-    "e") break ;;
     *)   echo "($LINENO)  >> キーが違います。" ;;
     esac
   done
@@ -368,7 +393,7 @@ RVM_RUBY_INSTALL(){
 
 # rbenvのインストール
 RBENV_INSTALL(){
-  GIT_VERSION_INSTALL
+  GIT_INSTALL
 
   git clone git://github.com/sstephenson/rbenv.git /usr/local/src/rbenv
   echo 'export RBENV_ROOT="/usr/local/src/rbenv"' >> /etc/profile.d/rbenv.sh
@@ -554,7 +579,7 @@ EOF
 }
 
 NVM_INSTALL(){
-  GIT_VERSION_INSTALL
+  GIT_INSTALL
 
   git clone git://github.com/creationix/nvm.git ~/.nvm
   source ~/.nvm/nvm.sh
@@ -670,7 +695,7 @@ EOF
       sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
       # sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
       sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
-      GIT_VERSION_INSTALL
+      GIT_INSTALL
 
       git clone git://git.kernel.org/pub/scm/git/git.git
 
