@@ -260,7 +260,7 @@ GIT_INSTALL(){
       "y" | "yes")
         sudo yum -y remove git
         GIT_VERSION_INSTALL
-                break ;;
+                # break ;;
       "n" | "no")
         echo "インストールを行わず、次のステップに移ります" ;;
         # break ;;
