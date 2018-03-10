@@ -256,19 +256,18 @@ GIT_INSTALL(){
     git --version
 
     read -p "バージョンを変更しますか？（yes or no） >>" KEY
-    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-      "y" | "yes")
-        sudo yum -y remove git
-        GIT_VERSION_INSTALL
-                # break ;;
-      "n" | "no")
-        echo "インストールを行わず、次のステップに移ります" ;;
-        # break ;;
-      *)
-        echo "($LINENO)  >> キーが違います。" ;;
+      case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+        "y" | "yes")
+          sudo yum -y remove git
+          GIT_VERSION_INSTALL
+          break ;;
+        "n" | "no")
+          echo "インストールを行わず、次のステップに移ります"
+          break ;;
+        *)
+          echo "($LINENO)  >> キーが違います。"
       esac
-
-      # break ;;
+    # done
   else
     echoGreen 'gitがインストールされていませんでした'
     GIT_VERSION_INSTALL
@@ -288,23 +287,23 @@ GIT_VERSION_INSTALL(){
 EOF
 
   read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      # yum install -y git
-      # sudo yum -y remove git
-      curl -s https://setup.ius.io/ | bash
-      yum install -y git2u
-      git clone git://git.kernel.org/pub/scm/git/git.git
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        # yum install -y git
+        # sudo yum -y remove git
+        curl -s https://setup.ius.io/ | bash
+        yum install -y git2u
+        git clone git://git.kernel.org/pub/scm/git/git.git
 
-      echoGreen 'git のバージョンは以下となります'
-      git --version
-      break ;;
-    "2")
-      yum install -y git
-      echoGreen 'git のバージョンは以下となります'
-      git --version
-      break ;;
-    *)   echo "($LINENO)  >> キーが違います。" ;;
+        echoGreen 'git のバージョンは以下となります'
+        git --version
+        break ;;
+      "2")
+        yum install -y git
+        echoGreen 'git のバージョンは以下となります'
+        git --version
+        break ;;
+      *)   echo "($LINENO)  >> キーが違います。" ;;
     esac
   done
 
@@ -323,24 +322,24 @@ RUBY_INSTALL_SELECT(){
 EOF
 
   read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      echoGreen "($LINENO) >> [2]  rvm で rubyをインストール"
-      RUN_CHECK
-      DEVELOP_PACKAGE_INSTALL
-      RVM_INSTALL
-      RVM_RUBY_VERSION_CHECK
-      RVM_RUBY_INSTALL
-      break ;;
-    "2")
-      echoGreen "($LINENO) >> [3]  rbenv で rubyをインストール"
-      RUN_CHECK
-      DEVELOP_PACKAGE_INSTALL
-      RBENV_INSTALL
-      RBENV_RUBY_VERSION_CHECK
-      RBENV_RUBY_INSTALL
-      break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        echoGreen "($LINENO) >> [2]  rvm で rubyをインストール"
+        RUN_CHECK
+        DEVELOP_PACKAGE_INSTALL
+        RVM_INSTALL
+        RVM_RUBY_VERSION_CHECK
+        RVM_RUBY_INSTALL
+        break ;;
+      "2")
+        echoGreen "($LINENO) >> [3]  rbenv で rubyをインストール"
+        RUN_CHECK
+        DEVELOP_PACKAGE_INSTALL
+        RBENV_INSTALL
+        RBENV_RUBY_VERSION_CHECK
+        RBENV_RUBY_INSTALL
+        break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
