@@ -42,12 +42,12 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +-----------------------------------------+
-|                【 MENU 】         v 4.7 |
+|                【 MENU 】         v 4.8 |
 +-----------------------------------------+
 | [1]  開発用としてiptableとselinuxを解除 |
 | [2]  ruby をインストール                |
-| [3]  rails をインストール               |（検証中）
-| [4]  node.js をインストール             |（検証中）
+| [3]  rails をインストール               |
+| [4]  node.js をインストール             |
 | [5]  ffmpeg（のみ） をインストール      |（検証中）
 | [6]  ImageMagick をインストール         |（検証中）
 | [7]  mecab をインストール               |（検証中）
@@ -58,19 +58,19 @@ EOF
 # | [7]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
 # | [8]  5.7 をインストール                 |（検証中）
 
-  #入力された項目を読み込み、変数KEYに代入する
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") FNC_ACTION ;;
-    "2") FNC_ACTION ;;
-    "3") FNC_ACTION ;;
-    "4") FNC_ACTION ;;
-    "5") FNC_ACTION ;;
-    "6") FNC_ACTION ;;
-    "7") FNC_ACTION ;;
-    "8") FNC_ACTION ;;
-    "e") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    #入力された項目を読み込み、変数KEYに代入する
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") FNC_ACTION ;;
+      "2") FNC_ACTION ;;
+      "3") FNC_ACTION ;;
+      "4") FNC_ACTION ;;
+      "5") FNC_ACTION ;;
+      "6") FNC_ACTION ;;
+      "7") FNC_ACTION ;;
+      "8") FNC_ACTION ;;
+      "e") break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
     read -p "ENTERを押してください。" BLANK
   done
@@ -216,11 +216,11 @@ RUN_CHECK(){
 +--------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") break ;;
-    "2") FNC_MENU ;;
-    *)   echo "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") break ;;
+      "2") FNC_MENU ;;
+      *)   echo "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -259,16 +259,14 @@ GIT_INSTALL(){
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "y" | "yes")
         sudo yum -y remove git
-        GIT_VERSION_INSTALL
-                break ;;
+        GIT_VERSION_INSTALL ;;
+        # break ;;
       "n" | "no")
-        echo "インストールを行わず、次のステップに移ります" ;;
+        echoYellow "インストールを行わず、次のステップに移ります" ;;
         # break ;;
       *)
-        echo "($LINENO)  >> キーが違います。" ;;
-      esac
-
-      # break ;;
+        echoRed "($LINENO)  >> キーが違います。"
+    esac
   else
     echoGreen 'gitがインストールされていませんでした'
     GIT_VERSION_INSTALL
@@ -287,24 +285,24 @@ GIT_VERSION_INSTALL(){
 +----------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      # yum install -y git
-      # sudo yum -y remove git
-      curl -s https://setup.ius.io/ | bash
-      yum install -y git2u
-      git clone git://git.kernel.org/pub/scm/git/git.git
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        # yum install -y git
+        # sudo yum -y remove git
+        curl -s https://setup.ius.io/ | bash
+        yum install -y git2u
+        git clone git://git.kernel.org/pub/scm/git/git.git
 
-      echoGreen 'git のバージョンは以下となります'
-      git --version
-      break ;;
-    "2")
-      yum install -y git
-      echoGreen 'git のバージョンは以下となります'
-      git --version
-      break ;;
-    *)   echo "($LINENO)  >> キーが違います。" ;;
+        echoGreen 'git のバージョンは以下となります'
+        git --version
+        break ;;
+      "2")
+        yum install -y git
+        echoGreen 'git のバージョンは以下となります'
+        git --version
+        break ;;
+      *)   echo "($LINENO)  >> キーが違います。" ;;
     esac
   done
 
@@ -318,29 +316,29 @@ RUBY_INSTALL_SELECT(){
 | どのアプリを利用しますか？ |
 +----------------------------+
 | > [1] rvm                  |
-| > [2] rbenv                |
+| > [2] rbenv (会社推奨)     |
 +----------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      echoGreen "($LINENO) >> [2]  rvm で rubyをインストール"
-      RUN_CHECK
-      DEVELOP_PACKAGE_INSTALL
-      RVM_INSTALL
-      RVM_RUBY_VERSION_CHECK
-      RVM_RUBY_INSTALL
-      break ;;
-    "2")
-      echoGreen "($LINENO) >> [3]  rbenv で rubyをインストール"
-      RUN_CHECK
-      DEVELOP_PACKAGE_INSTALL
-      RBENV_INSTALL
-      RBENV_RUBY_VERSION_CHECK
-      RBENV_RUBY_INSTALL
-      break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        echoGreen "($LINENO) >> [2]  rvm で rubyをインストール"
+        RUN_CHECK
+        DEVELOP_PACKAGE_INSTALL
+        RVM_INSTALL
+        RVM_RUBY_VERSION_CHECK
+        RVM_RUBY_INSTALL
+        break ;;
+      "2")
+        echoGreen "($LINENO) >> [3]  rbenv で rubyをインストール"
+        RUN_CHECK
+        DEVELOP_PACKAGE_INSTALL
+        RBENV_INSTALL
+        RBENV_RUBY_VERSION_CHECK
+        RBENV_RUBY_INSTALL
+        break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -418,11 +416,11 @@ RBENV_RUBY_VERSION_CHECK(){
 +-----------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") rbenv install --list ;;
-    "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") rbenv install --list ;;
+      "2") break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -455,35 +453,35 @@ RAILS_VERSION_CHECK(){
 +------------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      RAILS_INSTALL 3.2.22.5
-      break ;;
-    "2")
-      RAILS_INSTALL 4.0.13
-      break ;;
-    "3")
-      RAILS_INSTALL 4.1.16
-      break ;;
-    "4")
-      RAILS_INSTALL 4.2.10
-      break ;;
-    "5")
-      RAILS_INSTALL 5.1.4
-      break ;;
-    "6")
-      gem install rails --pre
-      break ;;
-    "7")
-      gem query -ra -n  "^rails$" ;;
-    "8")
-      echo -n "バージョン : "
-      read ans
-      RAILS_INSTALL $ans
-      break ;;
-    *)
-      echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        RAILS_INSTALL 3.2.22.5
+        break ;;
+      "2")
+        RAILS_INSTALL 4.0.13
+        break ;;
+      "3")
+        RAILS_INSTALL 4.1.16
+        break ;;
+      "4")
+        RAILS_INSTALL 4.2.10
+        break ;;
+      "5")
+        RAILS_INSTALL 5.1.4
+        break ;;
+      "6")
+        gem install rails --pre
+        break ;;
+      "7")
+        gem query -ra -n  "^rails$" ;;
+      "8")
+        echo -n "バージョン : "
+        read ans
+        RAILS_INSTALL $ans
+        break ;;
+      *)
+        echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -508,22 +506,22 @@ NODE_INSTALL_CHECK(){
 +----------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      NODE_YUM_VERSION_INSTALL_CHECK
-      break ;;
-    "2")
-      NVM_INSTALL
-      NVM_RUBY_VERSION_CHECK
-      NVM_RUBY_INSTALL
-      break ;;
-    "3")
-      NODEBLEW_INSTALL
-      NODEBLEW_RUBY_VERSION_CHECK
-      NODEBLEW_RUBY_INSTALL
-      break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        NODE_YUM_VERSION_INSTALL_CHECK
+        break ;;
+      "2")
+        NVM_INSTALL
+        NVM_RUBY_VERSION_CHECK
+        NVM_RUBY_INSTALL
+        break ;;
+      "3")
+        NODEBLEW_INSTALL
+        NODEBLEW_RUBY_VERSION_CHECK
+        NODEBLEW_RUBY_INSTALL
+        break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -544,36 +542,35 @@ NODE_YUM_VERSION_INSTALL_CHECK(){
 +-----------------------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      sudo yum install -y epel-release
-      sudo yum install -y nodejs npm --enablerepo=epel
-      node -v
-      break ;;
-    "2")
-      curl -sL https://rpm.nodesource.com/setup_5.x | bash -
-      yum install -y nodejs gcc-c++ make
-      break ;;
-    "3")
-      curl -sL https://rpm.nodesource.com/setup_6.x | bash -
-      yum install -y nodejs gcc-c++ make
-      break ;;
-    "4")
-      curl -sL https://rpm.nodesource.com/setup_7.x | bash -
-      yum install -y nodejs gcc-c++ make
-      break ;;
-    "5")
-      curl -sL https://rpm.nodesource.com/setup_8.x | bash -
-      yum install -y nodejs gcc-c++ make
-      break ;;
-    "6")
-      curl -sL https://rpm.nodesource.com/setup_9.x | bash -
-      yum install -y gcc-c++ make
-      yum install -y nodejs
-
-      break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        sudo yum install -y epel-release
+        sudo yum install -y nodejs npm --enablerepo=epel
+        node -v
+        break ;;
+      "2")
+        curl -sL https://rpm.nodesource.com/setup_5.x | bash -
+        yum install -y nodejs gcc-c++ make
+        break ;;
+      "3")
+        curl -sL https://rpm.nodesource.com/setup_6.x | bash -
+        yum install -y nodejs gcc-c++ make
+        break ;;
+      "4")
+        curl -sL https://rpm.nodesource.com/setup_7.x | bash -
+        yum install -y nodejs gcc-c++ make
+        break ;;
+      "5")
+        curl -sL https://rpm.nodesource.com/setup_8.x | bash -
+        yum install -y nodejs gcc-c++ make
+        break ;;
+      "6")
+        curl -sL https://rpm.nodesource.com/setup_9.x | bash -
+        yum install -y gcc-c++ make
+        yum install -y nodejs
+        break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -597,11 +594,11 @@ NVM_RUBY_VERSION_CHECK(){
 +----------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") nvm ls-remote ;;
-    "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") nvm ls-remote ;;
+      "2") break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -635,11 +632,11 @@ NODEBLEW_RUBY_VERSION_CHECK(){
 +----------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") nodebrew ls-remote ;;
-    "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") nodebrew ls-remote ;;
+      "2") break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -682,55 +679,55 @@ MECAB_IPADIC_INSTALL(){
 +------------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "y")
-      echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
-      #path 登録
-      echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
-      source ~/.bash_profile
-      sudo ./configure --with-charset=utf8
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "y")
+        echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
+        #path 登録
+        echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
+        source ~/.bash_profile
+        sudo ./configure --with-charset=utf8
 
-      # 必要パッケージのインストール
-      sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-      # sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
-      sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
-      GIT_INSTALL
+        # 必要パッケージのインストール
+        sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+        # sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
+        sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
+        GIT_INSTALL
 
-      git clone git://git.kernel.org/pub/scm/git/git.git
+        git clone git://git.kernel.org/pub/scm/git/git.git
 
-      # 辞書の取得
-      WORKING=/tmp/mecabdic
-      mkdir -p $WORKING
-      cd $WORKING
-      git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+        # 辞書の取得
+        WORKING=/tmp/mecabdic
+        mkdir -p $WORKING
+        cd $WORKING
+        git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
 
-      # インストール
-      cd mecab-ipadic-neologd
-      ./bin/install-mecab-ipadic-neologd -n
+        # インストール
+        cd mecab-ipadic-neologd
+        ./bin/install-mecab-ipadic-neologd -n
 
-      echoGreen 'mecab のバージョンは以下となります'
-      mecab --version
+        echoGreen 'mecab のバージョンは以下となります'
+        mecab --version
 
-      echoGreen 'mecab の動作テスト'
-      echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
+        echoGreen 'mecab の動作テスト'
+        echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
 
-      echoYellow '---------------------------------------------------------------------------------'
-      echoYellow 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
-      sudo find / -name libmecab.so*
-      echoYellow ''
-      echoYellow 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
-      echoYellow '                                    ------------------------'
-      echoYellow '                                    ここを書き換えてください'
-      echoYellow 'コマンド②：source ~/.bash_profile'
-      echoYellow '---------------------------------------------------------------------------------'
-      echoYellow ''
-      echoYellow 'mecab-ipadic-neologd のインストール先は、以下の通りです'
-      echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
+        echoYellow '---------------------------------------------------------------------------------'
+        echoYellow 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
+        sudo find / -name libmecab.so*
+        echoYellow ''
+        echoYellow 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+        echoYellow '                                    ------------------------'
+        echoYellow '                                    ここを書き換えてください'
+        echoYellow 'コマンド②：source ~/.bash_profile'
+        echoYellow '---------------------------------------------------------------------------------'
+        echoYellow ''
+        echoYellow 'mecab-ipadic-neologd のインストール先は、以下の通りです'
+        echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
 
-      break ;;
-    "e")  break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+        break ;;
+      "e")  break ;;
+      *) echo "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
