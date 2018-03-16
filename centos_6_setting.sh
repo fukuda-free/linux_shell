@@ -394,10 +394,13 @@ RVM_RUBY_VERSION_CHECK(){
 EOF
 
   read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") rvm list known ;;
-    "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        rvm list known ;;
+      "2")
+        break ;;
+      *)
+        echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -898,7 +901,6 @@ PYENV_INSTALL(){
   yum install -y gcc
   yum install -y gcc-c++
   yum install -y make
-  yum install -y git
   yum install -y openssl-devel
   yum install -y bzip2-devel
   yum install -y zlib-devel
@@ -913,6 +915,8 @@ PYENV_INSTALL(){
   yum install -y sqlite
   yum install -y sqlite-devel
   yum install -y openssl-devel
+  # yum install -y git
+  GIT_INSTALL
 
   git clone https://github.com/yyuu/pyenv.git ~/.pyenv
 
@@ -973,9 +977,11 @@ EOF
     read -p "項目を選択してください >>" KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
-        pip install tensorflow ;;
+        pip install tensorflow
+        break;;
       "2")
-        pip install tensorflow-gpu ;;
+        pip install tensorflow-gpu
+        break;;
       *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
