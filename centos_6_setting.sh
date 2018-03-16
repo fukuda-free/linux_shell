@@ -42,17 +42,19 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +-----------------------------------------+
-|                【 MENU 】         v 4.8 |
+|                【 MENU 】         v 5.0 |
 +-----------------------------------------+
-| [1]  開発用としてiptableとselinuxを解除 |
-| [2]  ruby をインストール                |
-| [3]  rails をインストール               |
-| [4]  node.js をインストール             |
-| [5]  ffmpeg（のみ） をインストール      |（検証中）
-| [6]  ImageMagick をインストール         |（検証中）
-| [7]  mecab をインストール               |（検証中）
-| [8]  redis をインストール               |（検証中）
-| [e]  シェルを終了                       |
+| [ 1]  開発用としてiptableとselinuxを解除 |
+| [ 2]  ruby をインストール                |
+| [ 3]  rails をインストール               |
+| [ 4]  node.js をインストール             |
+| [ 5]  ffmpeg（のみ） をインストール      |（検証中）
+| [ 6]  ImageMagick をインストール         |（検証中）
+| [ 7]  mecab をインストール               |（検証中）
+| [ 8]  redis をインストール               |（検証中）
+| [ 9]  python をインストール              |（検証中）
+| [10]  tensorflow をインストール          |（検証中）
+| [ e]  シェルを終了                       |
 +-----------------------------------------+
 EOF
 # | [7]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
@@ -69,6 +71,8 @@ EOF
       "6") FNC_ACTION ;;
       "7") FNC_ACTION ;;
       "8") FNC_ACTION ;;
+      "9") FNC_ACTION ;;
+      "10") FNC_ACTION ;;
       "e") break ;;
       *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
@@ -179,6 +183,25 @@ FNC_8(){
   echoGreen "($LINENO) >> [8]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
+  return 0
+}
+
+########################################################
+#  [9]
+FNC_9(){
+  echoGreen "($LINENO) >> [9]  python をインストール"
+  RUN_CHECK
+  PYTHON_INSTALL_CHECK
+  return 0
+}
+
+########################################################
+#  [10]
+FNC_10(){
+  echoGreen "($LINENO) >> [10]  tensorflow をインストール"
+  RUN_CHECK
+  PYTHON_INSTALL_CHECK
+  TENSORFLOW_INSTALL
   return 0
 }
 
@@ -817,6 +840,146 @@ MYSQL_57_INSTALL(){
   mysql --version
 }
 
+
+PYTHON_INSTALL_CHECK(){
+  if type python >/dev/null 2>&1; then
+    # echo 'git install OK'
+    echoGreen '現在、以下のpythonのバージョンがインストールされています'
+    python --version
+
+    read -p "バージョンを変更しますか？（yes or no） >>" KEY
+    case "${KEY}" in
+      "y" | "yes")
+        PYTHON_INSTALL_PATTERN ;;
+      "n" | "no")
+        echoYellow "インストールを行わず、次のステップに移ります" ;;
+      *)
+        echoRed "($LINENO)  >> キーが違います。"
+    esac
+  else
+    echoGreen 'gitがインストールされていませんでした'
+    PYTHON_INSTALL_PATTERN
+  fi
+}
+
+PYTHON_INSTALL_PATTERN(){
+  while true; do
+    cat << EOF
++----------------------------------------+
+| pythonを何経由でインストールしますか？ |
++----------------------------------------+
+| > [1] yum (作成中)                     |
+| > [2] pyenv (推奨)                     |
++----------------------------------------+
+EOF
+# | > [3] nodebrew                         |
+
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        # NODE_YUM_VERSION_INSTALL_CHECK
+        break ;;
+      "2")
+        PYENV_INSTALL
+        PYENV_PYTHON_VERSION_CHECK
+        PYENV_PYTHON_INSTALL
+        break ;;
+      # "3")
+      #   NODEBLEW_INSTALL
+      #   NODEBLEW_RUBY_VERSION_CHECK
+      #   NODEBLEW_RUBY_INSTALL
+      #   break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
+    esac
+  done
+}
+
+PYENV_INSTALL(){
+  yum install -y gcc
+  yum install -y gcc-c++
+  yum install -y make
+  yum install -y git
+  yum install -y openssl-devel
+  yum install -y bzip2-devel
+  yum install -y zlib-devel
+  yum install -y readline-devel
+  yum install -y sqlite-devel
+  yum install -y bzip2
+  yum install -y sqlite
+  yum install -y zlib-devel
+  yum install -y bzip2
+  yum install -y bzip2-devel
+  yum install -y readline-devel
+  yum install -y sqlite
+  yum install -y sqlite-devel
+  yum install -y openssl-devel
+
+  git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+
+  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+  echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+  echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
+  source ~/.bash_profile
+
+  echoGreen 'pyenv のバージョンは以下となります'
+  pyenv --version
+}
+
+PYENV_PYTHON_VERSION_CHECK(){
+  while true; do
+    cat << EOF
++------------------------------------+
+| python のバージョンを確認しますか？|
++------------------------------------+
+| > [1] する                         |
+| > [2] しない                       |
++------------------------------------+
+EOF
+
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") pyenv install --list ;;
+      "2") break ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
+    esac
+  done
+}
+
+PYENV_PYTHON_INSTALL(){
+    read -p "バージョン :" install_version
+  pyenv install ${install_version}
+  pyenv global  ${install_version}
+  pyenv rehash
+
+  echoGreen 'python のバージョンは以下となります'
+  python --version
+
+  echoGreen 'pip のバージョンは以下となります'
+  pip -V
+}
+
+
+TENSORFLOW_INSTALL(){
+  while true; do
+    cat << EOF
++--------------------------------------------------------+
+| tensorflow のどちらのバージョンをインストールしますか？|
++--------------------------------------------------------+
+| > [1] CPU版                                            |
+| > [2] GPU版                                            |
++--------------------------------------------------------+
+EOF
+
+    read -p "項目を選択してください >>" KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        pip install tensorflow ;;
+      "2")
+        pip install tensorflow-gpu ;;
+      *) echoRed "($LINENO)  >> キーが違います。" ;;
+    esac
+  done
+}
 ########################################################
 #  エンド処理
 FNC_MENU      #関数FNC_MENUを呼ぶ
