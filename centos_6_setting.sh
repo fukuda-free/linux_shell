@@ -2,7 +2,7 @@
 ########################################################
 # Ruby On Rails 環境構築用シェル
 # 作成者  fukuda
-# 更新日  2018/01/31
+# 更新日  2018/03/20
 ########################################################
 
 # echoの装飾用
@@ -42,7 +42,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +-----------------------------------------+
-|                【 MENU 】         v 5.0 |
+|                【 MENU 】         v 5.2 |
 +-----------------------------------------+
 | [ 1]  開発用としてiptableとselinuxを解除 |
 | [ 2]  ruby をインストール                |
@@ -54,11 +54,11 @@ FNC_MENU(){
 | [ 8]  redis をインストール               |（検証中）
 | [ 9]  python をインストール              |（検証中）
 | [10]  tensorflow をインストール          |（検証中）
+| [11]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
+| [12]  5.7 をインストール                 |（検証中）
 | [ e]  シェルを終了                       |
 +-----------------------------------------+
 EOF
-# | [7]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
-# | [8]  5.7 をインストール                 |（検証中）
 
     #入力された項目を読み込み、変数KEYに代入する
     read -p "項目を選択してください >>" KEY
@@ -73,6 +73,8 @@ EOF
       "8") FNC_ACTION ;;
       "9") FNC_ACTION ;;
       "10") FNC_ACTION ;;
+      "11") FNC_ACTION ;;
+      "12") FNC_ACTION ;;
       "e") break ;;
       *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
@@ -200,30 +202,29 @@ FNC_9(){
 FNC_10(){
   echoGreen "($LINENO) >> [10]  tensorflow をインストール"
   RUN_CHECK
-  PYTHON_INSTALL_CHECK
+  # PYTHON_INSTALL_CHECK
   TENSORFLOW_INSTALL
   return 0
 }
 
 
-# ########################################################
-# #  [7]
-# FNC_7(){
-#   echo "($LINENO) >> [7]  mysql 5.11 -> 5.7 + utf8mb4"
-#   RUN_CHECK
-#   MYSQL_51_2_57_VERSION_UP
-#   return 0
-# }
+########################################################
+#  [11]
+FNC_11(){
+  echo "($LINENO) >> [11]  mysql 5.11 -> 5.7 + utf8mb4"
+  RUN_CHECK
+  MYSQL_51_2_57_VERSION_UP
+  return 0
+}
 
-
-# ########################################################
-# #  [7]
-# FNC_8(){
-#   echo "($LINENO) >> [8]  5.7 をインストール"
-#   RUN_CHECK
-#   MYSQL_57_INSTALL
-#   return 0
-# }
+########################################################
+#  [12]
+FNC_12(){
+  echo "($LINENO) >> [12]  5.7 をインストール"
+  RUN_CHECK
+  MYSQL_57_INSTALL
+  return 0
+}
 
 ########################################################
 #  各種の呼び出し処理
@@ -394,13 +395,10 @@ RVM_RUBY_VERSION_CHECK(){
 EOF
 
   read -p "項目を選択してください >>" KEY
-    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-      "1")
-        rvm list known ;;
-      "2")
-        break ;;
-      *)
-        echoRed "($LINENO)  >> キーが違います。" ;;
+  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+    "1") rvm list known ;;
+    "2") break ;;
+    *) echoRed "($LINENO)  >> キーが違います。" ;;
     esac
   done
 }
@@ -826,21 +824,38 @@ MYSQL_51_2_57_VERSION_UP(){
 
 
 MYSQL_57_INSTALL(){
-  # デジタル署名をインポートする
-  sudo rpm --import http://dev.mysql.com/doc/refman/5.7/en/checking-gpg-signature.html
+  # 古いバージョンを削除
+  yum remove mysql*
 
-  # yumリポジトリの設定をインストールする
-  sudo rpm -ihv http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
+  # インストール
+  yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
+  yum -y install mysql-community-server
 
-  # yumリポジトリをlistする
-  yum --disablerepo=\* --enablerepo='mysql57-community*' list available
+  # バージョン確認
+  mysqld --version
 
-  # MySQL Server 5.7をインストールする
-  sudo yum --enablerepo='mysql57-community*' install -y mysql-community-server
-  yum install mysql-devel
+  # 起動
+  service mysqld restart
 
-  echo 'MySQL のバージョンは以下となります'
-  mysql --version
+  DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
+  echo ${DB_PASSWORD}
+
+
+  # MySQL のアップグレードでは、その度に、mysql_upgrade するらしい
+  mysql_upgrade -u root -p${DB_PASSWORD} --force
+
+  # 設定に応じて、ログ出力ファイルを作成する
+  # mkdir /var/log/mysql
+  # chown mysql:mysql /var/log/mysql
+
+  # 再起動
+  service mysqld restart
+
+  read -p "MYSQLのパスワードを入力してください ： " MYSQL_PASS
+  mysql -uroot -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_PASS}'; flush privileges;"
+
+  echo 'ログイン検証を行います'
+  mysql -uroot -p${MYSQL_PASS}
 }
 
 
@@ -915,8 +930,6 @@ PYENV_INSTALL(){
   yum install -y sqlite
   yum install -y sqlite-devel
   yum install -y openssl-devel
-  # yum install -y git
-  GIT_INSTALL
 
   git clone https://github.com/yyuu/pyenv.git ~/.pyenv
 
@@ -950,7 +963,7 @@ EOF
 }
 
 PYENV_PYTHON_INSTALL(){
-    read -p "バージョン :" install_version
+  read -p "バージョン :" install_version
   pyenv install ${install_version}
   pyenv global  ${install_version}
   pyenv rehash
@@ -964,6 +977,11 @@ PYENV_PYTHON_INSTALL(){
 
 
 TENSORFLOW_INSTALL(){
+  PYENV_INSTALL
+  pyenv install 3.6.4
+  pyenv global  3.6.4
+  pyenv rehash
+
   while true; do
     cat << EOF
 +--------------------------------------------------------+
