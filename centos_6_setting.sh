@@ -849,7 +849,7 @@ MYSQL_57_INSTALL(){
   # chown mysql:mysql /var/log/mysql
 
   # 再起動
-  service mysqld restart
+  # service mysqld restart
 
   read -p "MYSQLのパスワードを入力してください ： " MYSQL_PASS
   mysql -uroot -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_PASS}'; flush privileges;"
