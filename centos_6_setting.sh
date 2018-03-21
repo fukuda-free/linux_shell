@@ -213,7 +213,11 @@ FNC_11(){
   echo "(${LINE_NO}) >> [11]  5.7 をインストール"
 
   echoGreen "現在のMYSQLのバージョンは、以下の通りです"
-  mysqld --version
+  if type mysqld >/dev/null 2>&1; then
+    mysqld --version
+  else
+    echoRed "MYSQLはインストールされていません"
+  fi
   echo ""
 
   RUN_CHECK
@@ -290,11 +294,11 @@ GIT_INSTALL(){
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "y" | "yes")
         sudo yum -y remove git
-        GIT_VERSION_INSTALL ;;
-        # break ;;
+        GIT_VERSION_INSTALL
+        break ;;
       "n" | "no")
-        echoYellow "インストールを行わず、次のステップに移ります" ;;
-        # break ;;
+        echoYellow "インストールを行わず、次のステップに移ります"
+        break ;;
       *)
         echoRed "(${LINE_NO})  >> キーが違います。"
     esac
@@ -892,7 +896,8 @@ MYSQL_57_INSTALL(){
     read -p "MYSQLの設定で、rootの設定しますか？（yes or no） >>" KEY
     case "${KEY}" in
       "y" | "yes")
-        mysql_secure_installation ;;
+        mysql_secure_installation
+        break ;;
       "n" | "no")
         break ;;
       *)
