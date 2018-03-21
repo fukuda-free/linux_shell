@@ -54,14 +54,14 @@ FNC_MENU(){
 | [ 8]  redis をインストール               |（検証中）
 | [ 9]  python をインストール              |（検証中）
 | [10]  tensorflow をインストール          |（検証中）
-| [11]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
-| [12]  5.7 をインストール                 |（検証中）
+| [11]  5.7 をインストール                 |（検証中）
 | [ e]  シェルを終了                       |
 +-----------------------------------------+
 EOF
+# | [11]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
 
     #入力された項目を読み込み、変数KEYに代入する
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") FNC_ACTION ;;
       "2") FNC_ACTION ;;
@@ -74,9 +74,9 @@ EOF
       "9") FNC_ACTION ;;
       "10") FNC_ACTION ;;
       "11") FNC_ACTION ;;
-      "12") FNC_ACTION ;;
+      # "12") FNC_ACTION ;;
       "e") break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
     read -p "ENTERを押してください。" BLANK
   done
@@ -87,14 +87,14 @@ EOF
 FNC_ACTION(){
   FNC_${KEY}
   if [ $? != 0 ]; then
-     echoRed "($LINENO)  >> FNC_${KEY}で異常が発生しました"
+     echoRed "(${LINE_NO})  >> FNC_${KEY}で異常が発生しました"
   fi
 }
 
 ########################################################
 #  [1]
 FNC_1(){
-  echoGreen "($LINENO) >> [1]  開発用としてiptableとselinuxを解除"
+  echoGreen "(${LINE_NO}) >> [1]  開発用としてiptableとselinuxを解除"
   /etc/rc.d/init.d/iptables stop
   chkconfig iptables off
   chkconfig --list iptables
@@ -109,7 +109,7 @@ FNC_1(){
 #######################################################
 #  [2]
 FNC_2(){
-  echoGreen "($LINENO) >> [2]  ruby をインストール"
+  echoGreen "(${LINE_NO}) >> [2]  ruby をインストール"
   RUBY_INSTALL_SELECT
   return 0
 }
@@ -117,7 +117,7 @@ FNC_2(){
 ########################################################
 #  [3]
 FNC_3(){
-  echoGreen "($LINENO) >> [3]  rails をインストール"
+  echoGreen "(${LINE_NO}) >> [3]  rails をインストール"
   RUN_CHECK
   RAILS_VERSION_CHECK
   return 0
@@ -126,7 +126,7 @@ FNC_3(){
 ########################################################
 #  [4]
 FNC_4(){
-  echoGreen "($LINENO) >> [4]  node.js をインストール"
+  echoGreen "(${LINE_NO}) >> [4]  node.js をインストール"
   RUN_CHECK
   DEVELOP_PACKAGE_INSTALL
   NODE_INSTALL_CHECK
@@ -145,7 +145,7 @@ FNC_4(){
 ########################################################
 #  [5]
 FNC_5(){
-  echoGreen "($LINENO) >> [5]  ffmpeg をインストール"
+  echoGreen "(${LINE_NO}) >> [5]  ffmpeg をインストール"
   RUN_CHECK
   FFMPEG_INSTALL
   # DEVELOP_PACKAGE_INSTALL
@@ -156,7 +156,7 @@ FNC_5(){
 ########################################################
 #  [6]
 FNC_6(){
-  echoGreen "($LINENO) >> [6]  ImageMagick をインストール"
+  echoGreen "(${LINE_NO}) >> [6]  ImageMagick をインストール"
   RUN_CHECK
   yum -y install ImageMagick
   yum -y install ImageMagick-devel
@@ -166,7 +166,7 @@ FNC_6(){
 ########################################################
 #  [7]
 FNC_7(){
-  echoGreen "($LINENO) >> [7]  mecab をインストール"
+  echoGreen "(${LINE_NO}) >> [7]  mecab をインストール"
   RUN_CHECK
   sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
   sudo yum install -y mecab mecab-devel
@@ -182,7 +182,7 @@ FNC_7(){
 ########################################################
 #  [8]
 FNC_8(){
-  echoGreen "($LINENO) >> [8]  redis をインストール"
+  echoGreen "(${LINE_NO}) >> [8]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
   return 0
@@ -191,7 +191,7 @@ FNC_8(){
 ########################################################
 #  [9]
 FNC_9(){
-  echoGreen "($LINENO) >> [9]  python をインストール"
+  echoGreen "(${LINE_NO}) >> [9]  python をインストール"
   RUN_CHECK
   PYTHON_INSTALL_CHECK
   return 0
@@ -200,32 +200,35 @@ FNC_9(){
 ########################################################
 #  [10]
 FNC_10(){
-  echoGreen "($LINENO) >> [10]  tensorflow をインストール"
+  echoGreen "(${LINE_NO}) >> [10]  tensorflow をインストール"
   RUN_CHECK
   # PYTHON_INSTALL_CHECK
   TENSORFLOW_INSTALL
   return 0
 }
 
-
 ########################################################
 #  [11]
 FNC_11(){
-  echo "($LINENO) >> [11]  mysql 5.11 -> 5.7 + utf8mb4"
+  echo "(${LINE_NO}) >> [11]  5.7 をインストール"
+
+  echoGreen "現在のMYSQLのバージョンは、以下の通りです"
+  mysqld --version
+  echo ""
+
   RUN_CHECK
-  MYSQL_51_2_57_VERSION_UP
+  MYSQL_57_INSTALL
   return 0
 }
 
 ########################################################
 #  [12]
 FNC_12(){
-  echo "($LINENO) >> [12]  5.7 をインストール"
+  echo "(${LINE_NO}) >> [12]  mysql 5.11 -> 5.7 + utf8mb4"
   RUN_CHECK
-  MYSQL_57_INSTALL
+  MYSQL_51_2_57_VERSION_UP
   return 0
 }
-
 ########################################################
 #  各種の呼び出し処理
 # 確認処理
@@ -240,11 +243,15 @@ RUN_CHECK(){
 +--------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-      "1") break ;;
-      "2") FNC_MENU ;;
-      *)   echo "($LINENO)  >> キーが違います。" ;;
+      "1")
+        break ;;
+      "2")
+        FNC_MENU
+        break ;;
+      *)
+        echo "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -289,7 +296,7 @@ GIT_INSTALL(){
         echoYellow "インストールを行わず、次のステップに移ります" ;;
         # break ;;
       *)
-        echoRed "($LINENO)  >> キーが違います。"
+        echoRed "(${LINE_NO})  >> キーが違います。"
     esac
   else
     echoGreen 'gitがインストールされていませんでした'
@@ -326,7 +333,7 @@ EOF
         echoGreen 'git のバージョンは以下となります'
         git --version
         break ;;
-      *)   echo "($LINENO)  >> キーが違います。" ;;
+      *)   echo "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 
@@ -347,7 +354,7 @@ EOF
     read -p "項目を選択してください >>" KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
-        echoGreen "($LINENO) >> [2]  rvm で rubyをインストール"
+        echoGreen "(${LINE_NO}) >> [2]  rvm で rubyをインストール"
         RUN_CHECK
         DEVELOP_PACKAGE_INSTALL
         RVM_INSTALL
@@ -355,14 +362,14 @@ EOF
         RVM_RUBY_INSTALL
         break ;;
       "2")
-        echoGreen "($LINENO) >> [3]  rbenv で rubyをインストール"
+        echoGreen "(${LINE_NO}) >> [3]  rbenv で rubyをインストール"
         RUN_CHECK
         DEVELOP_PACKAGE_INSTALL
         RBENV_INSTALL
         RBENV_RUBY_VERSION_CHECK
         RBENV_RUBY_INSTALL
         break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -398,7 +405,7 @@ EOF
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") rvm list known ;;
     "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -444,7 +451,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") rbenv install --list ;;
       "2") break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -505,7 +512,7 @@ EOF
         RAILS_INSTALL $ans
         break ;;
       *)
-        echoRed "($LINENO)  >> キーが違います。" ;;
+        echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -545,7 +552,7 @@ EOF
         NODEBLEW_RUBY_VERSION_CHECK
         NODEBLEW_RUBY_INSTALL
         break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -594,7 +601,7 @@ EOF
         yum install -y gcc-c++ make
         yum install -y nodejs
         break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -622,7 +629,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") nvm ls-remote ;;
       "2") break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -660,7 +667,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") nodebrew ls-remote ;;
       "2") break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -751,7 +758,7 @@ EOF
 
         break ;;
       "e")  break ;;
-      *) echo "($LINENO)  >> キーが違います。" ;;
+      *) echo "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -825,7 +832,7 @@ MYSQL_51_2_57_VERSION_UP(){
 
 MYSQL_57_INSTALL(){
   # 古いバージョンを削除
-  yum remove mysql*
+  yum -y remove mysql*
 
   # インストール
   yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
@@ -834,28 +841,77 @@ MYSQL_57_INSTALL(){
   # バージョン確認
   mysqld --version
 
+  # 設定
+  # read -p "Press [Enter] key to resume."
+  echo ""
+  read -p "MYSQLの設定で、rootのパスワードを「なし」にしますか？（yes or no） >>" KEY
+  case "${KEY}" in
+    "y" | "yes")
+      MYSQL_ROOT_PASS_SEKYURY=1 ;;
+    "n" | "no")
+      MYSQL_ROOT_PASS_SEKYURY=0 ;;
+    *)
+      echoRed "(${LINE_NO})  >> キーが違います。"
+  esac
+
+  read -p "MYSQLの設定で、文字コードをutf8mb4にしても宜しいですか？（yes or no） >>" KEY
+  case "${KEY}" in
+    "y" | "yes")
+      MYSQL_UTF8_ENCODE=1 ;;
+    "n" | "no")
+      MYSQL_UTF8_ENCODE=0 ;;
+    *)
+      echoRed "(${LINE_NO})  >> キーが違います。"
+  esac
+
+  # 実行
+  if [ ${MYSQL_ROOT_PASS_SEKYURY} = 1 ]; then
+    echo 'skip-grant-tables' >> /etc/my.cnf
+  fi
+
+  if [ ${MYSQL_UTF8_ENCODE} = 1 ]; then
+    echo 'character-set-server=utf8mb4' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '[client]' >> /etc/my.cnf
+    echo 'default-character-set=utf8mb4' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+  fi
+
   # 起動
   service mysqld restart
 
   DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
-  echo ${DB_PASSWORD}
+  echoRed "初期パスワードは、「${DB_PASSWORD}」です。"
+  echoRed "このパスワードは、場合によっては必要となりますので、メモしておくことをお勧めします"
+  echo ""
+
+  if [ ${MYSQL_ROOT_PASS_SEKYURY} = 0 ]; then
+    read -p "MYSQLの設定で、rootの設定しますか？（yes or no） >>" KEY
+    case "${KEY}" in
+      "y" | "yes")
+        mysql_secure_installation ;;
+      "n" | "no")
+        break ;;
+      *)
+        echoRed "(${LINE_NO})  >> キーが違います。" ;;
+    esac
+  fi
+
 
 
   # MySQL のアップグレードでは、その度に、mysql_upgrade するらしい
-  mysql_upgrade -u root -p${DB_PASSWORD} --force
+  # mysql_upgrade -u root -p${DB_PASSWORD} --force
 
-  # 設定に応じて、ログ出力ファイルを作成する
-  # mkdir /var/log/mysql
-  # chown mysql:mysql /var/log/mysql
+  # read -p "MYSQLのパスワードを入力してください ： " MYSQL_PASS
+  # mysql -uroot -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_PASS}'; flush privileges;"
 
-  # 再起動
-  # service mysqld restart
+  # echo 'ログイン検証を行います'
+  # mysql -uroot -p${MYSQL_PASS}
 
-  read -p "MYSQLのパスワードを入力してください ： " MYSQL_PASS
-  mysql -uroot -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_PASS}'; flush privileges;"
 
-  echo 'ログイン検証を行います'
-  mysql -uroot -p${MYSQL_PASS}
 }
 
 
@@ -872,7 +928,7 @@ PYTHON_INSTALL_CHECK(){
       "n" | "no")
         echoYellow "インストールを行わず、次のステップに移ります" ;;
       *)
-        echoRed "($LINENO)  >> キーが違います。"
+        echoRed "(${LINE_NO})  >> キーが違います。"
     esac
   else
     echoGreen 'gitがインストールされていませんでした'
@@ -907,7 +963,7 @@ EOF
       #   NODEBLEW_RUBY_VERSION_CHECK
       #   NODEBLEW_RUBY_INSTALL
       #   break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -957,7 +1013,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") pyenv install --list ;;
       "2") break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -1000,7 +1056,7 @@ EOF
       "2")
         pip install tensorflow-gpu
         break;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   done
 }
