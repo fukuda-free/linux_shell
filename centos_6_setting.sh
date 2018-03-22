@@ -41,9 +41,9 @@ echoYellow() {
 FNC_MENU(){
   while true; do
     cat << EOF
-+-----------------------------------------+
-|                【 MENU 】         v 5.2 |
-+-----------------------------------------+
++------------------------------------------+
+|                【 MENU 】          v 5.2 |
++------------------------------------------+
 | [ 1]  開発用としてiptableとselinuxを解除 |
 | [ 2]  ruby をインストール                |
 | [ 3]  rails をインストール               |
@@ -54,9 +54,9 @@ FNC_MENU(){
 | [ 8]  redis をインストール               |（検証中）
 | [ 9]  python をインストール              |（検証中）
 | [10]  tensorflow をインストール          |（検証中）
-| [11]  5.7 をインストール                 |（検証中）
+| [11]  MYSQL 5.7 をインストール           |（検証中）
 | [ e]  シェルを終了                       |
-+-----------------------------------------+
++------------------------------------------+
 EOF
 # | [11]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
 
@@ -216,7 +216,7 @@ FNC_11(){
   if type mysqld >/dev/null 2>&1; then
     mysqld --version
   else
-    echoRed "MYSQLはインストールされていません"
+    echoRed "MYSQLはインストールされていませんでした"
   fi
   echo ""
 
@@ -290,7 +290,7 @@ GIT_INSTALL(){
     echoGreen '現在、以下のGITのバージョンがインストールされています'
     git --version
 
-    read -p "バージョンを変更しますか？（yes or no） >>" KEY
+    read -p "バージョンを変更しますか？（yes or no） >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "y" | "yes")
         sudo yum -y remove git
@@ -320,7 +320,7 @@ GIT_VERSION_INSTALL(){
 +----------------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         # yum install -y git
@@ -355,7 +355,7 @@ RUBY_INSTALL_SELECT(){
 +----------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         echoGreen "(${LINE_NO}) >> [2]  rvm で rubyをインストール"
@@ -405,7 +405,7 @@ RVM_RUBY_VERSION_CHECK(){
 +-----------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
+  read -p "項目を選択してください >> " KEY
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") rvm list known ;;
     "2") break ;;
@@ -451,7 +451,7 @@ RBENV_RUBY_VERSION_CHECK(){
 +-----------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") rbenv install --list ;;
       "2") break ;;
@@ -488,7 +488,7 @@ RAILS_VERSION_CHECK(){
 +------------------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         RAILS_INSTALL 3.2.22.5
@@ -541,7 +541,7 @@ NODE_INSTALL_CHECK(){
 +----------------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         NODE_YUM_VERSION_INSTALL_CHECK
@@ -577,7 +577,7 @@ NODE_YUM_VERSION_INSTALL_CHECK(){
 +-----------------------------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         sudo yum install -y epel-release
@@ -629,7 +629,7 @@ NVM_RUBY_VERSION_CHECK(){
 +----------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") nvm ls-remote ;;
       "2") break ;;
@@ -667,7 +667,7 @@ NODEBLEW_RUBY_VERSION_CHECK(){
 +----------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") nodebrew ls-remote ;;
       "2") break ;;
@@ -714,7 +714,7 @@ MECAB_IPADIC_INSTALL(){
 +------------------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "y")
         echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
@@ -848,7 +848,7 @@ MYSQL_57_INSTALL(){
   # 設定
   # read -p "Press [Enter] key to resume."
   echo ""
-  read -p "MYSQLの設定で、rootのパスワードを「なし」にしますか？（yes or no） >>" KEY
+  read -p "MYSQLの設定で、rootのパスワードを「なし」にしますか？（yes or no） >> " KEY
   case "${KEY}" in
     "y" | "yes")
       MYSQL_ROOT_PASS_SEKYURY=1 ;;
@@ -858,7 +858,7 @@ MYSQL_57_INSTALL(){
       echoRed "(${LINE_NO})  >> キーが違います。"
   esac
 
-  read -p "MYSQLの設定で、文字コードをutf8mb4にしても宜しいですか？（yes or no） >>" KEY
+  read -p "MYSQLの設定で、文字コードをutf8mb4にしても宜しいですか？（yes or no） >> " KEY
   case "${KEY}" in
     "y" | "yes")
       MYSQL_UTF8_ENCODE=1 ;;
@@ -870,6 +870,7 @@ MYSQL_57_INSTALL(){
 
   # 実行
   if [ ${MYSQL_ROOT_PASS_SEKYURY} = 1 ]; then
+    echo '' >> /etc/my.cnf
     echo 'skip-grant-tables' >> /etc/my.cnf
   fi
 
@@ -882,6 +883,15 @@ MYSQL_57_INSTALL(){
     echo 'default-character-set=utf8mb4' >> /etc/my.cnf
     echo '' >> /etc/my.cnf
     echo '' >> /etc/my.cnf
+  else
+    echo 'character-set-server=utf8' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '[client]' >> /etc/my.cnf
+    echo 'default-character-set=utf8' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
   fi
 
   # 起動
@@ -889,11 +899,12 @@ MYSQL_57_INSTALL(){
 
   DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
   echoRed "初期パスワードは、「${DB_PASSWORD}」です。"
-  echoRed "このパスワードは、場合によっては必要となりますので、メモしておくことをお勧めします"
+  echoRed "このパスワードは、場合によっては必要となりますので、"
+  echoRed "メモしておくことをお勧めします"
   echo ""
 
   if [ ${MYSQL_ROOT_PASS_SEKYURY} = 0 ]; then
-    read -p "MYSQLの設定で、rootの設定しますか？（yes or no） >>" KEY
+    read -p "MYSQLの設定で、rootのパスワード設定を行いますか？（yes or no） >> " KEY
     case "${KEY}" in
       "y" | "yes")
         mysql_secure_installation
@@ -903,20 +914,12 @@ MYSQL_57_INSTALL(){
       *)
         echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
+  else
+    echoRed "パスワードがOFFとなっています"
+    echoRed "※本番時の利用では注意してください"
   fi
 
-
-
-  # MySQL のアップグレードでは、その度に、mysql_upgrade するらしい
-  # mysql_upgrade -u root -p${DB_PASSWORD} --force
-
-  # read -p "MYSQLのパスワードを入力してください ： " MYSQL_PASS
-  # mysql -uroot -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_PASS}'; flush privileges;"
-
-  # echo 'ログイン検証を行います'
-  # mysql -uroot -p${MYSQL_PASS}
-
-
+  chkconfig mysqld on
 }
 
 
@@ -926,14 +929,14 @@ PYTHON_INSTALL_CHECK(){
     echoGreen '現在、以下のpythonのバージョンがインストールされています'
     python --version
 
-    read -p "バージョンを変更しますか？（yes or no） >>" KEY
+    read -p "バージョンを変更しますか？（yes or no） >> " KEY
     case "${KEY}" in
       "y" | "yes")
         PYTHON_INSTALL_PATTERN ;;
       "n" | "no")
         echoYellow "インストールを行わず、次のステップに移ります" ;;
       *)
-        echoRed "(${LINE_NO})  >> キーが違います。"
+        echoRed "(${LINE_NO})  >> キーが違います。" ;;
     esac
   else
     echoGreen 'gitがインストールされていませんでした'
@@ -953,7 +956,7 @@ PYTHON_INSTALL_PATTERN(){
 EOF
 # | > [3] nodebrew                         |
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         # NODE_YUM_VERSION_INSTALL_CHECK
@@ -1014,7 +1017,7 @@ PYENV_PYTHON_VERSION_CHECK(){
 +------------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") pyenv install --list ;;
       "2") break ;;
@@ -1053,7 +1056,7 @@ TENSORFLOW_INSTALL(){
 +--------------------------------------------------------+
 EOF
 
-    read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         pip install tensorflow
