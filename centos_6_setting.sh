@@ -42,7 +42,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +------------------------------------------+
-|                【 MENU 】          v 5.2 |
+|                【 MENU 】          v 5.3 |
 +------------------------------------------+
 | [ 1]  開発用としてiptableとselinuxを解除 |
 | [ 2]  ruby をインストール                |
@@ -55,6 +55,7 @@ FNC_MENU(){
 | [ 9]  python をインストール              |（検証中）
 | [10]  tensorflow をインストール          |（検証中）
 | [11]  MYSQL 5.7 をインストール           |（検証中）
+| [12]  スワップ領域の割り当て             |（検証中）
 | [ e]  シェルを終了                       |
 +------------------------------------------+
 EOF
@@ -74,9 +75,9 @@ EOF
       "9") FNC_ACTION ;;
       "10") FNC_ACTION ;;
       "11") FNC_ACTION ;;
-      # "12") FNC_ACTION ;;
+      "12") FNC_ACTION ;;
       "e") break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
     read -p "ENTERを押してください。" BLANK
   done
@@ -87,14 +88,14 @@ EOF
 FNC_ACTION(){
   FNC_${KEY}
   if [ $? != 0 ]; then
-     echoRed "(${LINE_NO})  >> FNC_${KEY}で異常が発生しました"
+     echoRed "(${LINENO})  >> FNC_${KEY}で異常が発生しました"
   fi
 }
 
 ########################################################
 #  [1]
 FNC_1(){
-  echoGreen "(${LINE_NO}) >> [1]  開発用としてiptableとselinuxを解除"
+  echoGreen "(${LINENO}) >> [1]  開発用としてiptableとselinuxを解除"
   /etc/rc.d/init.d/iptables stop
   chkconfig iptables off
   chkconfig --list iptables
@@ -109,7 +110,7 @@ FNC_1(){
 #######################################################
 #  [2]
 FNC_2(){
-  echoGreen "(${LINE_NO}) >> [2]  ruby をインストール"
+  echoGreen "(${LINENO}) >> [2]  ruby をインストール"
   RUBY_INSTALL_SELECT
   return 0
 }
@@ -117,7 +118,7 @@ FNC_2(){
 ########################################################
 #  [3]
 FNC_3(){
-  echoGreen "(${LINE_NO}) >> [3]  rails をインストール"
+  echoGreen "(${LINENO}) >> [3]  rails をインストール"
   RUN_CHECK
   RAILS_VERSION_CHECK
   return 0
@@ -126,7 +127,7 @@ FNC_3(){
 ########################################################
 #  [4]
 FNC_4(){
-  echoGreen "(${LINE_NO}) >> [4]  node.js をインストール"
+  echoGreen "(${LINENO}) >> [4]  node.js をインストール"
   RUN_CHECK
   DEVELOP_PACKAGE_INSTALL
   NODE_INSTALL_CHECK
@@ -145,7 +146,7 @@ FNC_4(){
 ########################################################
 #  [5]
 FNC_5(){
-  echoGreen "(${LINE_NO}) >> [5]  ffmpeg をインストール"
+  echoGreen "(${LINENO}) >> [5]  ffmpeg をインストール"
   RUN_CHECK
   FFMPEG_INSTALL
   # DEVELOP_PACKAGE_INSTALL
@@ -156,7 +157,7 @@ FNC_5(){
 ########################################################
 #  [6]
 FNC_6(){
-  echoGreen "(${LINE_NO}) >> [6]  ImageMagick をインストール"
+  echoGreen "(${LINENO}) >> [6]  ImageMagick をインストール"
   RUN_CHECK
   yum -y install ImageMagick
   yum -y install ImageMagick-devel
@@ -166,11 +167,15 @@ FNC_6(){
 ########################################################
 #  [7]
 FNC_7(){
-  echoGreen "(${LINE_NO}) >> [7]  mecab をインストール"
+  echoGreen "(${LINENO}) >> [7]  mecab をインストール"
   RUN_CHECK
+  # yum -y install gcc-c++
+  sudo yum update -y
   sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-  sudo yum install -y mecab mecab-devel
-  sudo yum install -y mecab-ipadic
+  sudo yum makecache
+  # sudo yum -y install mecab mecab-ipadic mecab-devel
+  # sudo yum -y install libmecab1 libmecab-dev mecab mecab-ipadic mecab-ipadic-utf8 mecab-utils mecab-devel
+  sudo yum install mecab mecab-devel mecab-ipadic git make curl xz
   echoGreen 'mecab のバージョンは以下となります'
   mecab --version
   echoYellow 'mecab の動作検証'
@@ -182,7 +187,7 @@ FNC_7(){
 ########################################################
 #  [8]
 FNC_8(){
-  echoGreen "(${LINE_NO}) >> [8]  redis をインストール"
+  echoGreen "(${LINENO}) >> [8]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
   return 0
@@ -191,7 +196,7 @@ FNC_8(){
 ########################################################
 #  [9]
 FNC_9(){
-  echoGreen "(${LINE_NO}) >> [9]  python をインストール"
+  echoGreen "(${LINENO}) >> [9]  python をインストール"
   RUN_CHECK
   PYTHON_INSTALL_CHECK
   return 0
@@ -200,7 +205,7 @@ FNC_9(){
 ########################################################
 #  [10]
 FNC_10(){
-  echoGreen "(${LINE_NO}) >> [10]  tensorflow をインストール"
+  echoGreen "(${LINENO}) >> [10]  tensorflow をインストール"
   RUN_CHECK
   # PYTHON_INSTALL_CHECK
   TENSORFLOW_INSTALL
@@ -210,7 +215,7 @@ FNC_10(){
 ########################################################
 #  [11]
 FNC_11(){
-  echo "(${LINE_NO}) >> [11]  5.7 をインストール"
+  echo "(${LINENO}) >> [11]  5.7 をインストール"
 
   echoGreen "現在のMYSQLのバージョンは、以下の通りです"
   if type mysqld >/dev/null 2>&1; then
@@ -228,11 +233,38 @@ FNC_11(){
 ########################################################
 #  [12]
 FNC_12(){
-  echo "(${LINE_NO}) >> [12]  mysql 5.11 -> 5.7 + utf8mb4"
+  echo "(${LINENO}) >> [12]  スワップ領域の割り当て"
   RUN_CHECK
-  MYSQL_51_2_57_VERSION_UP
+
+  SWAPFILENAME=/swap.img
+  MEMSIZE=`cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
+
+  if [ $MEMSIZE -lt 2097152 ]; then
+    SIZE=$((MEMSIZE * 2))k
+  elif [ $MEMSIZE -lt 8388608 ]; then
+    SIZE=${MEMSIZE}k
+  elif [ $MEMSIZE -lt 67108864 ]; then
+    SIZE=$((MEMSIZE / 2))k
+  else
+    SIZE=4194304k
+  fi
+
+  fallocate -l $SIZE $SWAPFILENAME && mkswap $SWAPFILENAME && swapon $SWAPFILENAME
+
   return 0
 }
+
+
+# ########################################################
+# #  [12]
+# FNC_12(){
+#   echo "(${LINENO}) >> [12]  mysql 5.11 -> 5.7 + utf8mb4"
+#   RUN_CHECK
+#   MYSQL_51_2_57_VERSION_UP
+#   return 0
+# }
+
+
 ########################################################
 #  各種の呼び出し処理
 # 確認処理
@@ -255,7 +287,7 @@ EOF
         FNC_MENU
         break ;;
       *)
-        echo "(${LINE_NO})  >> キーが違います。" ;;
+        echo "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -300,7 +332,7 @@ GIT_INSTALL(){
         echoYellow "インストールを行わず、次のステップに移ります"
         break ;;
       *)
-        echoRed "(${LINE_NO})  >> キーが違います。"
+        echoRed "(${LINENO})  >> キーが違います。"
     esac
   else
     echoGreen 'gitがインストールされていませんでした'
@@ -337,7 +369,7 @@ EOF
         echoGreen 'git のバージョンは以下となります'
         git --version
         break ;;
-      *)   echo "(${LINE_NO})  >> キーが違います。" ;;
+      *)   echo "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 
@@ -358,7 +390,7 @@ EOF
     read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
-        echoGreen "(${LINE_NO}) >> [2]  rvm で rubyをインストール"
+        echoGreen "(${LINENO}) >> [2]  rvm で rubyをインストール"
         RUN_CHECK
         DEVELOP_PACKAGE_INSTALL
         RVM_INSTALL
@@ -366,14 +398,14 @@ EOF
         RVM_RUBY_INSTALL
         break ;;
       "2")
-        echoGreen "(${LINE_NO}) >> [3]  rbenv で rubyをインストール"
+        echoGreen "(${LINENO}) >> [3]  rbenv で rubyをインストール"
         RUN_CHECK
         DEVELOP_PACKAGE_INSTALL
         RBENV_INSTALL
         RBENV_RUBY_VERSION_CHECK
         RBENV_RUBY_INSTALL
         break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -409,7 +441,7 @@ EOF
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") rvm list known ;;
     "2") break ;;
-    *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+    *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -455,7 +487,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") rbenv install --list ;;
       "2") break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -516,7 +548,7 @@ EOF
         RAILS_INSTALL $ans
         break ;;
       *)
-        echoRed "(${LINE_NO})  >> キーが違います。" ;;
+        echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -556,7 +588,7 @@ EOF
         NODEBLEW_RUBY_VERSION_CHECK
         NODEBLEW_RUBY_INSTALL
         break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -605,7 +637,7 @@ EOF
         yum install -y gcc-c++ make
         yum install -y nodejs
         break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -633,7 +665,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") nvm ls-remote ;;
       "2") break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -671,7 +703,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") nodebrew ls-remote ;;
       "2") break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -762,7 +794,7 @@ EOF
 
         break ;;
       "e")  break ;;
-      *) echo "(${LINE_NO})  >> キーが違います。" ;;
+      *) echo "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -855,7 +887,7 @@ MYSQL_57_INSTALL(){
     "n" | "no")
       MYSQL_ROOT_PASS_SEKYURY=0 ;;
     *)
-      echoRed "(${LINE_NO})  >> キーが違います。"
+      echoRed "(${LINENO})  >> キーが違います。"
   esac
 
   read -p "MYSQLの設定で、文字コードをutf8mb4にしても宜しいですか？（yes or no） >> " KEY
@@ -865,7 +897,7 @@ MYSQL_57_INSTALL(){
     "n" | "no")
       MYSQL_UTF8_ENCODE=0 ;;
     *)
-      echoRed "(${LINE_NO})  >> キーが違います。"
+      echoRed "(${LINENO})  >> キーが違います。"
   esac
 
   # 実行
@@ -912,7 +944,7 @@ MYSQL_57_INSTALL(){
       "n" | "no")
         break ;;
       *)
-        echoRed "(${LINE_NO})  >> キーが違います。" ;;
+        echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   else
     echoRed "パスワードがOFFとなっています"
@@ -920,6 +952,7 @@ MYSQL_57_INSTALL(){
   fi
 
   chkconfig mysqld on
+  # break;;
 }
 
 
@@ -936,7 +969,7 @@ PYTHON_INSTALL_CHECK(){
       "n" | "no")
         echoYellow "インストールを行わず、次のステップに移ります" ;;
       *)
-        echoRed "(${LINE_NO})  >> キーが違います。" ;;
+        echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   else
     echoGreen 'gitがインストールされていませんでした'
@@ -971,7 +1004,7 @@ EOF
       #   NODEBLEW_RUBY_VERSION_CHECK
       #   NODEBLEW_RUBY_INSTALL
       #   break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -1021,7 +1054,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") pyenv install --list ;;
       "2") break ;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -1064,7 +1097,7 @@ EOF
       "2")
         pip install tensorflow-gpu
         break;;
-      *) echoRed "(${LINE_NO})  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
