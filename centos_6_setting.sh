@@ -48,22 +48,22 @@ FNC_MENU(){
 | [ 2]  ruby をインストール                |
 | [ 3]  rails をインストール               |
 | [ 4]  node.js をインストール             |
-| [ 5]  ffmpeg（のみ） をインストール      |（検証中）
-| [ 6]  ImageMagick をインストール         |（検証中）
-| [ 7]  mecab をインストール               |（検証中）
-| [ 8]  redis をインストール               |（検証中）
-| [ 9]  python をインストール              |（検証中）
-| [10]  tensorflow をインストール          |（検証中）
-| [11]  MYSQL 5.7 をインストール           |（検証中）
-| [12]  スワップ領域の割り当て             |（検証中）
+| [ 5]  MYSQL 5.7 をインストール           |
+| [ 6]  スワップ領域の割り当て             |
+| [ 7]  ffmpeg（のみ） をインストール      |
+| [ 8]  ImageMagick をインストール         |
+| [ 9]  mecab をインストール               |（検証中）
+| [10]  redis をインストール               |（検証中）
+| [80]  python をインストール              |（検証中）
+| [81]  tensorflow をインストール          |（検証中）
 | [ e]  シェルを終了                       |
 +------------------------------------------+
 EOF
 # | [11]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
 
     #入力された項目を読み込み、変数KEYに代入する
-    read -p "項目を選択してください >> " KEY
-    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+    read -p "項目を選択してください >> " MENU_NUMBER
+    case "${MENU_NUMBER}" in  #変数MENU_NUMBERに合った内容でコマンドが実行される
       "1") FNC_ACTION ;;
       "2") FNC_ACTION ;;
       "3") FNC_ACTION ;;
@@ -74,8 +74,8 @@ EOF
       "8") FNC_ACTION ;;
       "9") FNC_ACTION ;;
       "10") FNC_ACTION ;;
-      "11") FNC_ACTION ;;
-      "12") FNC_ACTION ;;
+      "80") FNC_ACTION ;;
+      "81") FNC_ACTION ;;
       "e") break ;;
       *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
@@ -86,16 +86,15 @@ EOF
 ########################################################
 # FNC_ACTION 共通メソッド
 FNC_ACTION(){
-  FNC_${KEY}
+  FNC_${MENU_NUMBER}
   if [ $? != 0 ]; then
-     echoRed "(${LINENO})  >> FNC_${KEY}で異常が発生しました"
+     echoRed "(${LINENO})  >> FNC_${MENU_NUMBER}で異常が発生しました"
   fi
 }
 
 ########################################################
-#  [1]
 FNC_1(){
-  echoGreen "(${LINENO}) >> [1]  開発用としてiptableとselinuxを解除"
+  echoGreen "(${LINENO}) >> [ 1]  開発用としてiptableとselinuxを解除"
   /etc/rc.d/init.d/iptables stop
   chkconfig iptables off
   chkconfig --list iptables
@@ -105,12 +104,16 @@ FNC_1(){
   echoGreen "開発用パッケージをインストールします"
   sudo yum -y groupinstall "Base" "Development tools"
   GIT_INSTALL
+  SWAP_SETTING
+
+  rm -rf /etc/localtime
+  cp /usr/share/zoneinfo/Japan /etc/localtime
+
   return 0
 }
 #######################################################
-#  [2]
 FNC_2(){
-  echoGreen "(${LINENO}) >> [2]  ruby をインストール"
+  echoGreen "(${LINENO}) >> [ 2]  ruby をインストール"
   RUBY_INSTALL_SELECT
   return 0
 }
@@ -118,16 +121,15 @@ FNC_2(){
 ########################################################
 #  [3]
 FNC_3(){
-  echoGreen "(${LINENO}) >> [3]  rails をインストール"
+  echoGreen "(${LINENO}) >> [ 3]  rails をインストール"
   RUN_CHECK
   RAILS_VERSION_CHECK
   return 0
 }
 
 ########################################################
-#  [4]
 FNC_4(){
-  echoGreen "(${LINENO}) >> [4]  node.js をインストール"
+  echoGreen "(${LINENO}) >> [ 4]  node.js をインストール"
   RUN_CHECK
   DEVELOP_PACKAGE_INSTALL
   NODE_INSTALL_CHECK
@@ -144,9 +146,35 @@ FNC_4(){
 }
 
 ########################################################
-#  [5]
 FNC_5(){
-  echoGreen "(${LINENO}) >> [5]  ffmpeg をインストール"
+  echo "(${LINENO}) >> [ 5]  MYSQL 5.7 をインストール"
+
+  echoGreen "現在のMYSQLのバージョンは、以下の通りです"
+  if type mysqld >/dev/null 2>&1; then
+    mysqld --version
+  else
+    echoRed "MYSQLはインストールされていませんでした"
+  fi
+  echo ""
+
+  RUN_CHECK
+  MYSQL_57_INSTALL
+  return 0
+}
+
+########################################################
+#  [6]
+FNC_6(){
+  echo "(${LINENO}) >> [ 6]  スワップ領域の割り当て"
+  RUN_CHECK
+  SWAP_SETTING
+  return 0
+}
+
+########################################################
+#  [7]
+FNC_7(){
+  echoGreen "(${LINENO}) >> [ 7]  ffmpeg（のみ） をインストール"
   RUN_CHECK
   FFMPEG_INSTALL
   # DEVELOP_PACKAGE_INSTALL
@@ -155,9 +183,9 @@ FNC_5(){
 }
 
 ########################################################
-#  [6]
-FNC_6(){
-  echoGreen "(${LINENO}) >> [6]  ImageMagick をインストール"
+#  [8]
+FNC_8(){
+  echoGreen "(${LINENO}) >> [ 8]  ImageMagick をインストール"
   RUN_CHECK
   yum -y install ImageMagick
   yum -y install ImageMagick-devel
@@ -165,9 +193,9 @@ FNC_6(){
 }
 
 ########################################################
-#  [7]
-FNC_7(){
-  echoGreen "(${LINENO}) >> [7]  mecab をインストール"
+#  [9]
+FNC_9(){
+  echoGreen "(${LINENO}) >> [ 9]  mecab をインストール"
   RUN_CHECK
   # yum -y install gcc-c++
   sudo yum update -y
@@ -185,75 +213,32 @@ FNC_7(){
 }
 
 ########################################################
-#  [8]
-FNC_8(){
-  echoGreen "(${LINENO}) >> [8]  redis をインストール"
+#  [10]
+FNC_10(){
+  echoGreen "(${LINENO}) >> [10]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
   return 0
 }
 
 ########################################################
-#  [9]
-FNC_9(){
-  echoGreen "(${LINENO}) >> [9]  python をインストール"
+#  [80]
+FNC_80(){
+  echoGreen "(${LINENO}) >> [80]  python をインストール"
   RUN_CHECK
   PYTHON_INSTALL_CHECK
   return 0
 }
 
 ########################################################
-#  [10]
-FNC_10(){
-  echoGreen "(${LINENO}) >> [10]  tensorflow をインストール"
+#  [81]
+FNC_81(){
+  echoGreen "(${LINENO}) >> [81]  tensorflow をインストール"
   RUN_CHECK
   # PYTHON_INSTALL_CHECK
   TENSORFLOW_INSTALL
   return 0
 }
-
-########################################################
-#  [11]
-FNC_11(){
-  echo "(${LINENO}) >> [11]  5.7 をインストール"
-
-  echoGreen "現在のMYSQLのバージョンは、以下の通りです"
-  if type mysqld >/dev/null 2>&1; then
-    mysqld --version
-  else
-    echoRed "MYSQLはインストールされていませんでした"
-  fi
-  echo ""
-
-  RUN_CHECK
-  MYSQL_57_INSTALL
-  return 0
-}
-
-########################################################
-#  [12]
-FNC_12(){
-  echo "(${LINENO}) >> [12]  スワップ領域の割り当て"
-  RUN_CHECK
-
-  SWAPFILENAME=/swap.img
-  MEMSIZE=`cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
-
-  if [ $MEMSIZE -lt 2097152 ]; then
-    SIZE=$((MEMSIZE * 2))k
-  elif [ $MEMSIZE -lt 8388608 ]; then
-    SIZE=${MEMSIZE}k
-  elif [ $MEMSIZE -lt 67108864 ]; then
-    SIZE=$((MEMSIZE / 2))k
-  else
-    SIZE=4194304k
-  fi
-
-  fallocate -l $SIZE $SWAPFILENAME && mkswap $SWAPFILENAME && swapon $SWAPFILENAME
-
-  return 0
-}
-
 
 # ########################################################
 # #  [12]
@@ -326,13 +311,13 @@ GIT_INSTALL(){
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "y" | "yes")
         sudo yum -y remove git
-        GIT_VERSION_INSTALL
-        break ;;
+        GIT_VERSION_INSTALL ;;
+        # break ;;
       "n" | "no")
-        echoYellow "インストールを行わず、次のステップに移ります"
-        break ;;
+        echoYellow "インストールを行わず、次のステップに移ります" ;;
+        # break ;;
       *)
-        echoRed "(${LINENO})  >> キーが違います。"
+        echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   else
     echoGreen 'gitがインストールされていませんでした'
@@ -1101,6 +1086,32 @@ EOF
     esac
   done
 }
+
+SWAP_SETTING(){
+  echoGreen "(${LINENO})  >> スワップ領域を自動で割り当てます"
+  echoGreen "現在のスワップ領域は以下の通りです"
+  free
+
+  SWAPFILENAME=/swap.img
+  MEMSIZE=`cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
+
+  if [ $MEMSIZE -lt 2097152 ]; then
+    SIZE=$((MEMSIZE * 2))k
+  elif [ $MEMSIZE -lt 8388608 ]; then
+    SIZE=${MEMSIZE}k
+  elif [ $MEMSIZE -lt 67108864 ]; then
+    SIZE=$((MEMSIZE / 2))k
+  else
+    SIZE=4194304k
+  fi
+
+  fallocate -l $SIZE $SWAPFILENAME && mkswap $SWAPFILENAME && swapon $SWAPFILENAME
+
+  echoGreen "スワップ領域を以下に設定しました"
+  free
+}
+
+
 ########################################################
 #  エンド処理
 FNC_MENU      #関数FNC_MENUを呼ぶ
