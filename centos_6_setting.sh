@@ -54,6 +54,7 @@ FNC_MENU(){
 | [ 8]  ImageMagick をインストール         |
 | [ 9]  mecab をインストール               |（検証中）
 | [10]  redis をインストール               |（検証中）
+| [11]  GIT をアップデート                 |（検証中）
 | [80]  python をインストール              |（検証中）
 | [81]  tensorflow をインストール          |（検証中）
 | [ e]  シェルを終了                       |
@@ -74,6 +75,7 @@ EOF
       "8") FNC_ACTION ;;
       "9") FNC_ACTION ;;
       "10") FNC_ACTION ;;
+      "11") FNC_ACTION ;;
       "80") FNC_ACTION ;;
       "81") FNC_ACTION ;;
       "e") break ;;
@@ -103,7 +105,6 @@ FNC_1(){
   chkconfig kdump off
   echoGreen "開発用パッケージをインストールします"
   sudo yum -y groupinstall "Base" "Development tools"
-  GIT_INSTALL
   SWAP_SETTING
 
   rm -rf /etc/localtime
@@ -203,7 +204,7 @@ FNC_9(){
   sudo yum makecache
   # sudo yum -y install mecab mecab-ipadic mecab-devel
   # sudo yum -y install libmecab1 libmecab-dev mecab mecab-ipadic mecab-ipadic-utf8 mecab-utils mecab-devel
-  sudo yum install mecab mecab-devel mecab-ipadic git make curl xz
+  sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
   echoGreen 'mecab のバージョンは以下となります'
   mecab --version
   echoYellow 'mecab の動作検証'
@@ -218,6 +219,15 @@ FNC_10(){
   echoGreen "(${LINENO}) >> [10]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
+  return 0
+}
+
+########################################################
+#  [11]
+FNC_11(){
+  echoGreen "(${LINENO}) >> [11]  GIT をアップデート"
+  RUN_CHECK
+  GIT_INSTALL
   return 0
 }
 
@@ -443,7 +453,8 @@ RVM_RUBY_INSTALL(){
 
 # rbenvのインストール
 RBENV_INSTALL(){
-  GIT_INSTALL
+  # GIT_INSTALL
+  yum install -y git
 
   git clone git://github.com/sstephenson/rbenv.git /usr/local/src/rbenv
   echo 'export RBENV_ROOT="/usr/local/src/rbenv"' >> /etc/profile.d/rbenv.sh
@@ -628,7 +639,8 @@ EOF
 }
 
 NVM_INSTALL(){
-  GIT_INSTALL
+  # GIT_INSTALL
+  yum install -y git
 
   git clone git://github.com/creationix/nvm.git ~/.nvm
   source ~/.nvm/nvm.sh
@@ -742,9 +754,9 @@ EOF
 
         # 必要パッケージのインストール
         sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-        # sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
-        sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
-        GIT_INSTALL
+        sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
+        # sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
+        # GIT_INSTALL
 
         git clone git://git.kernel.org/pub/scm/git/git.git
 
