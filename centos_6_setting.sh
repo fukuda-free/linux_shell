@@ -858,6 +858,7 @@ MYSQL_57_INSTALL(){
   # インストール
   yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
   yum -y install mysql-community-server
+  yum -y install mysql-devel
 
   # バージョン確認
   mysqld --version
