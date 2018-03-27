@@ -101,7 +101,7 @@ FNC_1(){
   chkconfig iptables off
   chkconfig --list iptables
   setenforce 0
-  # sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+  sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
   chkconfig kdump off
   echoGreen "開発用パッケージをインストールします"
   sudo yum -y groupinstall "Base" "Development tools"
@@ -516,8 +516,8 @@ RAILS_VERSION_CHECK(){
 +------------------------------------------+
 EOF
 
-    read -p "項目を選択してください >> " KEY
-    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+    read -p "項目を選択してください >> " RIALS_MENU_KEY
+    case "${RIALS_MENU_KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         RAILS_INSTALL 3.2.22.5
         break ;;
@@ -535,14 +535,17 @@ EOF
         break ;;
       "6")
         gem install rails --pre
-        break ;;
+        # break
+        echoGreen 'rails のバージョンは以下となります'
+        rails -v
+        ;;
       "7")
         gem query -ra -n  "^rails$" ;;
       "8")
-        echo -n "バージョン : "
-        read ans
-        RAILS_INSTALL $ans
-        break ;;
+        read -p "バージョン : " RIALS_VERSION_NUM
+        RAILS_INSTALL ${RIALS_VERSION_NUM}
+        # break ;;
+        ;;
       *)
         echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
@@ -880,9 +883,9 @@ MYSQL_57_INSTALL(){
   echo ""
   read -p "MYSQLの設定で、rootのパスワードを「なし」にしますか？（yes or no） >> " KEY
   case "${KEY}" in
-    "y" | "yes")
+    "y" | "yes"| "Y")
       MYSQL_ROOT_PASS_SEKYURY=1 ;;
-    "n" | "no")
+    "n" | "no"| "N")
       MYSQL_ROOT_PASS_SEKYURY=0 ;;
     *)
       echoRed "(${LINENO})  >> キーが違います。"
