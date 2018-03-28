@@ -127,6 +127,7 @@ DEV_MENU()
 | [ 8] bundle install 再実行  |
 | [ 9] rails console 実行     |
 | [10] DB + テーブル 再構築   |
+| [11] log表示                |
 | [ t] トップメニューに戻る   |
 | [ e] シェルを終了           |
 +-----------------------------+
@@ -178,6 +179,8 @@ DEV_MENU_2(){
 		'puma')    PUMA_STOP ;;
 	esac
 	DEV_LOG_BK
+	rufo /var/www/rails/watson_tool/app/models/
+	rufo /var/www/rails/watson_tool/app/controllers/
 	case $app_sarver_gem in
 		'unicorn') UNICORN_DEV_START ;;
 		'puma')    PUMA_DEV_START ;;
@@ -196,6 +199,8 @@ DEV_MENU_3(){
 DEV_MENU_4(){
 	echoG "($LINENO) >> DB + テーブル 追加構築"
 	DB_DEV_MIGRATE_CREATE
+	bundle exec annotate
+
 	return 0
 }
 
@@ -251,8 +256,17 @@ DEV_MENU_10(){
 	# 開発DB作成
 	DB_DEV_MIGRATE_NEW
 
+	bundle exec annotate
 	return 0
 }
+
+
+DEV_MENU_11(){
+	tailf -n 50 ${rails_app_dir}/log/development.log
+	return 0
+
+}
+
 
 
 ########################################################
