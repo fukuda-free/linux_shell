@@ -538,9 +538,10 @@ EOF
         # break
         echoGreen 'rails のバージョンは以下となります'
         rails -v
-        ;;
+        break ;;
       "7")
-        gem query -ra -n  "^rails$" ;;
+        gem query -ra -n  "^rails$"
+        break ;;
       "8")
         read -p "バージョン : " RIALS_VERSION_NUM
         RAILS_INSTALL ${RIALS_VERSION_NUM}
