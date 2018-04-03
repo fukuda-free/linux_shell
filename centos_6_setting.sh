@@ -104,7 +104,11 @@ FNC_1(){
   sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
   chkconfig kdump off
   echoGreen "開発用パッケージをインストールします"
+  sudo yum  -y update
   sudo yum -y groupinstall "Base" "Development tools"
+  sudo yum install -y crontabs cronie-noanacron cronie-anacron
+  cp -r /usr/share/zoneinfo/Japan /etc/localtime
+
   SWAP_SETTING
 
   rm -rf /etc/localtime
