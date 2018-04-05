@@ -108,6 +108,7 @@ FNC_1(){
   sudo yum -y groupinstall "Base" "Development tools"
   sudo yum install -y crontabs cronie-noanacron cronie-anacron
   cp -r /usr/share/zoneinfo/Japan /etc/localtime
+  echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
   SWAP_SETTING
 
