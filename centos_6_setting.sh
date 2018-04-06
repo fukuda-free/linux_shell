@@ -103,12 +103,17 @@ FNC_1(){
   setenforce 0
   sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
   chkconfig kdump off
+
   echoGreen "開発用パッケージをインストールします"
   sudo yum  -y update
   sudo yum -y groupinstall "Base" "Development tools"
   sudo yum install -y crontabs cronie-noanacron cronie-anacron
 
-  cp -rf /usr/share/zoneinfo/Japan /etc/localtime
+  echoGreen "時間軸を日本にします"
+  # rm -rf /etc/localtime
+  # cp -rf /usr/share/zoneinfo/Japan /etc/localtime
+  sudo ln -sf /usr/share/zoneinfo/Japan /etc/localtime
+
   sudo yum -y install ntp
   sudo ntpdate ntp.nict.jp
 
@@ -116,8 +121,6 @@ FNC_1(){
 
   SWAP_SETTING
 
-  rm -rf /etc/localtime
-  cp /usr/share/zoneinfo/Japan /etc/localtime
 
   return 0
 }
