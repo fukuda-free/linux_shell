@@ -213,17 +213,47 @@ FNC_8(){
 FNC_9(){
   echoGreen "(${LINENO}) >> [ 9]  mecab をインストール"
   RUN_CHECK
-  # yum -y install gcc-c++
   sudo yum update -y
   sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-  sudo yum makecache
-  # sudo yum -y install mecab mecab-ipadic mecab-devel
-  # sudo yum -y install libmecab1 libmecab-dev mecab mecab-ipadic mecab-ipadic-utf8 mecab-utils mecab-devel
-  sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
+  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.3.0-1.noarch.rpm
+  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.4.0-1.noarch.rpm
+
+  # タイムアウトする為、１次的にタイムアウト時間を変更
+  echo '# 通信速度が遅いためtimeout時間を変更' >> /etc/yum.conf
+  echo 'minrate=1' >> /etc/yum.conf
+  echo 'timeout=500' >> /etc/yum.conf
+  sudo yum install -y mecab mecab-ipadic mecab-jumandic mecab-devel
+
+  if type mecab >/dev/null 2>&1; then
+    echoGreen "yum からの mecab のインストール完了！"
+  else
+    echoRed "yum からの mecab のインストールに失敗しました"
+    echoRed "その為、ソースからインストールします"
+    sudo yum install -y git make curl xz
+    sudo yum install -y gcc-c++
+    # yumによるインストールを失敗した場合
+    git clone https://github.com/taku910/mecab.git
+    cd mecab/mecab
+    ./configure --enable-utf8-only
+    make
+    sudo make install
+  fi
+
+  # # 後処理(元の状態に戻す)
+  # sed -e '/# 通信速度が遅いためtimeout時間を変更/d' /etc/yum.conf
+  # sed -e '/minrate=1/d' /etc/yum.conf
+  # sed -i -e '/timeout=500/d' /etc/yum.conf
+
   echoGreen 'mecab のバージョンは以下となります'
   mecab --version
-  echoYellow 'mecab の動作検証'
+  # echoYellow 'mecab の動作検証'
+  echoYellow 'mecab の動作検証' -d /usr/lib64/mecab/dic/ipadic
   echo 'すもももももももものうち' | mecab
+
+  echoYellow 'mecab の動作検証' -d /usr/lib64/mecab/dic/jumandic
+  echo 'すもももももももものうち' | mecab
+
+
   MECAB_IPADIC_INSTALL
   return 0
 }
