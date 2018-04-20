@@ -42,7 +42,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +------------------------------------------+
-|                【 MENU 】          v 5.3 |
+|                【 MENU 】          v 5.5 |
 +------------------------------------------+
 | [ 1]  開発用としてiptableとselinuxを解除 |
 | [ 2]  ruby をインストール                |
@@ -846,8 +846,9 @@ EOF
 }
 
 REDIS_INSTALL(){
+  sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
   sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-  sudo yum -y --enablerepo=remi install redis
+  sudo yum --enablerepo=remi,remi-test install -y redis
 
   echoGreen 'redis のバージョンは以下となります'
   redis-server --version
