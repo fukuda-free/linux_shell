@@ -42,7 +42,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +------------------------------------------+
-|                【 MENU 】          v 5.5 |
+|                【 MENU 】          v 5.6 |
 +------------------------------------------+
 | [ 1]  開発用としてiptableとselinuxを解除 |
 | [ 2]  ruby をインストール                |
@@ -550,48 +550,42 @@ RAILS_VERSION_CHECK(){
 +------------------------------------------+
 | Rails のバージョンはどれを利用しますか？ |
 +------------------------------------------+
-| > [1] 3.2.22.5                           |
-| > [2] 4.0.13                             |
-| > [3] 4.1.16                             |
-| > [4] 4.2.10                             |
-| > [5] 5.1.4                              |
-| > [6] 最新                               |
-| > [7] バージョン検索                     |
-| > [8] 手動入力                           |
+| > [1] 4.2.10                             |
+| > [2] 5.0.7                              |
+| > [3] 5.1.6                              |
+| > [4] 最新                               |
+| > [5] バージョン検索                     |
+| > [6] 手動入力                           |
+| > [e] 終了                               |
 +------------------------------------------+
 EOF
 
     read -p "項目を選択してください >> " RIALS_MENU_KEY
     case "${RIALS_MENU_KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
-        RAILS_INSTALL 3.2.22.5
-        break ;;
-      "2")
-        RAILS_INSTALL 4.0.13
-        break ;;
-      "3")
-        RAILS_INSTALL 4.1.16
-        break ;;
-      "4")
         RAILS_INSTALL 4.2.10
         break ;;
-      "5")
-        RAILS_INSTALL 5.1.4
+      "2")
+        RAILS_INSTALL 5.0.7
         break ;;
-      "6")
+      "3")
+        RAILS_INSTALL 5.1.6
+        break ;;
+      "4")
         gem install rails --pre
-        # break
         echoGreen 'rails のバージョンは以下となります'
         rails -v
         break ;;
-      "7")
+      "5")
         gem query -ra -n  "^rails$"
-        break ;;
-      "8")
+        read -p "Press [Enter] key to resume."
+        RAILS_VERSION_CHECK ;;
+      "6")
         read -p "バージョン : " RIALS_VERSION_NUM
         RAILS_INSTALL ${RIALS_VERSION_NUM}
-        # break ;;
-        ;;
+        break ;;
+      "e")
+        break ;;
       *)
         echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
