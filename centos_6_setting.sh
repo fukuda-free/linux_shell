@@ -840,9 +840,16 @@ EOF
 }
 
 REDIS_INSTALL(){
-  sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-  sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-  sudo yum --enablerepo=remi,remi-test install -y redis
+  # 旧
+  # sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  # sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+  # sudo yum --enablerepo=remi,remi-test install -y redis
+
+  # 新(旧が動かなかったため)
+  sudo rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  sudo yum --enablerepo=epel -y install redis
+  sudo /etc/init.d/redis start
+  sudo chkconfig redis on
 
   echoGreen 'redis のバージョンは以下となります'
   redis-server --version
