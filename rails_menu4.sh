@@ -3,7 +3,7 @@
 # railsのディレクトリ
 rails_dir="/var/www/rails"
 # rails_app名
-app_name="ai_q"
+app_name="watson_tool"
 # rails_appディレクトリ
 rails_app_dir="${rails_dir}/${app_name}"
 
@@ -15,60 +15,61 @@ mysql_bk_dr="/var/www/rails/mysql_bk"
 # mysql development user
 mysql_development_user="root"
 # mysql development pass
-mysql_development_pass="ypc06572"
+mysql_development_pass=""
 
 # mysql production user
 mysql_production_user="root"
 # mysql production pass
-mysql_production_pass="ypc06572"
+mysql_production_pass=""
 
-# app_serverの種類(unicorn or puma)
-app_sarver_gem="unicorn"
+# app_serverの種類(unicorn or puma or foreman)
+app_sarver_gem="puma"
+# app_sarver_gem="foreman"
+
 # app_server_pid
-app_server_pid="${rails_app_dir}/tmp/pids/unicorn.pid"
+app_server_pid="${rails_app_dir}/tmp/pids/puma.pid"
+
+# active_job(sidekiq or delayed_job)
+active_job_adapter='sidekiq'
 
 # gem関係 ##################################
-heart_seed_catalogs_name='sys_config,sys_serif'
+# heart_seed_catalogs_name='sys_config,sys_serif'
 
 # AWS関係 ##################################
 # env名
-env_name="ai_q_env"
-# rails_appディレクトリ
-env_path=$rails_dir/$env_name
+# env_name="ai_q_env"
+# # rails_appディレクトリ
+# env_path=$rails_dir/$env_name
 
 export MECAB_PATH=/usr/lib64/libmecab.so.2
 ########################################################
 # カラー設定
 F_ESC="\e["
 F_ESCEND="m"
-F_COLOR_R="${F_ESC}31${F_ESCEND}"  # 赤文字
-F_COLOR_G="${F_ESC}32${F_ESCEND}"  # 緑文字
-F_COLOR_Y="${F_ESC}33${F_ESCEND}"  # 黄文字
-F_COLOR_B="${F_ESC}34${F_ESCEND}"  # 青文字
-
-F_COLOR_R_B="${F_ESC}31;01${F_ESCEND}"  # 赤太文字
-F_COLOR_Y_B="${F_ESC}33;01${F_ESCEND}"  # 緑太文字
-
+F_COLOR_R_B="${F_ESC}31;01${F_ESCEND}"  # 青文字
+F_COLOR_Y_B="${F_ESC}33;01${F_ESCEND}"  # 青文字
 F_COLOR_OFF="${F_ESC}${F_ESCEND}"
 
-echoG() {
+
+echoGreen() {
   # 文字色：green
-  echo -en "${F_COLOR_G}"
+  echo -en "${F_ESC}32${F_ESCEND}"
   echo "${1}" | tee -a ${LOG}
-  echo -en "${F_COLOR_OFF}"
+  echo -en "${COLOR_OFF}"
 }
-echoR() {
+echoRed() {
   # 文字色：Red
-  echo -en "${F_COLOR_R}"
+  echo -en "${F_ESC}31${F_ESCEND}"
   echo "${1}" | tee -a ${LOG}
-  echo -en "${F_COLOR_OFF}"
+  echo -en "${COLOR_OFF}"
 }
-echoY() {
+echoYellow() {
   # 文字色：Yellow
-  echo -en "${F_COLOR_Y}"
+  echo -en "${F_ESC}33${F_ESCEND}"
   echo "${1}" | tee -a ${LOG}
-  echo -en "${F_COLOR_OFF}"
+  echo -en "${COLOR_OFF}"
 }
+
 ########################################################
 # TOPメニュー
 ########################################################
@@ -85,7 +86,7 @@ TOP_MENU()
 		echo -e "| [ e]  シェルを終了        |"
 		echo -e "+---------------------------+"
 
-	read -p "項目を選択してください >> " TOP_NUMBER  #入力された項目を読み込み、変数TOP_NUMBERに代入する
+	read -p "項目を選択してください >>" TOP_NUMBER  #入力された項目を読み込み、変数TOP_NUMBERに代入する
 	case "${TOP_NUMBER}" in  #変数KEYに合った内容でコマンドが実行される
 		"1")
 			DEV_MENU
@@ -101,7 +102,7 @@ TOP_MENU()
 			break ;;
 		"e")
 			break ;;
-		*) echoR "($LINENO)  >> キーが違います。" ;;
+		*) echo "($LINENO)  >> キーが違います。" ;;
 		esac
 		read -p "ENTERを押してください。" BLANK
 	done
@@ -133,7 +134,7 @@ DEV_MENU()
 +-----------------------------+
 EOF
 
-	read -p "項目を選択してください >> " KEY  #入力された項目を読み込み、変数KEYに代入する
+	read -p "項目を選択してください >>" KEY  #入力された項目を読み込み、変数KEYに代入する
 	case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
 		"1") DEV_ACTION ;;
 		"2") DEV_ACTION ;;
@@ -145,11 +146,12 @@ EOF
 		"8") DEV_ACTION ;;
 		"9") DEV_ACTION ;;
 		"10") DEV_ACTION ;;
+		"11") DEV_ACTION ;;
 		"t")
 			TOP_MENU
 			break ;;
 		"e") break ;;
-		*) echoR "($LINENO)  >> キーが違います。" ;;
+		*) echoRed "($LINENO)  >> キーが違います。" ;;
 		esac
 		read -p "ENTERを押してください。" BLANK
 	done
@@ -159,13 +161,13 @@ EOF
 DEV_ACTION(){
 	DEV_MENU_${KEY}
 	if [ $? != 0 ]; then
-		echoR "($LINENO) >> DEV_MENU_${KEY}で異常が発生しました"
+		echo "($LINENO) >> DEV_MENU_${KEY}で異常が発生しました"
 	fi
 }
 
 #  [1]  nginx 再起動
 DEV_MENU_1(){
-	echoG "($LINENO) >> nginx 再起動"
+	echo "($LINENO) >> nginx 再起動"
 	NGINX_STOP
 	NGINX_START
 	return 0   #正常終了は戻り値が0
@@ -173,31 +175,40 @@ DEV_MENU_1(){
 
 #  [2]  unicorn 再起動
 DEV_MENU_2(){
-	echoG "($LINENO) >> アプリケーションサーバーの再起動"
-	case $app_sarver_gem in
+	echo "($LINENO) >> アプリケーションサーバーの再起動"
+	case ${app_sarver_gem} in
 		'unicorn') UNICORN_STOP ;;
-		'puma')    PUMA_STOP ;;
+		'puma')    PUMA_STOP    ;;
+		'foreman') FOREMAN_STOP ;;
 	esac
-	DEV_LOG_BK
-	rufo /var/www/rails/watson_tool/app/models/
-	rufo /var/www/rails/watson_tool/app/controllers/
-	case $app_sarver_gem in
+
+	case ${app_sarver_gem} in
 		'unicorn') UNICORN_DEV_START ;;
-		'puma')    PUMA_DEV_START ;;
+		'puma')    PUMA_DEV_START    ;;
+		'foreman') FOREMAN_DEV_START ;;
 	esac
+
+	case ${active_job_adapter} in
+		'sidekiq')     SIDEKIQ_DEV_START     ;;
+		'delayed_job') DELAYED_JOB_DEV_START ;;
+	esac
+
+	DEV_LOG_BK
+
 	return 0   #正常終了は戻り値が0
 }
 
 #  [3]  DB + テーブル 構築
 DEV_MENU_3(){
-	echoG "($LINENO) >> DB + テーブル 構築"
+	echo "($LINENO) >> DB + テーブル 構築"
 	DB_DEV_MIGRATE_NEW
+	bundle exec annotate
 	return 0
 }
 
 #  [4]  DB + テーブル 再構築
 DEV_MENU_4(){
-	echoG "($LINENO) >> DB + テーブル 追加構築"
+	echo "($LINENO) >> DB + テーブル 追加構築"
 	DB_DEV_MIGRATE_CREATE
 	bundle exec annotate
 
@@ -206,7 +217,7 @@ DEV_MENU_4(){
 
 # [5]  キャッシュの削除
 DEV_MENU_5(){
-	echoG "($LINENO) >> キャッシュの削除を行ないます"
+	echo "($LINENO) >> キャッシュの削除を行ないます"
 	DEV_LOG_BK
 	CACHE_CREAE
 	return 0
@@ -214,14 +225,14 @@ DEV_MENU_5(){
 
 # [6]  ルートファイルの確認
 DEV_MENU_6(){
-	echoG "($LINENO) >> ルート を表示させます"
+	echo "($LINENO) >> ルート を表示させます"
 	bundle exec rake routes
 	return 0
 }
 
 # [7]  bundle install 実行
 DEV_MENU_7(){
-	echoG "($LINENO) >> bundle install 実行します"
+	echo "($LINENO) >> bundle install 実行します"
 	# bundle exec bundle install --path vendor/bundle
 	bundle install --path vendor/bundle --jobs=4
 	return 0
@@ -229,7 +240,7 @@ DEV_MENU_7(){
 
 # [8]  bundle install 再実行
 DEV_MENU_8(){
-	echoG "($LINENO) >> bundle install 再実行します"
+	echo "($LINENO) >> bundle install 再実行します"
 	sudo rm -rf vendor/bundle
 	# bundle exec bundle install --path vendor/bundle
 	bundle install --path vendor/bundle --jobs=4
@@ -238,7 +249,7 @@ DEV_MENU_8(){
 
 # [9]  rails console 実行
 DEV_MENU_9(){
-	echoG "($LINENO) >> rails console 実行します"
+	echo "($LINENO) >> rails console 実行します"
 	bundle exec rails console
 	return 0
 }
@@ -246,11 +257,11 @@ DEV_MENU_9(){
 
 # [9]  rails console 実行
 DEV_MENU_10(){
-	echoG "($LINENO) >> DB + テーブル 再構築"
+	echo "($LINENO) >> DB + テーブル 再構築"
 	# SQLバックアップ
 	DEV_MYSQL_BK
 
-	echoG "($LINENO) >> DB 再構築"
+	echo "($LINENO) >> DB 再構築"
 	RAILS_ENV=development bundle exec rake db:drop
 
 	# 開発DB作成
@@ -267,6 +278,55 @@ DEV_MENU_11(){
 
 }
 
+
+########################################################
+# DEV用メソッド
+########################################################
+SIDEKIQ_DEV_START(){
+	echo "($LINENO) >> sidekiq 再起動"
+	kill -QUIT `cat tmp/pids/sidekiq.pid`
+	bundle exec sidekiq -C config/sidekiq.yml -d
+}
+
+DELAYED_JOB_DEV_START(){
+	echo "($LINENO) >> delayed_job 再起動"
+	RAILS_ENV=development bin/delayed_job -n 2 restart
+}
+
+UNICORN_DEV_START(){
+	echo "($LINENO) >> Unicorn 起動（develop）"
+	bundle exec unicorn_rails -c config/unicorn.rb -D
+}
+
+
+# 開発用ログをバックアップ
+DEV_LOG_BK(){
+	echo "($LINENO) >> development ログ バックアップ"
+	cp -p $rails_app_dir/log/development.log $rails_app_dir/log/development.log_$(date +%Y%m%d%H%M%S)
+
+	# log_bk del ##########################
+	all_file="*"
+	rails_env="_development"
+
+	cd $rails_dir/${app_name}/log
+
+	# development
+	rails_env_bk="development.log_"
+	cnt=` ls $rails_app_dir/log/${rails_env}_bk${all_file} | wc -l`
+
+	#ファイル数が設定値より大きいか比較
+	if [ $cnt -gt $log_cnt_max ]; then
+		echo "($LINENO) >> development ログ バックアップ 過剰分削除"
+		ls -tr $rails_app_dir/log/${rails_env}_bk${all_file} | head -$(($cnt-$log_cnt_max)) | xargs rm -f
+	else
+		echo "($LINENO) >> development ログ バックアップ 保存"
+	fi
+
+	cd $rails_dir/${app_name}
+
+	echo "($LINENO) >> ログ 初期化"
+	bundle exec rake log:clear
+}
 
 
 ########################################################
@@ -292,7 +352,7 @@ PRO_MENU()
 +----------------------------+
 EOF
 
-	read -p "項目を選択してください >> " KEY  #入力された項目を読み込み、変数KEYに代入する
+	read -p "項目を選択してください >>" KEY  #入力された項目を読み込み、変数KEYに代入する
 	case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
 		"1")  PRO_ACTION ;;
 		"2")  PRO_ACTION ;;
@@ -306,7 +366,7 @@ EOF
 			TOP_MENU
 			break ;;
 		"e") break ;;
-		*) echoR "($LINENO)  >> キーが違います。" ;;
+		*) echo "($LINENO)  >> キーが違います。" ;;
 		esac
 		read -p "ENTERを押してください。" BLANK
 	done
@@ -316,13 +376,13 @@ EOF
 PRO_ACTION(){
 	PRO_MENU_${KEY}
 	if [ $? != 0 ]; then
-		echoR "($LINENO) >> PRO_MENU_${KEY}で異常が発生しました"
+		echo "($LINENO) >> PRO_MENU_${KEY}で異常が発生しました"
 	fi
 }
 
 #  [1]  nginx 再起動
 PRO_MENU_1(){
-	echoG "($LINENO) >> nginx 再起動"
+	echo "($LINENO) >> nginx 再起動"
 	NGINX_STOP
 	NGINX_START
 	return 0   #正常終了は戻り値が0
@@ -330,7 +390,7 @@ PRO_MENU_1(){
 
 #  [2]  unicorn 再起動
 PRO_MENU_2(){
-	echoG "($LINENO) >> アプリケーションサーバーの再起動"
+	echo "($LINENO) >> アプリケーションサーバーの再起動"
 	case $app_sarver_gem in
 		'unicorn') UNICORN_STOP ;;
 		'puma')    PUMA_STOP ;;
@@ -348,14 +408,14 @@ PRO_MENU_2(){
 
 #  [3]  DB + テーブル 構築
 PRO_MENU_3(){
-	echoG "($LINENO) >> DB + テーブル 構築"
+	echo "($LINENO) >> DB + テーブル 構築"
 	DB_PRO_MIGRATE
 	return 0
 }
 
 # [4]  キャッシュの削除
 PRO_MENU_4(){
-	echoG "($LINENO) >> キャッシュの削除を行ないます"
+	echo "($LINENO) >> キャッシュの削除を行ないます"
 	PRO_LOG_BK
 	CACHE_CREAE_ALL
 	return 0
@@ -363,7 +423,7 @@ PRO_MENU_4(){
 
 # [5]  コンパイル
 PRO_MENU_5(){
-	echoG "($LINENO) >> コンパイルを行ないます"
+	echo "($LINENO) >> コンパイルを行ないます"
 	PRO_LOG_BK
 	CACHE_CREAE
 	PRECOMPILE
@@ -372,26 +432,26 @@ PRO_MENU_5(){
 
 # [5]  delayed_job の再起動
 PRO_MENU_6(){
-	echoG "($LINENO) >> delayed_job(production)を再稼働します"
+	echo "($LINENO) >> delayed_job(production)を再稼働します"
 	DELAYED_JOB_PRO_RESTART
 	return 0
 }
 
 # [7]  rails console 実行
 PRO_MENU_7(){
-	echoG "($LINENO) >> rails console 実行"
+	echo "($LINENO) >> rails console 実行"
 	RAILS_ENV=production bundle exec rails console
 	return 0   #正常終了は戻り値が0
 }
 
 #  [4]  DB + テーブル 再構築
 PRO_MENU_99(){
-	echoG "($LINENO) >> [4]  DB + テーブル 再構築"
+	echo "($LINENO) >> [4]  DB + テーブル 再構築"
 
 	# SQLバックアップ
 	PRO_MYSQL_BK
 
-	echoG "($LINENO) >> DB 再構築"
+	echo "($LINENO) >> DB 再構築"
 	RAILS_ENV=production bundle exec rake db:drop
 
 	# 開発DB作成
@@ -406,26 +466,23 @@ PRO_MENU_99(){
 #######################################################
 # nginx 停止
 NGINX_STOP(){
-	echoG "($LINENO) >> Nginx 停止"
+	echo "($LINENO) >> Nginx 停止"
 	service nginx stop
 }
 NGINX_START(){
-	echoG "($LINENO) >> nginx 起動"
+	echo "($LINENO) >> nginx 起動"
 	service nginx start
 }
 
-UNICORN_DEV_START(){
-	echoG "($LINENO) >> Unicorn 起動（develop）"
-	bundle exec unicorn_rails -c config/unicorn.rb -D
-}
+
 
 UNICORN_STOP(){
-	echoG "($LINENO) >> Unicorn 停止"
+	echo "($LINENO) >> Unicorn 停止"
 	kill -QUIT `cat $app_server_pid`
 }
 
 UNICORN_PRO_START(){
-	echoG "($LINENO) >> Unicorn 起動（production）"
+	echo "($LINENO) >> Unicorn 起動（production）"
 	export SECRET_KEY_BASE='bundle exec rake secret'
 
 	bundle exec unicorn -E production -c config/unicorn.rb -D
@@ -433,54 +490,33 @@ UNICORN_PRO_START(){
 }
 
 PUMA_DEV_START(){
-	echoG "($LINENO)	>> puma 起動（develop）"
-	pumactl -F config/puma.rb start
+	echo "($LINENO)	>> puma 起動（develop）"
+	bundle exec pumactl -F config/puma.rb start
+
+	bundle exec whenever --update-crontab
 }
 
 PUMA_STOP(){
-	echoG "($LINENO)	>> puma 停止"
+	echo "($LINENO)	>> puma 停止"
 	# kill -QUIT `cat $puma_pid`
-	pumactl -F config/puma.rb stop
+	bundle exec pumactl -F config/puma.rb stop
 }
 
 PUMA_PRO_START(){
-	echoG "($LINENO)	>> puma 起動（production）"
+	echo "($LINENO)	>> puma 起動（production）"
 	export SECRET_KEY_BASE='bundle exec rake secret'
 	export RACK_ENV='production'
 	pumactl -F config/puma.rb start
 }
 
-# 開発用ログをバックアップ
-DEV_LOG_BK(){
-	echoG "($LINENO) >> development ログ バックアップ"
-	cp -p $rails_app_dir/log/development.log $rails_app_dir/log/development.log_$(date +%Y%m%d%H%M%S)
+# FOREMAN_STOP(){}
+# FOREMAN_DEV_START(){}
 
-	# log_bk del ##########################
-	all_file="*"
 
-	cd $rails_dir/${app_name}/log
-
-	# development
-	rails_env_bk="development.log_"
-	cnt=` ls $rails_app_dir/log/${rails_env}_bk${all_file} | wc -l`
-
-	#ファイル数が設定値より大きいか比較
-	if [ $cnt -gt $log_cnt_max ]; then
-		echoG "($LINENO) >> development ログ バックアップ 過剰分削除"
-		ls -tr $rails_app_dir/log/${rails_env}_bk${all_file} | head -$(($cnt-$log_cnt_max)) | xargs rm -f
-	else
-		echoG "($LINENO) >> development ログ バックアップ 保存"
-	fi
-
-	cd $rails_dir/${app_name}
-
-	echoG "($LINENO) >> ログ 初期化"
-	bundle exec rake log:clear
-}
 
 # 本番用ログをバックアップ
 PRO_LOG_BK(){
-	echoG "($LINENO) >> production ログ バックアップ"
+	echo "($LINENO) >> production ログ バックアップ"
 	cp -p $rails_app_dir/log/production.log $rails_app_dir/log/production.log_$(date +%Y%m%d%H%M%S)
 
 	# log_bk del ##########################
@@ -494,28 +530,28 @@ PRO_LOG_BK(){
 
 	#ファイル数が設定値より大きいか比較
 	if [ $cnt -gt $log_cnt_max ]; then
-		echoG "($LINENO) >> production ログ バックアップ 過剰分削除"
+		echo "($LINENO) >> production ログ バックアップ 過剰分削除"
 		ls -tr $rails_app_dir/log/${rails_env}_bk${all_file} | head -$(($cnt-$log_cnt_max)) | xargs rm -f
 	else
-		echoG "($LINENO) >> production ログ バックアップ 保存"
+		echo "($LINENO) >> production ログ バックアップ 保存"
 	fi
 
 	cd $rails_dir/${app_name}
 
-	echoG "($LINENO) >> ログ 初期化"
+	echo "($LINENO) >> ログ 初期化"
 	bundle exec rake log:clear
 }
 
 
 # キャッシュクリア
 CACHE_CREAE(){
-	echoG "($LINENO) >> キャッシュ クリア"
+	echo "($LINENO) >> キャッシュ クリア"
 	bundle exec rake tmp:clear
 }
 
 # キャッシュクリア
 CACHE_CREAE_ALL(){
-	echoG "($LINENO) >> キャッシュ クリア"
+	echo "($LINENO) >> キャッシュ クリア"
 	bundle exec rake tmp:clear
 	bundle exec rails runner 'Rails.cache.clear'
 }
@@ -523,11 +559,11 @@ CACHE_CREAE_ALL(){
 
 # コンパイル
 PRECOMPILE(){
-	echoG "($LINENO) >> 古いコンパイルファイル 削除"
+	echo "($LINENO) >> 古いコンパイルファイル 削除"
 	rm -rf public/assets
 	RAILS_ENV=production bundle exec rake assets:clean
 
-	echoG "($LINENO) >> assets コンパイル 実行"
+	echo "($LINENO) >> assets コンパイル 実行"
 	RAILS_ENV=production bundle exec rake assets:precompile
 }
 
@@ -537,28 +573,16 @@ DB_DEV_MIGRATE_NEW(){
 	RAILS_ENV=development bundle exec rake db:create
 	RAILS_ENV=development bundle exec rake db:migrate
 
-	read -p "SEEDを実行しますか？ [Y/n] >> " ANSWER
-	case $ANSWER in
-		"Y" | "y" | "yes" | "Yes" | "YES" )
-			RAILS_SEED_DEV_SAVE
-			HEART_SEED_DEV_SAVE
-			break ;;
-		* ) echoR "実行せずに、次の処理に移ります";;
-	esac
-	bundle exec annotate
+	HEART_SEED_SAVE
+
+	echo "($LINENO) >> seedファイル 実行"
+	bundle exec rake db:seed
 }
 
 DB_DEV_MIGRATE_CREATE(){
 	RAILS_ENV=development bundle exec rake db:migrate
-	read -p "SEEDを実行しますか？ [Y/n] >> " ANSWER
-	case $ANSWER in
-		"Y" | "y" | "yes" | "Yes" | "YES" )
-			RAILS_SEED_DEV_SAVE
-			HEART_SEED_DEV_SAVE
-			break ;;
-		* ) echoR "実行せずに、次の処理に移ります";;
-	esac
-	bundle exec annotate
+
+	# HEART_SEED_SAVE
 }
 
 # 本番環境DB＋テーブル構築
@@ -566,58 +590,22 @@ DB_PRO_MIGRATE(){
 	RAILS_ENV=production bundle exec rake db:create
 	RAILS_ENV=production bundle exec rake db:migrate
 
-	read -p "SEEDを実行しますか？ [Y/n] >> " ANSWER
-	case $ANSWER in
-		"Y" | "y" | "yes" | "Yes" | "YES" )
-			RAILS_SEED_PRO_SAVE
-			HEART_SEED_PRO_SAVE
-			break ;;
-		* ) echoR "実行しません";;
-	esac
-}
+	HEART_SEED_SAVE
 
-RAILS_SEED_DEV_SAVE(){
-	echoG "($LINENO) >> seedファイル 実行(development)"
-	bundle exec rake db:seed
-}
-
-RAILS_SEED_PRO_SAVE(){
-	echoG "($LINENO) >> seedファイル 実行(production)"
+	echo "($LINENO) >> seedファイル 実行"
 	RAILS_ENV=production bundle exec rake db:seed
 }
 
-HEART_SEED_DEV_SAVE(){
-	if [ "$heart_seed_catalogs_name" = "" ]; then
-		# 何を書こう・・
-		echoR "($LINENO) >> seed用ymlファイル 実行カタログが判りません"
-		echoR "($LINENO) >> 設定をし直してから、実行してください"
-	else
-		echoG "($LINENO) >> seed用ymlファイル 削除（heart_seed）"
-		rm -r -f $rails_app_dir/db/seeds/*.yml
+HEART_SEED_SAVE(){
+	echo "($LINENO) >> seed用ymlファイル 削除（heart_seed）"
+	rm -r -f $rails_app_dir/db/seeds/*.yml
 
-		echoG "($LINENO) >> seed用ymlファイル 作成（heart_seed）"
-		bundle exec rake heart_seed:xls
+	echo "($LINENO) >> seed用ymlファイル 作成（heart_seed）"
+	bundle exec rake heart_seed:xls
 
-		echoG "($LINENO) >> heart_seedファイル 実行"
-		CATALOGS=$heart_seed_catalogs_name bundle exec rake heart_seed:db:seed
-	fi
-}
-
-HEART_SEED_PRO_SAVE(){
-	if [ "$heart_seed_catalogs_name" = "" ]; then
-		# 何を書こう・・
-		echoR "($LINENO) >> seed用ymlファイル 実行カタログが判りません"
-		echoR "($LINENO) >> 設定をし直してから、実行してください"
-	else
-		echoG "($LINENO) >> seed用ymlファイル 削除（heart_seed）"
-		rm -r -f $rails_app_dir/db/seeds/*.yml
-
-		echoG "($LINENO) >> seed用ymlファイル 作成（heart_seed）"
-		bundle exec rake heart_seed:xls
-
-		echoG "($LINENO) >> heart_seedファイル 実行"
-		CATALOGS=$heart_seed_catalogs_name bundle exec rake heart_seed:db:seed
-	fi
+	echo "($LINENO) >> heart_seedファイル 実行"
+	CATALOGS=sys_config bundle exec rake heart_seed:db:seed
+	CATALOGS=sys_config bundle exec rake heart_seed:db:seed
 }
 
 # 開発環境のDBバックアップ
@@ -713,7 +701,7 @@ GEM_MENU()
 +----------------------------+
 EOF
 
-	read -p "項目を選択してください >> " KEY  #入力された項目を読み込み、変数KEYに代入する
+	read -p "項目を選択してください >>" KEY  #入力された項目を読み込み、変数KEYに代入する
 	case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
 		"1") GEM_ACTION ;;
 		"2") GEM_ACTION ;;
@@ -750,7 +738,7 @@ GEM_MENU_2(){
 
 GEM_MENU_3(){
 	echo "($LINENO) >> [3] heart_seed save"
-	HEART_SEED_DEV_SAVE
+	HEART_SEED_SAVE
 }
 
 
@@ -768,7 +756,22 @@ HEART_SEED_SETTING(){
 	bundle exec rake heart_seed:init
 }
 
+HEART_SEED_SAVE(){
+	if [ "${heart_seed_catalogs_name}" = "" ]; then
+		# 何を書こう・・
+		echo "($LINENO) >> seed用ymlファイル 実行カタログが判りません"
+		echo "($LINENO) >> 設定をし直してから、実行してください"
+	else
+		echo "($LINENO) >> seed用ymlファイル 削除（heart_seed）"
+		rm -r -f $rails_app_dir/db/seeds/*.yml
 
+		echo "($LINENO) >> seed用ymlファイル 作成（heart_seed）"
+		bundle exec rake heart_seed:xls
+
+		echo "($LINENO) >> heart_seedファイル 実行"
+		CATALOGS=${heart_seed_catalogs_name} bundle exec rake heart_seed:db:seed
+	fi
+}
 
 # bower インストール
 BOWER_INSTALL(){
@@ -786,38 +789,43 @@ BEST_PRACTICES(){
 
 # delayed_job 再起動
 DELAYED_JOB_RESTART(){
-	echo "($LINENO) >> delayed_job 停止"
-	bundle exec bin/delayed_job -n 2 stop
+	# CPU_CORE_NUM=`grep -c ^processor /proc/cpuinfo`
 
-	echo "($LINENO) >> delayed_job ジョブクリア"
-	bundle exec rake jobs:clear
+	# echo "($LINENO) >> delayed_job 停止"
+	# RAILS_ENV=development bin/delayed_job -n ${CPU_CORE_NUM} stop
+	# RAILS_ENV=development bin/delayed_job -n 2 stop
 
-	echo "($LINENO) >> delayed_job 起動"
-	bundle exec bin/delayed_job -n 2 start
+	# echo "($LINENO) >> delayed_job ジョブクリア"
+	# RAILS_ENV=development rake jobs:clear
 
-	# 諄いが、念の為に再起動
-	# bundle exec RQaInCompanyLS_ENV=production bin/delayed_job -n 2 restart
-	# bundle exec bin/delayed_job -n 2 restart
+	# echo "($LINENO) >> delayed_job 起動"
+	# RAILS_ENV=development bin/delayed_job -n ${CPU_CORE_NUM} start
+	# RAILS_ENV=development bin/delayed_job -n 2 start
+
+	# # 諄いが、念の為に再起動
+	# RAILS_ENV=development bin/delayed_job -n ${CPU_CORE_NUM} restart
 
 	return 0   #正常終了は戻り値が0
 }
 
 DELAYED_JOB_PRO_RESTART(){
+	source ~/.bash_profile
 	echo "($LINENO) >> delayed_job 停止"
-				source ~/.bash_profile
-	# bundle exec RAILS_ENV=production bin/delayed_job -n 2 stop
-	RAILS_ENV=production bin/delayed_job -n 2 stop
+	CPU_CORE_NUM=`grep -c ^processor /proc/cpuinfo`
+
+	# bundle exec RAILS_ENV=production bin/delayed_job -n ${CPU_CORE_NUM} stop
+	RAILS_ENV=production bin/delayed_job -n ${CPU_CORE_NUM} stop
 
 	echo "($LINENO) >> delayed_job ジョブクリア"
 	RAILS_ENV=production bundle exec rake jobs:clear
 
 	echo "($LINENO) >> delayed_job 起動"
-	# bundle exec RAILS_ENV=production bin/delayed_job -n 2 start
-	RAILS_ENV=production bin/delayed_job -n 2 start
+	# bundle exec RAILS_ENV=production bin/delayed_job -n ${CPU_CORE_NUM} start
+	RAILS_ENV=production bin/delayed_job -n ${CPU_CORE_NUM} start
 
 	# 諄いが、念の為に再起動
-	# bundle exec RAILS_ENV=production bin/delayed_job -n 2 restart
-	# RAILS_ENV=production bin/delayed_job -n 2 restart
+	# bundle exec RAILS_ENV=production bin/delayed_job -n ${CPU_CORE_NUM} restart
+	# RAILS_ENV=production bin/delayed_job -n ${CPU_CORE_NUM} restart
 	return 0   #正常終了は戻り値が0
 }
 
@@ -860,7 +868,7 @@ VERI_MENU(){
 +----------------------------+
 EOF
 
-	read -p "項目を選択してください >> " KEY  #入力された項目を読み込み、変数KEYに代入する
+	read -p "項目を選択してください >>" KEY  #入力された項目を読み込み、変数KEYに代入する
 	case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
 		"1") SETTING_ACTION ;;
 		"2") SETTING_ACTION ;;
