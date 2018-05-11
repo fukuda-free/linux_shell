@@ -77,7 +77,7 @@ TOP_MENU()
 {
 	while true; do
 		echo -e "+---------------------------+"
-		echo -e "| ${F_COLOR_Y_B}【 RAILS MENU   】${F_COLOR_OFF} ${F_COLOR_R_B}v 3.02${F_COLOR_OFF} |"
+		echo -e "| ${F_COLOR_Y_B}【 RAILS MENU   】${F_COLOR_OFF} ${F_COLOR_R_B}v 3.03${F_COLOR_OFF} |"
 		echo -e "+---------------------------+"
 		echo -e "| [ 1]  development modeへ  |"
 		echo -e "| [ 2]  production modeへ   |"
