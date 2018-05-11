@@ -2,7 +2,7 @@
 ########################################################
 # Ruby On Rails 環境構築用シェル
 # 作成者  fukuda
-# 更新日  2018/01/31
+# 更新日  2018/03/20
 ########################################################
 
 # echoの装飾用
@@ -41,36 +41,45 @@ echoYellow() {
 FNC_MENU(){
   while true; do
     cat << EOF
-+-----------------------------------------+
-|                【 MENU 】         v 4.7 |
-+-----------------------------------------+
-| [1]  開発用としてiptableとselinuxを解除 |
-| [2]  ruby をインストール                |
-| [3]  rails をインストール               |（検証中）
-| [4]  node.js をインストール             |（検証中）
-| [5]  ffmpeg（のみ） をインストール      |（検証中）
-| [6]  ImageMagick をインストール         |（検証中）
-| [7]  mecab をインストール               |（検証中）
-| [8]  redis をインストール               |（検証中）
-| [e]  シェルを終了                       |
-+-----------------------------------------+
++------------------------------------------+
+|                【 MENU 】          v 5.6 |
++------------------------------------------+
+| [ 1]  開発用としてiptableとselinuxを解除 |
+| [ 2]  ruby をインストール                |
+| [ 3]  rails をインストール               |
+| [ 4]  node.js をインストール             |
+| [ 5]  MYSQL 5.7 をインストール           |
+| [ 6]  スワップ領域の割り当て             |
+| [ 7]  ffmpeg（のみ） をインストール      |
+| [ 8]  ImageMagick をインストール         |
+| [ 9]  mecab をインストール               |（検証中）
+| [10]  redis をインストール               |（検証中）
+| [11]  GIT をアップデート                 |（検証中）
+| [80]  python をインストール              |（検証中）
+| [81]  tensorflow をインストール          |（検証中）
+| [ e]  シェルを終了                       |
++------------------------------------------+
 EOF
-# | [7]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
-# | [8]  5.7 をインストール                 |（検証中）
+# | [11]  mysql 5.11 -> 5.7 + utf8mb4 (NG)   |（検証中）
 
-  #入力された項目を読み込み、変数KEYに代入する
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") FNC_ACTION ;;
-    "2") FNC_ACTION ;;
-    "3") FNC_ACTION ;;
-    "4") FNC_ACTION ;;
-    "5") FNC_ACTION ;;
-    "6") FNC_ACTION ;;
-    "7") FNC_ACTION ;;
-    "8") FNC_ACTION ;;
-    "e") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    #入力された項目を読み込み、変数KEYに代入する
+    read -p "項目を選択してください >> " MENU_NUMBER
+    case "${MENU_NUMBER}" in  #変数MENU_NUMBERに合った内容でコマンドが実行される
+      "1") FNC_ACTION ;;
+      "2") FNC_ACTION ;;
+      "3") FNC_ACTION ;;
+      "4") FNC_ACTION ;;
+      "5") FNC_ACTION ;;
+      "6") FNC_ACTION ;;
+      "7") FNC_ACTION ;;
+      "8") FNC_ACTION ;;
+      "9") FNC_ACTION ;;
+      "10") FNC_ACTION ;;
+      "11") FNC_ACTION ;;
+      "80") FNC_ACTION ;;
+      "81") FNC_ACTION ;;
+      "e") break ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
     read -p "ENTERを押してください。" BLANK
   done
@@ -79,31 +88,48 @@ EOF
 ########################################################
 # FNC_ACTION 共通メソッド
 FNC_ACTION(){
-  FNC_${KEY}
+  FNC_${MENU_NUMBER}
   if [ $? != 0 ]; then
-     echoRed "($LINENO)  >> FNC_${KEY}で異常が発生しました"
+     echoRed "(${LINENO})  >> FNC_${MENU_NUMBER}で異常が発生しました"
   fi
 }
 
 ########################################################
-#  [1]
 FNC_1(){
-  echoGreen "($LINENO) >> [1]  開発用としてiptableとselinuxを解除"
+  echoGreen "(${LINENO}) >> [ 1]  開発用としてiptableとselinuxを解除"
   /etc/rc.d/init.d/iptables stop
   chkconfig iptables off
   chkconfig --list iptables
   setenforce 0
-  # sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+  sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
   chkconfig kdump off
+
+  echoGreen "--------------------------------------------------------"
   echoGreen "開発用パッケージをインストールします"
+  sudo yum  -y update
   sudo yum -y groupinstall "Base" "Development tools"
-  GIT_INSTALL
+  sudo yum install -y crontabs cronie-noanacron cronie-anacron
+  echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+
+  echoGreen "--------------------------------------------------------"
+  date
+  echoGreen "時間軸を日本にします"
+  # rm -rf /etc/localtime
+  # cp -rf /usr/share/zoneinfo/Japan /etc/localtime
+  sudo ln -sf /usr/share/zoneinfo/Japan /etc/localtime
+  date
+
+  sudo yum -y install ntp
+  sudo ntpdate ntp.nict.jp
+
+  echoGreen "--------------------------------------------------------"
+  SWAP_SETTING
+
   return 0
 }
 #######################################################
-#  [2]
 FNC_2(){
-  echoGreen "($LINENO) >> [2]  ruby をインストール"
+  echoGreen "(${LINENO}) >> [ 2]  ruby をインストール"
   RUBY_INSTALL_SELECT
   return 0
 }
@@ -111,16 +137,15 @@ FNC_2(){
 ########################################################
 #  [3]
 FNC_3(){
-  echoGreen "($LINENO) >> [3]  rails をインストール"
+  echoGreen "(${LINENO}) >> [ 3]  rails をインストール"
   RUN_CHECK
   RAILS_VERSION_CHECK
   return 0
 }
 
 ########################################################
-#  [4]
 FNC_4(){
-  echoGreen "($LINENO) >> [4]  node.js をインストール"
+  echoGreen "(${LINENO}) >> [ 4]  node.js をインストール"
   RUN_CHECK
   DEVELOP_PACKAGE_INSTALL
   NODE_INSTALL_CHECK
@@ -137,9 +162,35 @@ FNC_4(){
 }
 
 ########################################################
-#  [5]
 FNC_5(){
-  echoGreen "($LINENO) >> [5]  ffmpeg をインストール"
+  echo "(${LINENO}) >> [ 5]  MYSQL 5.7 をインストール"
+
+  echoGreen "現在のMYSQLのバージョンは、以下の通りです"
+  if type mysqld >/dev/null 2>&1; then
+    mysqld --version
+  else
+    echoRed "MYSQLはインストールされていませんでした"
+  fi
+  echo ""
+
+  RUN_CHECK
+  MYSQL_57_INSTALL
+  return 0
+}
+
+########################################################
+#  [6]
+FNC_6(){
+  echo "(${LINENO}) >> [ 6]  スワップ領域の割り当て"
+  RUN_CHECK
+  SWAP_SETTING
+  return 0
+}
+
+########################################################
+#  [7]
+FNC_7(){
+  echoGreen "(${LINENO}) >> [ 7]  ffmpeg（のみ） をインストール"
   RUN_CHECK
   FFMPEG_INSTALL
   # DEVELOP_PACKAGE_INSTALL
@@ -148,9 +199,9 @@ FNC_5(){
 }
 
 ########################################################
-#  [6]
-FNC_6(){
-  echoGreen "($LINENO) >> [6]  ImageMagick をインストール"
+#  [8]
+FNC_8(){
+  echoGreen "(${LINENO}) >> [ 8]  ImageMagick をインストール"
   RUN_CHECK
   yum -y install ImageMagick
   yum -y install ImageMagick-devel
@@ -158,49 +209,101 @@ FNC_6(){
 }
 
 ########################################################
-#  [7]
-FNC_7(){
-  echoGreen "($LINENO) >> [7]  mecab をインストール"
+#  [9]
+FNC_9(){
+  echoGreen "(${LINENO}) >> [ 9]  mecab をインストール"
   RUN_CHECK
+  sudo yum update -y
   sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-  sudo yum install -y mecab mecab-devel
-  sudo yum install -y mecab-ipadic
+  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.3.0-1.noarch.rpm
+  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.4.0-1.noarch.rpm
+
+  # タイムアウトする為、１次的にタイムアウト時間を変更
+  echo '# 通信速度が遅いためtimeout時間を変更' >> /etc/yum.conf
+  echo 'minrate=1' >> /etc/yum.conf
+  echo 'timeout=500' >> /etc/yum.conf
+  sudo yum install -y mecab mecab-ipadic mecab-jumandic mecab-devel
+
+  if type mecab >/dev/null 2>&1; then
+    echoGreen "yum からの mecab のインストール完了！"
+  else
+    echoRed "yum からの mecab のインストールに失敗しました"
+    echoRed "その為、ソースからインストールします"
+    sudo yum install -y git make curl xz
+    sudo yum install -y gcc-c++
+    # yumによるインストールを失敗した場合
+    git clone https://github.com/taku910/mecab.git
+    cd mecab/mecab
+    ./configure --enable-utf8-only
+    make
+    sudo make install
+  fi
+
+  # # 後処理(元の状態に戻す)
+  # sed -e '/# 通信速度が遅いためtimeout時間を変更/d' /etc/yum.conf
+  # sed -e '/minrate=1/d' /etc/yum.conf
+  # sed -i -e '/timeout=500/d' /etc/yum.conf
+
   echoGreen 'mecab のバージョンは以下となります'
   mecab --version
-  echoYellow 'mecab の動作検証'
+  # echoYellow 'mecab の動作検証'
+  echoYellow 'mecab の動作検証' -d /usr/lib64/mecab/dic/ipadic
   echo 'すもももももももものうち' | mecab
+
+  echoYellow 'mecab の動作検証' -d /usr/lib64/mecab/dic/jumandic
+  echo 'すもももももももものうち' | mecab
+
+
   MECAB_IPADIC_INSTALL
   return 0
 }
 
 ########################################################
-#  [8]
-FNC_8(){
-  echoGreen "($LINENO) >> [8]  redis をインストール"
+#  [10]
+FNC_10(){
+  echoGreen "(${LINENO}) >> [10]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
   return 0
 }
 
+########################################################
+#  [11]
+FNC_11(){
+  echoGreen "(${LINENO}) >> [11]  GIT をアップデート"
+  RUN_CHECK
+  GIT_INSTALL
+  return 0
+}
+
+########################################################
+#  [80]
+FNC_80(){
+  echoGreen "(${LINENO}) >> [80]  python をインストール"
+  RUN_CHECK
+  PYTHON_INSTALL_CHECK
+  return 0
+}
+
+########################################################
+#  [81]
+FNC_81(){
+  echoGreen "(${LINENO}) >> [81]  tensorflow をインストール"
+  RUN_CHECK
+  # PYTHON_INSTALL_CHECK
+  TENSORFLOW_INSTALL
+  return 0
+}
 
 # ########################################################
-# #  [7]
-# FNC_7(){
-#   echo "($LINENO) >> [7]  mysql 5.11 -> 5.7 + utf8mb4"
+# #  [12]
+# FNC_12(){
+#   echo "(${LINENO}) >> [12]  mysql 5.11 -> 5.7 + utf8mb4"
 #   RUN_CHECK
 #   MYSQL_51_2_57_VERSION_UP
 #   return 0
 # }
 
-
-# ########################################################
-# #  [7]
-# FNC_8(){
-#   echo "($LINENO) >> [8]  5.7 をインストール"
-#   RUN_CHECK
-#   MYSQL_57_INSTALL
-#   return 0
-# }
 
 ########################################################
 #  各種の呼び出し処理
@@ -216,11 +319,15 @@ RUN_CHECK(){
 +--------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") break ;;
-    "2") FNC_MENU ;;
-    *)   echo "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        break ;;
+      "2")
+        FNC_MENU
+        break ;;
+      *)
+        echo "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -255,19 +362,18 @@ GIT_INSTALL(){
     echoGreen '現在、以下のGITのバージョンがインストールされています'
     git --version
 
-    read -p "バージョンを変更しますか？（yes or no） >>" KEY
-      case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-        "y" | "yes")
-          sudo yum -y remove git
-          GIT_VERSION_INSTALL
-          break ;;
-        "n" | "no")
-          echo "インストールを行わず、次のステップに移ります"
-          break ;;
-        *)
-          echo "($LINENO)  >> キーが違います。"
-      esac
-    # done
+    read -p "バージョンを変更しますか？（yes or no） >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "y" | "yes")
+        sudo yum -y remove git
+        GIT_VERSION_INSTALL ;;
+        # break ;;
+      "n" | "no")
+        echoYellow "インストールを行わず、次のステップに移ります" ;;
+        # break ;;
+      *)
+        echoRed "(${LINENO})  >> キーが違います。" ;;
+    esac
   else
     echoGreen 'gitがインストールされていませんでした'
     GIT_VERSION_INSTALL
@@ -286,7 +392,7 @@ GIT_VERSION_INSTALL(){
 +----------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
         # yum install -y git
@@ -303,7 +409,7 @@ EOF
         echoGreen 'git のバージョンは以下となります'
         git --version
         break ;;
-      *)   echo "($LINENO)  >> キーが違います。" ;;
+      *)   echo "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 
@@ -317,14 +423,14 @@ RUBY_INSTALL_SELECT(){
 | どのアプリを利用しますか？ |
 +----------------------------+
 | > [1] rvm                  |
-| > [2] rbenv                |
+| > [2] rbenv (会社推奨)     |
 +----------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
+    read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
-        echoGreen "($LINENO) >> [2]  rvm で rubyをインストール"
+        echoGreen "(${LINENO}) >> [2]  rvm で rubyをインストール"
         RUN_CHECK
         DEVELOP_PACKAGE_INSTALL
         RVM_INSTALL
@@ -332,14 +438,14 @@ EOF
         RVM_RUBY_INSTALL
         break ;;
       "2")
-        echoGreen "($LINENO) >> [3]  rbenv で rubyをインストール"
+        echoGreen "(${LINENO}) >> [3]  rbenv で rubyをインストール"
         RUN_CHECK
         DEVELOP_PACKAGE_INSTALL
         RBENV_INSTALL
         RBENV_RUBY_VERSION_CHECK
         RBENV_RUBY_INSTALL
         break ;;
-      *) echoRed "($LINENO)  >> キーが違います。" ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -371,11 +477,11 @@ RVM_RUBY_VERSION_CHECK(){
 +-----------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
+  read -p "項目を選択してください >> " KEY
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") rvm list known ;;
     "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -392,7 +498,8 @@ RVM_RUBY_INSTALL(){
 
 # rbenvのインストール
 RBENV_INSTALL(){
-  GIT_INSTALL
+  # GIT_INSTALL
+  yum install -y git
 
   git clone git://github.com/sstephenson/rbenv.git /usr/local/src/rbenv
   echo 'export RBENV_ROOT="/usr/local/src/rbenv"' >> /etc/profile.d/rbenv.sh
@@ -417,11 +524,11 @@ RBENV_RUBY_VERSION_CHECK(){
 +-----------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") rbenv install --list ;;
-    "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") rbenv install --list ;;
+      "2") break ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -443,46 +550,44 @@ RAILS_VERSION_CHECK(){
 +------------------------------------------+
 | Rails のバージョンはどれを利用しますか？ |
 +------------------------------------------+
-| > [1] 3.2.22.5                           |
-| > [2] 4.0.13                             |
-| > [3] 4.1.16                             |
-| > [4] 4.2.10                             |
-| > [5] 5.1.4                              |
-| > [6] 最新                               |
-| > [7] バージョン検索                     |
-| > [8] 手動入力                           |
+| > [1] 4.2.10                             |
+| > [2] 5.0.7                              |
+| > [3] 5.1.6                              |
+| > [4] 最新                               |
+| > [5] バージョン検索                     |
+| > [6] 手動入力                           |
+| > [e] 終了                               |
 +------------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      RAILS_INSTALL 3.2.22.5
-      break ;;
-    "2")
-      RAILS_INSTALL 4.0.13
-      break ;;
-    "3")
-      RAILS_INSTALL 4.1.16
-      break ;;
-    "4")
-      RAILS_INSTALL 4.2.10
-      break ;;
-    "5")
-      RAILS_INSTALL 5.1.4
-      break ;;
-    "6")
-      gem install rails --pre
-      break ;;
-    "7")
-      gem query -ra -n  "^rails$" ;;
-    "8")
-      echo -n "バージョン : "
-      read ans
-      RAILS_INSTALL $ans
-      break ;;
-    *)
-      echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >> " RIALS_MENU_KEY
+    case "${RIALS_MENU_KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        RAILS_INSTALL 4.2.10
+        break ;;
+      "2")
+        RAILS_INSTALL 5.0.7
+        break ;;
+      "3")
+        RAILS_INSTALL 5.1.6
+        break ;;
+      "4")
+        gem install rails --pre
+        echoGreen 'rails のバージョンは以下となります'
+        rails -v
+        break ;;
+      "5")
+        gem query -ra -n  "^rails$"
+        read -p "Press [Enter] key to resume."
+        RAILS_VERSION_CHECK ;;
+      "6")
+        read -p "バージョン : " RIALS_VERSION_NUM
+        RAILS_INSTALL ${RIALS_VERSION_NUM}
+        break ;;
+      "e")
+        break ;;
+      *)
+        echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -507,22 +612,22 @@ NODE_INSTALL_CHECK(){
 +----------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      NODE_YUM_VERSION_INSTALL_CHECK
-      break ;;
-    "2")
-      NVM_INSTALL
-      NVM_RUBY_VERSION_CHECK
-      NVM_RUBY_INSTALL
-      break ;;
-    "3")
-      NODEBLEW_INSTALL
-      NODEBLEW_RUBY_VERSION_CHECK
-      NODEBLEW_RUBY_INSTALL
-      break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        NODE_YUM_VERSION_INSTALL_CHECK
+        break ;;
+      "2")
+        NVM_INSTALL
+        NVM_RUBY_VERSION_CHECK
+        NVM_RUBY_INSTALL
+        break ;;
+      "3")
+        NODEBLEW_INSTALL
+        NODEBLEW_RUBY_VERSION_CHECK
+        NODEBLEW_RUBY_INSTALL
+        break ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -543,42 +648,42 @@ NODE_YUM_VERSION_INSTALL_CHECK(){
 +-----------------------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1")
-      sudo yum install -y epel-release
-      sudo yum install -y nodejs npm --enablerepo=epel
-      node -v
-      break ;;
-    "2")
-      curl -sL https://rpm.nodesource.com/setup_5.x | bash -
-      yum install -y nodejs gcc-c++ make
-      break ;;
-    "3")
-      curl -sL https://rpm.nodesource.com/setup_6.x | bash -
-      yum install -y nodejs gcc-c++ make
-      break ;;
-    "4")
-      curl -sL https://rpm.nodesource.com/setup_7.x | bash -
-      yum install -y nodejs gcc-c++ make
-      break ;;
-    "5")
-      curl -sL https://rpm.nodesource.com/setup_8.x | bash -
-      yum install -y nodejs gcc-c++ make
-      break ;;
-    "6")
-      curl -sL https://rpm.nodesource.com/setup_9.x | bash -
-      yum install -y gcc-c++ make
-      yum install -y nodejs
-
-      break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        sudo yum install -y epel-release
+        sudo yum install -y nodejs npm --enablerepo=epel
+        node -v
+        break ;;
+      "2")
+        curl -sL https://rpm.nodesource.com/setup_5.x | bash -
+        yum install -y nodejs gcc-c++ make
+        break ;;
+      "3")
+        curl -sL https://rpm.nodesource.com/setup_6.x | bash -
+        yum install -y nodejs gcc-c++ make
+        break ;;
+      "4")
+        curl -sL https://rpm.nodesource.com/setup_7.x | bash -
+        yum install -y nodejs gcc-c++ make
+        break ;;
+      "5")
+        curl -sL https://rpm.nodesource.com/setup_8.x | bash -
+        yum install -y nodejs gcc-c++ make
+        break ;;
+      "6")
+        curl -sL https://rpm.nodesource.com/setup_9.x | bash -
+        yum install -y gcc-c++ make
+        yum install -y nodejs
+        break ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
 
 NVM_INSTALL(){
-  GIT_INSTALL
+  # GIT_INSTALL
+  yum install -y git
 
   git clone git://github.com/creationix/nvm.git ~/.nvm
   source ~/.nvm/nvm.sh
@@ -596,11 +701,11 @@ NVM_RUBY_VERSION_CHECK(){
 +----------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") nvm ls-remote ;;
-    "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") nvm ls-remote ;;
+      "2") break ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -634,11 +739,11 @@ NODEBLEW_RUBY_VERSION_CHECK(){
 +----------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "1") nodebrew ls-remote ;;
-    "2") break ;;
-    *) echoRed "($LINENO)  >> キーが違います。" ;;
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") nodebrew ls-remote ;;
+      "2") break ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -681,62 +786,70 @@ MECAB_IPADIC_INSTALL(){
 +------------------------------------------+
 EOF
 
-  read -p "項目を選択してください >>" KEY
-  case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-    "y")
-      echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
-      #path 登録
-      echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
-      source ~/.bash_profile
-      sudo ./configure --with-charset=utf8
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "y")
+        echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
+        #path 登録
+        echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
+        source ~/.bash_profile
+        sudo ./configure --with-charset=utf8
 
-      # 必要パッケージのインストール
-      sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-      # sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
-      sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
-      GIT_INSTALL
+        # 必要パッケージのインストール
+        sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+        sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
+        # sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
+        # GIT_INSTALL
 
-      git clone git://git.kernel.org/pub/scm/git/git.git
+        git clone git://git.kernel.org/pub/scm/git/git.git
 
-      # 辞書の取得
-      WORKING=/tmp/mecabdic
-      mkdir -p $WORKING
-      cd $WORKING
-      git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+        # 辞書の取得
+        WORKING=/tmp/mecabdic
+        mkdir -p $WORKING
+        cd $WORKING
+        git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
 
-      # インストール
-      cd mecab-ipadic-neologd
-      ./bin/install-mecab-ipadic-neologd -n
+        # インストール
+        cd mecab-ipadic-neologd
+        ./bin/install-mecab-ipadic-neologd -n
 
-      echoGreen 'mecab のバージョンは以下となります'
-      mecab --version
+        echoGreen 'mecab のバージョンは以下となります'
+        mecab --version
 
-      echoGreen 'mecab の動作テスト'
-      echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
+        echoGreen 'mecab の動作テスト'
+        echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
 
-      echoYellow '---------------------------------------------------------------------------------'
-      echoYellow 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
-      sudo find / -name libmecab.so*
-      echoYellow ''
-      echoYellow 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
-      echoYellow '                                    ------------------------'
-      echoYellow '                                    ここを書き換えてください'
-      echoYellow 'コマンド②：source ~/.bash_profile'
-      echoYellow '---------------------------------------------------------------------------------'
-      echoYellow ''
-      echoYellow 'mecab-ipadic-neologd のインストール先は、以下の通りです'
-      echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
+        echoYellow '---------------------------------------------------------------------------------'
+        echoYellow 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
+        sudo find / -name libmecab.so*
+        echoYellow ''
+        echoYellow 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+        echoYellow '                                    ------------------------'
+        echoYellow '                                    ここを書き換えてください'
+        echoYellow 'コマンド②：source ~/.bash_profile'
+        echoYellow '---------------------------------------------------------------------------------'
+        echoYellow ''
+        echoYellow 'mecab-ipadic-neologd のインストール先は、以下の通りです'
+        echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
 
-      break ;;
-    "e")  break ;;
-    *) echo "($LINENO)  >> キーが違います。" ;;
+        break ;;
+      "e")  break ;;
+      *) echo "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
 
 REDIS_INSTALL(){
-  sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-  sudo yum -y --enablerepo=remi install redis
+  # 旧
+  # sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  # sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+  # sudo yum --enablerepo=remi,remi-test install -y redis
+
+  # 新(旧が動かなかったため)
+  sudo rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  sudo yum --enablerepo=epel -y install redis
+  sudo /etc/init.d/redis start
+  sudo chkconfig redis on
 
   echoGreen 'redis のバージョンは以下となります'
   redis-server --version
@@ -802,22 +915,266 @@ MYSQL_51_2_57_VERSION_UP(){
 
 
 MYSQL_57_INSTALL(){
-  # デジタル署名をインポートする
-  sudo rpm --import http://dev.mysql.com/doc/refman/5.7/en/checking-gpg-signature.html
+  # 古いバージョンを削除
+  yum -y remove mysql*
 
-  # yumリポジトリの設定をインストールする
-  sudo rpm -ihv http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
+  # インストール
+  yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
+  yum -y install mysql-community-server
+  yum -y install mysql-devel
 
-  # yumリポジトリをlistする
-  yum --disablerepo=\* --enablerepo='mysql57-community*' list available
+  # バージョン確認
+  mysqld --version
 
-  # MySQL Server 5.7をインストールする
-  sudo yum --enablerepo='mysql57-community*' install -y mysql-community-server
-  yum install mysql-devel
+  # 設定
+  # read -p "Press [Enter] key to resume."
+  echo ""
+  read -p "MYSQLの設定で、rootのパスワードを「なし」にしますか？（yes or no） >> " KEY
+  case "${KEY}" in
+    "y" | "yes"| "Y")
+      MYSQL_ROOT_PASS_SEKYURY=1 ;;
+    "n" | "no"| "N")
+      MYSQL_ROOT_PASS_SEKYURY=0 ;;
+    *)
+      echoRed "(${LINENO})  >> キーが違います。"
+  esac
 
-  echo 'MySQL のバージョンは以下となります'
-  mysql --version
+  read -p "MYSQLの設定で、文字コードをutf8mb4にしても宜しいですか？（yes or no） >> " KEY
+  case "${KEY}" in
+    "y" | "yes")
+      MYSQL_UTF8_ENCODE=1 ;;
+    "n" | "no")
+      MYSQL_UTF8_ENCODE=0 ;;
+    *)
+      echoRed "(${LINENO})  >> キーが違います。"
+  esac
+
+  # 実行
+  if [ ${MYSQL_ROOT_PASS_SEKYURY} = 1 ]; then
+    echo '' >> /etc/my.cnf
+    echo 'skip-grant-tables' >> /etc/my.cnf
+  fi
+
+  if [ ${MYSQL_UTF8_ENCODE} = 1 ]; then
+    echo 'character-set-server=utf8mb4' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '[client]' >> /etc/my.cnf
+    echo 'default-character-set=utf8mb4' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+  else
+    echo 'character-set-server=utf8' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '[client]' >> /etc/my.cnf
+    echo 'default-character-set=utf8' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+    echo '' >> /etc/my.cnf
+  fi
+
+  # 起動
+  service mysqld restart
+
+  DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
+  echoRed "初期パスワードは、「${DB_PASSWORD}」です。"
+  echoRed "このパスワードは、場合によっては必要となりますので、"
+  echoRed "メモしておくことをお勧めします"
+  echo ""
+
+  if [ ${MYSQL_ROOT_PASS_SEKYURY} = 0 ]; then
+    read -p "MYSQLの設定で、rootのパスワード設定を行いますか？（yes or no） >> " KEY
+    case "${KEY}" in
+      "y" | "yes")
+        mysql_secure_installation
+        break ;;
+      "n" | "no")
+        break ;;
+      *)
+        echoRed "(${LINENO})  >> キーが違います。" ;;
+    esac
+  else
+    echoRed "パスワードがOFFとなっています"
+    echoRed "※本番時の利用では注意してください"
+  fi
+
+  chkconfig mysqld on
+  # break;;
 }
+
+
+PYTHON_INSTALL_CHECK(){
+  if type python >/dev/null 2>&1; then
+    # echo 'git install OK'
+    echoGreen '現在、以下のpythonのバージョンがインストールされています'
+    python --version
+
+    read -p "バージョンを変更しますか？（yes or no） >> " KEY
+    case "${KEY}" in
+      "y" | "yes")
+        PYTHON_INSTALL_PATTERN ;;
+      "n" | "no")
+        echoYellow "インストールを行わず、次のステップに移ります" ;;
+      *)
+        echoRed "(${LINENO})  >> キーが違います。" ;;
+    esac
+  else
+    echoGreen 'gitがインストールされていませんでした'
+    PYTHON_INSTALL_PATTERN
+  fi
+}
+
+PYTHON_INSTALL_PATTERN(){
+  while true; do
+    cat << EOF
++----------------------------------------+
+| pythonを何経由でインストールしますか？ |
++----------------------------------------+
+| > [1] yum (作成中)                     |
+| > [2] pyenv (推奨)                     |
++----------------------------------------+
+EOF
+# | > [3] nodebrew                         |
+
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        # NODE_YUM_VERSION_INSTALL_CHECK
+        break ;;
+      "2")
+        PYENV_INSTALL
+        PYENV_PYTHON_VERSION_CHECK
+        PYENV_PYTHON_INSTALL
+        break ;;
+      # "3")
+      #   NODEBLEW_INSTALL
+      #   NODEBLEW_RUBY_VERSION_CHECK
+      #   NODEBLEW_RUBY_INSTALL
+      #   break ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+    esac
+  done
+}
+
+PYENV_INSTALL(){
+  yum install -y gcc
+  yum install -y gcc-c++
+  yum install -y make
+  yum install -y openssl-devel
+  yum install -y bzip2-devel
+  yum install -y zlib-devel
+  yum install -y readline-devel
+  yum install -y sqlite-devel
+  yum install -y bzip2
+  yum install -y sqlite
+  yum install -y zlib-devel
+  yum install -y bzip2
+  yum install -y bzip2-devel
+  yum install -y readline-devel
+  yum install -y sqlite
+  yum install -y sqlite-devel
+  yum install -y openssl-devel
+
+  git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+
+  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+  echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+  echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
+  source ~/.bash_profile
+
+  echoGreen 'pyenv のバージョンは以下となります'
+  pyenv --version
+}
+
+PYENV_PYTHON_VERSION_CHECK(){
+  while true; do
+    cat << EOF
++------------------------------------+
+| python のバージョンを確認しますか？|
++------------------------------------+
+| > [1] する                         |
+| > [2] しない                       |
++------------------------------------+
+EOF
+
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1") pyenv install --list ;;
+      "2") break ;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+    esac
+  done
+}
+
+PYENV_PYTHON_INSTALL(){
+  read -p "バージョン :" install_version
+  pyenv install ${install_version}
+  pyenv global  ${install_version}
+  pyenv rehash
+
+  echoGreen 'python のバージョンは以下となります'
+  python --version
+
+  echoGreen 'pip のバージョンは以下となります'
+  pip -V
+}
+
+
+TENSORFLOW_INSTALL(){
+  PYENV_INSTALL
+  pyenv install 3.6.4
+  pyenv global  3.6.4
+  pyenv rehash
+
+  while true; do
+    cat << EOF
++--------------------------------------------------------+
+| tensorflow のどちらのバージョンをインストールしますか？|
++--------------------------------------------------------+
+| > [1] CPU版                                            |
+| > [2] GPU版                                            |
++--------------------------------------------------------+
+EOF
+
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        pip install tensorflow
+        break;;
+      "2")
+        pip install tensorflow-gpu
+        break;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+    esac
+  done
+}
+
+SWAP_SETTING(){
+  echoGreen "(${LINENO})  >> スワップ領域を自動で割り当てます"
+  echoGreen "現在のスワップ領域は以下の通りです"
+  free
+
+  SWAPFILENAME=/swap.img
+  MEMSIZE=`cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
+
+  if [ $MEMSIZE -lt 2097152 ]; then
+    SIZE=$((MEMSIZE * 2))k
+  elif [ $MEMSIZE -lt 8388608 ]; then
+    SIZE=${MEMSIZE}k
+  elif [ $MEMSIZE -lt 67108864 ]; then
+    SIZE=$((MEMSIZE / 2))k
+  else
+    SIZE=4194304k
+  fi
+
+  fallocate -l $SIZE $SWAPFILENAME && mkswap $SWAPFILENAME && swapon $SWAPFILENAME
+
+  echoGreen "スワップ領域を以下に設定しました"
+  free
+}
+
 
 ########################################################
 #  エンド処理
