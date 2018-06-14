@@ -42,7 +42,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +------------------------------------------+
-|                【 MENU 】          v 6.0 |
+|                【 MENU 】          v 5.6 |
 +------------------------------------------+
 | [ 1]  開発用としてiptableとselinuxを解除 |
 | [ 2]  ruby をインストール                |
@@ -57,7 +57,6 @@ FNC_MENU(){
 | [11]  GIT をアップデート                 |（検証中）
 | [80]  python をインストール              |（検証中）
 | [81]  tensorflow をインストール          |（検証中）
-| [82]  jupyter をインストール             |（検証中）
 | [ e]  シェルを終了                       |
 +------------------------------------------+
 EOF
@@ -79,7 +78,6 @@ EOF
       "11") FNC_ACTION ;;
       "80") FNC_ACTION ;;
       "81") FNC_ACTION ;;
-      "82") FNC_ACTION ;;
       "e") break ;;
       *) echoRed "(${LINENO})  >> キーが違います。" ;;
     esac
@@ -296,18 +294,6 @@ FNC_81(){
   TENSORFLOW_INSTALL
   return 0
 }
-
-
-########################################################
-#  [82]
-FNC_82(){
-  echoGreen "(${LINENO}) >> [82]  jupyter をインストール"
-  RUN_CHECK
-  # PYTHON_INSTALL_CHECK
-  JUPYTER_INSTALL
-  return 0
-}
-
 
 # ########################################################
 # #  [12]
@@ -1189,38 +1175,6 @@ SWAP_SETTING(){
   free
 }
 
-
-JUPYTER_INSTALL(){
-  echoGreen "(${LINENO})  >> jupyterの開発環境を準備します"
-
-  yum -y update
-  yum -y groupinstall 'Development tools'
-  yum -y install wget
-
-  chkconfig iptables off
-  chkconfig iptables off
-  service iptables stop
-  service ip6tables stop
-
-  yum install -y gcc zlib-devel bzip2 bzip2-devel readline readline-devel sqlite sqlite-devel openssl openssl-devel git
-
-  git clone https://github.com/yyuu/pyenv.git ~/.pyenv
-  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> .bash_profile
-  echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> .bash_profile
-  echo 'eval "$(pyenv init -)"' >> .bash_profile
-  source .bash_profile
-
-  pyenv install anaconda3-5.0.1
-  pyenv global anaconda3-5.0.1
-  pyenv rehash
-
-  conda update conda
-  conda --version
-
-  echoYellow "(${LINENO})  >> jupyterの開発環境の準備が整いました"
-  echoYellow "(${LINENO})  >> 「jupyter notebook --allow-root --ip=[IPアドレス]」を入力して起動してください"
-  echoYellow "(${LINENO})  >> URLは、コマンド起動後にコンソール上に表示されます"
-}
 
 ########################################################
 #  エンド処理
