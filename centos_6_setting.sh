@@ -1073,23 +1073,9 @@ EOF
 }
 
 PYENV_INSTALL(){
-  yum install -y gcc
-  yum install -y gcc-c++
-  yum install -y make
-  yum install -y openssl-devel
-  yum install -y bzip2-devel
-  yum install -y zlib-devel
-  yum install -y readline-devel
-  yum install -y sqlite-devel
-  yum install -y bzip2
-  yum install -y sqlite
-  yum install -y zlib-devel
-  yum install -y bzip2
-  yum install -y bzip2-devel
-  yum install -y readline-devel
-  yum install -y sqlite
-  yum install -y sqlite-devel
-  yum install -y openssl-devel
+  yum install -y gcc gcc-c++ make openssl-devel bzip2-devel zlib-devel
+  yum install -y readline-devel sqlite-devel bzip2 sqlite zlib-devel bzip2
+  yum install -y bzip2-devel readline-devel sqlite sqlite-devel openssl-devel git
 
   git clone https://github.com/yyuu/pyenv.git ~/.pyenv
 
