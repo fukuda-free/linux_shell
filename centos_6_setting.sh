@@ -42,7 +42,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +------------------------------------------+
-|                【 MENU 】          v 6.0 |
+|                【 MENU 】          v 6.1 |
 +------------------------------------------+
 | [ 1]  開発用としてiptableとselinuxを解除 |
 | [ 2]  ruby をインストール                |
@@ -1079,10 +1079,16 @@ PYENV_INSTALL(){
 
   git clone https://github.com/yyuu/pyenv.git ~/.pyenv
 
-  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
-  echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
-  echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
-  source ~/.bash_profile
+  # echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+  # echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+  # echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
+  # source ~/.bash_profile
+  echo 'export PYENV_ROOT="${HOME}/.pyenv"'      >> /root/.bashrc
+  echo 'if [ -d "${PYENV_ROOT}" ]; then'         >> /root/.bashrc
+  echo '    export PATH=${PYENV_ROOT}/bin:$PATH' >> /root/.bashrc
+  echo '    eval "$(pyenv init -)"'              >> /root/.bashrc
+  echo 'fi'                                      >> /root/.bashrc
+  source ~/.bashrc
 
   echoGreen 'pyenv のバージョンは以下となります'
   pyenv --version
