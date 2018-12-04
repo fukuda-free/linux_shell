@@ -388,7 +388,6 @@ GIT_VERSION_INSTALL(){
 | > [2] 1.7 (centOS6系 デフォルト)       |
 +----------------------------------------+
 EOF
-
     read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
@@ -1134,35 +1133,48 @@ JUPYTER_INSTALL(){
   echoYellow "(${LINENO})  >> URLは、コマンド起動後にコンソール上に表示されます"
 }
 
+################################################################################
+# 日本語解析 関係
+################################################################################
 MECAB_INSTALL(){
-  sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.3.0-1.noarch.rpm
-  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.4.0-1.noarch.rpm
+  MECAB_INSTALL_CHECK
 
-  # タイムアウトする為、１次的にタイムアウト時間を変更
-  echo '# 通信速度が遅いためtimeout時間を変更' >> /etc/yum.conf
-  echo 'minrate=1' >> /etc/yum.conf
-  echo 'timeout=500' >> /etc/yum.conf
-  sudo yum install -y mecab mecab-ipadic mecab-jumandic mecab-devel
-
+  MECAB_YAM_INSTALL
   if type mecab >/dev/null 2>&1; then
     echoGreen "yum からの mecab のインストール完了！"
   else
     echoRed "yum からの mecab のインストールに失敗しました"
     echoRed "その為、ソースからインストールします"
-    MECAB_INSTALL_FOR_MAKE
+    MECAB_MAKE_INSTALL
   fi
-
-  # 後処理(元の状態に戻す)
-  sed -e '/# 通信速度が遅いためtimeout時間を変更/d' /etc/yum.conf
-  sed -e '/minrate=1/d' /etc/yum.conf
-  sed -i -e '/timeout=500/d' /etc/yum.conf
 
   echoGreen 'mecab のバージョンは以下となります'
   mecab --version
+
+  MECAB_DIC_MENU
 }
 
-MECAB_INSTALL_FOR_MAKE(){
+MECAB_INSTALL_CHECK(){
+  if type mecab >/dev/null 2>&1; then
+    MECAB_DIC_MENU
+  fi
+}
+
+MECAB_YAM_INSTALL(){
+  sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.3.0-1.noarch.rpm
+  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.4.0-1.noarch.rpm
+
+  sudo yum install -y mecab mecab-devel
+}
+
+MECAB_MAKE_INSTALL(){
+  # タイムアウトする為、１次的にタイムアウト時間を変更 -> aws で必要
+  # echo '# 通信速度が遅いためtimeout時間を変更' >> /etc/yum.conf
+  # echo 'minrate=1' >> /etc/yum.conf
+  # echo 'timeout=500' >> /etc/yum.conf
+  # sudo yum install -y mecab mecab-devel
+
   echoGreen "(${LINENO})  >> mecab 本体をインストール"
     sudo yum install -y git make curl xz
     sudo yum install -y gcc-c++
@@ -1179,6 +1191,50 @@ MECAB_INSTALL_FOR_MAKE(){
   # ./configure
   # make
   # make install
+
+
+  # # 後処理(元の状態に戻す) -> aws で必要
+  # sed -e '/# 通信速度が遅いためtimeout時間を変更/d' /etc/yum.conf
+  # sed -e '/minrate=1/d' /etc/yum.conf
+  # sed -i -e '/timeout=500/d' /etc/yum.conf
+}
+
+
+MECAB_DIC_MENU(){
+    while true; do
+    cat << EOF
++----------------------------------+
+| どの辞書をインストールしますか？ |
++----------------------------------+
+| > [1] IPADIC                      |
+| > [2] JUMAN                      |
+| > [3] JUMANDIC                      |
+| > [4] JUMANPP                      |
+| > [5] KYTEA                      |
+| > [6] NEOLOG                      |
+| > [7] SNOW                      |
+| > [8] GPU版                      |
+| > [e] UNIDIC                      |
++----------------------------------+
+EOF
+
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "1")
+        pip install tensorflow
+        break;;
+      "2")
+        pip install tensorflow-gpu
+        break;;
+      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+    esac
+  done
+}
+
+
+MECAB_DIC_INSTALL(){
+
+
   echoGreen "(${LINENO})  >> ipadic(初期)をインストール"
   wget -O mecab-ipadic-2.7.0-20070801.tar.gz "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7MWVlSDBCSXZMTXM"
   tar zxfv mecab-ipadic-2.7.0-20070801.tar.gz
@@ -1187,7 +1243,6 @@ MECAB_INSTALL_FOR_MAKE(){
   make
   make install
 }
-
 
 
 MECAB_IPADIC_INSTALL(){
