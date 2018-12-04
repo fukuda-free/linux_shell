@@ -12,7 +12,7 @@ COLOR_OFF=${ESC}${ESCEND}
 
 echoW() {
   # 文字色：Black Bold(灰色)
-  echo -en "${ESC}30;1${ESCEND}"
+  echo -en "${ESC}37${ESCEND}"
   echo "${1}"
   echo -en "${COLOR_OFF}"
 }
@@ -31,6 +31,12 @@ echoR() {
 echoY() {
   # 文字色：Yellow
   echo -en "${ESC}33${ESCEND}"
+  echo "${1}" | tee -a ${LOG}
+  echo -en "${COLOR_OFF}"
+}
+echoB() {
+  # 文字色：Yellow
+  echo -en "${ESC}36${ESCEND}"
   echo "${1}" | tee -a ${LOG}
   echo -en "${COLOR_OFF}"
 }
@@ -1124,31 +1130,28 @@ FNC_9(){
 
   MECAB_INSTALL
 
-  # # echoY 'mecab の動作検証'
-  # echoY 'mecab の動作検証' -d /usr/lib64/mecab/dic/ipadic
-  # echo 'すもももももももものうち' | mecab
-
-  # echoY 'mecab の動作検証' -d /usr/lib64/mecab/dic/jumandic
-  # echo 'すもももももももものうち' | mecab
-
-  # MECAB_IPADIC_INSTALL
   return 0
 }
 
 MECAB_INSTALL(){
   if type mecab >/dev/null 2>&1; then
+    echoY 'mecab はインストール済みなので、辞書のインストールに移ります'
+    MECAB_DIC_MENU
+  else
     MECAB_YAM_INSTALL
     if type mecab >/dev/null 2>&1; then
-      echoG "yum からの mecab のインストール完了！"
+      echoB "yum からの mecab のインストール完了！"
     else
       echoR "yum からの mecab のインストールに失敗しました"
       echoR "その為、ソースからインストールします"
       MECAB_MAKE_INSTALL
     fi
-    echoG 'mecab のバージョンは以下となります'
+    echoY 'mecab のバージョンは以下となります'
     mecab --version
+
+    echoY 'mecab のインストールが完了しましたので、辞書のインストールに移ります'
+    MECAB_DIC_MENU
   fi
-  MECAB_DIC_MENU
 }
 
 
@@ -1157,7 +1160,7 @@ MECAB_YAM_INSTALL(){
   # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.3.0-1.noarch.rpm
   # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.4.0-1.noarch.rpm
 
-  sudo yum install -y mecab mecab-devel mecab-ipadic
+  sudo yum install -y mecab mecab-devel
 }
 
 MECAB_MAKE_INSTALL(){
@@ -1196,37 +1199,64 @@ MECAB_DIC_MENU(){
   echoW '+----------------------------------+'
   echoW '| どの辞書をインストールしますか？ |'
   echoW '+----------------------------------+'
-  echoW '| > [1] JUMAN                      |'
-  echoW '| > [2] JUMANDIC                   |'
-  echoW '| > [3] JUMANPP                    |'
-  echoW '| > [4] KYTEA                      |'
-  echoW '| > [5] NEOLOG                     |'
-  echoW '| > [6] SNOW                       |'
-  echoW '| > [7] GPU版                      |'
-  echoW '| > [8] UNIDIC                     |'
+  echoW '| > [1] IPA                        |'
+  echoW '| > [2] JUMAN                      |'
+  echoW '| > [3] NEOLOGD                    |'
+  echoW '| > [?] NAIST                      |'
+  echoW '| > [?] JUMANPP                    |'
+  echoW '| > [?] KYTEA                      |'
+  echoW '| > [?] NEOLOG                     |'
+  echoW '| > [?] SNOW                       |'
+  echoW '| > [?] GPU版                      |'
+  echoW '| > [?] UNIDIC                     |'
   echoW '| > [e] end                        |'
   echoW '+----------------------------------+'
 
-    read -p "項目を選択してください >> " KEY
-    case ${KEY} in  #変数KEYに合った内容でコマンドが実行される
-      '1') break;;
-      '2') break;;
-      '3') break;;
-      '4') break;;
-      '5') break;;
-      '6') break;;
-      '7') break;;
-      '8') break;;
-      'e') break;;
-      *)
-        echoR "(${LINENO})  >> キーが違います。" ;;
-    esac
+  read -p "項目を選択してください >> " KEY
+  case ${KEY} in  #変数KEYに合った内容でコマンドが実行される
+    '1')
+      echoY 'IPA辞書のインストールを行います'
+      sudo yum install -y mecab-ipadic
+      # MECAB_DIC_IPADIC_INSTALL
+      install_dic_path=/usr/lib64/mecab/dic/ipadic
+      ;;
+    '2')
+      echoY 'NEOLOGD辞書のインストールを行います'
+      sudo yum install -y mecab-jumandic
+      install_dic_path=/usr/lib64/mecab/dic/jumandic
+      ;;
+    '3')
+      echoY 'NEOLOGD辞書のインストールを行います'
+      MECAB_DIC_NEOLOGD_INSTALL
+      install_dic_path=/usr/lib64/mecab/dic/mecab-ipadic-neologd
+      ;;
+    '4') break;;
+    '5') break;;
+    '6') break;;
+    '7') break;;
+    '8') break;;
+    'e')  ;;
+    *)
+      echoR "(${LINENO})  >> キーが違います。" ;;
+  esac
+
+      echoY '以下のディレクトリにインストールされています'
+      echoB ${install_dic_path}
+      echo ''
+
+  echoY 'mecab の動作検証を行います'
+  echo 'すもももももももものうち' | mecab  -d ${install_dic_path}
+      echo ''
+
+  echoY 'mecab デフォルト辞書は、以下のとおり'
+  mecab -D
+      echo ''
+
+  echoY 'また、今存在する辞書は以下のとおり'
+  ll echo `mecab-config --dicdir`
 }
 
-
-MECAB_DIC_INSTALL(){
-
-
+MECAB_DIC_IPADIC_INSTALL(){
   echoG "(${LINENO})  >> ipadic(初期)をインストール"
   wget -O mecab-ipadic-2.7.0-20070801.tar.gz "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7MWVlSDBCSXZMTXM"
   tar zxfv mecab-ipadic-2.7.0-20070801.tar.gz
@@ -1237,67 +1267,44 @@ MECAB_DIC_INSTALL(){
 }
 
 
-MECAB_IPADIC_INSTALL(){
-  while true; do
-    cat << EOF
-+------------------------------------------+
-|  ipadic-neologdをインストールしますか？  |
-+------------------------------------------+
-| > [y] yes                                |
-| > [e] 終了する                           |
-+------------------------------------------+
-EOF
-    read -p "項目を選択してください >> " KEY
-    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-      "y")
-        echoY '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
-        #path 登録
-        echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
-        source ~/.bash_profile
-        sudo ./configure --with-charset=utf8
+MECAB_DIC_NEOLOGD_INSTALL(){
+  echoY '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
+  #path 登録
+  # echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
+  # source ~/.bash_profile
+  # sudo ./configure --with-charset=utf8
 
-        # 必要パッケージのインストール
-        sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-        sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
-        # sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
-        # GIT_INSTALL
+  # 必要パッケージのインストール
+  sudo yum install -y git make curl xz
 
-        git clone git://git.kernel.org/pub/scm/git/git.git
+  # 辞書の取得
+  WORKING=/tmp/mecabdic
+  mkdir -p $WORKING
+  cd $WORKING
+  git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
 
-        # 辞書の取得
-        WORKING=/tmp/mecabdic
-        mkdir -p $WORKING
-        cd $WORKING
-        git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+  # インストール
+  cd mecab-ipadic-neologd
+  ./bin/install-mecab-ipadic-neologd -n
 
-        # インストール
-        cd mecab-ipadic-neologd
-        ./bin/install-mecab-ipadic-neologd -n
+  # echoG 'mecab のバージョンは以下となります'
+  # mecab --version
 
-        echoG 'mecab のバージョンは以下となります'
-        mecab --version
+  # echoG 'mecab の動作テスト'
+  # echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
 
-        echoG 'mecab の動作テスト'
-        echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
-
-        echoY '---------------------------------------------------------------------------------'
-        echoY 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
-        sudo find / -name libmecab.so*
-        echoY ''
-        echoY 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
-        echoY '                                    ------------------------'
-        echoY '                                    ここを書き換えてください'
-        echoY 'コマンド②：source ~/.bash_profile'
-        echoY '---------------------------------------------------------------------------------'
-        echoY ''
-        echoY 'mecab-ipadic-neologd のインストール先は、以下の通りです'
-        echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
-
-        break ;;
-      "e")  break ;;
-      *) echo "(${LINENO})  >> キーが違います。" ;;
-    esac
-  done
+  # echoY '---------------------------------------------------------------------------------'
+  # echoY 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
+  # sudo find / -name libmecab.so*
+  # echoY ''
+  # echoY 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+  # echoY '                                    ------------------------'
+  # echoY '                                    ここを書き換えてください'
+  # echoY 'コマンド②：source ~/.bash_profile'
+  # echoY '---------------------------------------------------------------------------------'
+  # echoY ''
+  # echoY 'mecab-ipadic-neologd のインストール先は、以下の通りです'
+  # echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
 }
 
 
