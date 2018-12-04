@@ -10,25 +10,25 @@ ESC="\e["
 ESCEND=m
 COLOR_OFF=${ESC}${ESCEND}
 
-echoComment() {
+echoW() {
   # 文字色：Black Bold(灰色)
   echo -en "${ESC}30;1${ESCEND}"
   echo "${1}"
   echo -en "${COLOR_OFF}"
 }
-echoGreen() {
+echoG() {
   # 文字色：green
   echo -en "${ESC}32${ESCEND}"
   echo "${1}" | tee -a ${LOG}
   echo -en "${COLOR_OFF}"
 }
-echoRed() {
+echoR() {
   # 文字色：Red
   echo -en "${ESC}31${ESCEND}"
   echo "${1}" | tee -a ${LOG}
   echo -en "${COLOR_OFF}"
 }
-echoYellow() {
+echoY() {
   # 文字色：Yellow
   echo -en "${ESC}33${ESCEND}"
   echo "${1}" | tee -a ${LOG}
@@ -83,7 +83,7 @@ EOF
       "81") FNC_ACTION ;;
       "82") FNC_ACTION ;;
       "e") break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
     read -p "ENTERを押してください。" BLANK
   done
@@ -94,13 +94,13 @@ EOF
 FNC_ACTION(){
   FNC_${MENU_NUMBER}
   if [ $? != 0 ]; then
-     echoRed "(${LINENO})  >> FNC_${MENU_NUMBER}で異常が発生しました"
+     echoR "(${LINENO})  >> FNC_${MENU_NUMBER}で異常が発生しました"
   fi
 }
 
 ########################################################
 FNC_1(){
-  echoGreen "(${LINENO}) >> [ 1]  開発用としてiptableとselinuxを解除"
+  echoG "(${LINENO}) >> [ 1]  開発用としてiptableとselinuxを解除"
   /etc/rc.d/init.d/iptables stop
   chkconfig iptables off
   chkconfig --list iptables
@@ -108,16 +108,16 @@ FNC_1(){
   sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
   chkconfig kdump off
 
-  echoGreen "--------------------------------------------------------"
-  echoGreen "開発用パッケージをインストールします"
+  echoG "--------------------------------------------------------"
+  echoG "開発用パッケージをインストールします"
   sudo yum  -y update
   sudo yum -y groupinstall "Base" "Development tools"
   sudo yum install -y crontabs cronie-noanacron cronie-anacron
   echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
-  echoGreen "--------------------------------------------------------"
+  echoG "--------------------------------------------------------"
   date
-  echoGreen "時間軸を日本にします"
+  echoG "時間軸を日本にします"
   # rm -rf /etc/localtime
   # cp -rf /usr/share/zoneinfo/Japan /etc/localtime
   sudo ln -sf /usr/share/zoneinfo/Japan /etc/localtime
@@ -126,14 +126,14 @@ FNC_1(){
   sudo yum -y install ntp
   sudo ntpdate ntp.nict.jp
 
-  echoGreen "--------------------------------------------------------"
+  echoG "--------------------------------------------------------"
   SWAP_SETTING
 
   return 0
 }
 #######################################################
 FNC_2(){
-  echoGreen "(${LINENO}) >> [ 2]  ruby をインストール"
+  echoG "(${LINENO}) >> [ 2]  ruby をインストール"
   RUBY_INSTALL_SELECT
   return 0
 }
@@ -141,7 +141,7 @@ FNC_2(){
 ########################################################
 #  [3]
 FNC_3(){
-  echoGreen "(${LINENO}) >> [ 3]  rails をインストール"
+  echoG "(${LINENO}) >> [ 3]  rails をインストール"
   RUN_CHECK
   RAILS_VERSION_CHECK
   return 0
@@ -149,18 +149,18 @@ FNC_3(){
 
 ########################################################
 FNC_4(){
-  echoGreen "(${LINENO}) >> [ 4]  node.js をインストール"
+  echoG "(${LINENO}) >> [ 4]  node.js をインストール"
   RUN_CHECK
   DEVELOP_PACKAGE_INSTALL
   NODE_INSTALL_CHECK
   yum -y install npm --enablerepo=epel
   npm install -g yarn
 
-  echoGreen 'node.js のバージョンは以下となります'
+  echoG 'node.js のバージョンは以下となります'
   node -v
-  echoGreen 'npm のバージョンは以下となります'
+  echoG 'npm のバージョンは以下となります'
   npm -v
-  echoGreen 'yarn のバージョンは以下となります'
+  echoG 'yarn のバージョンは以下となります'
   yarn -v
   return 0
 }
@@ -169,11 +169,11 @@ FNC_4(){
 FNC_5(){
   echo "(${LINENO}) >> [ 5]  MYSQL 5.7 をインストール"
 
-  echoGreen "現在のMYSQLのバージョンは、以下の通りです"
+  echoG "現在のMYSQLのバージョンは、以下の通りです"
   if type mysqld >/dev/null 2>&1; then
     mysqld --version
   else
-    echoRed "MYSQLはインストールされていませんでした"
+    echoR "MYSQLはインストールされていませんでした"
   fi
   echo ""
 
@@ -194,7 +194,7 @@ FNC_6(){
 ########################################################
 #  [7]
 FNC_7(){
-  echoGreen "(${LINENO}) >> [ 7]  ffmpeg（のみ） をインストール"
+  echoG "(${LINENO}) >> [ 7]  ffmpeg（のみ） をインストール"
   RUN_CHECK
   FFMPEG_INSTALL
   # DEVELOP_PACKAGE_INSTALL
@@ -205,38 +205,18 @@ FNC_7(){
 ########################################################
 #  [8]
 FNC_8(){
-  echoGreen "(${LINENO}) >> [ 8]  ImageMagick をインストール"
+  echoG "(${LINENO}) >> [ 8]  ImageMagick をインストール"
   RUN_CHECK
   yum -y install ImageMagick
   yum -y install ImageMagick-devel
   return 0
 }
 
-########################################################
-#  [9]
-FNC_9(){
-  echoGreen "(${LINENO}) >> [ 9]  mecab をインストール"
-  RUN_CHECK
-  sudo yum update -y
-
-  MECAB_INSTALL
-
-
-  # echoYellow 'mecab の動作検証'
-  echoYellow 'mecab の動作検証' -d /usr/lib64/mecab/dic/ipadic
-  echo 'すもももももももものうち' | mecab
-
-  echoYellow 'mecab の動作検証' -d /usr/lib64/mecab/dic/jumandic
-  echo 'すもももももももものうち' | mecab
-
-  MECAB_IPADIC_INSTALL
-  return 0
-}
 
 ########################################################
 #  [10]
 FNC_10(){
-  echoGreen "(${LINENO}) >> [10]  cabocha をインストール"
+  echoG "(${LINENO}) >> [10]  cabocha をインストール"
   RUN_CHECK
   CABOCHA_INSTALL
   return 0
@@ -246,7 +226,7 @@ FNC_10(){
 ########################################################
 #  [11]
 FNC_11(){
-  echoGreen "(${LINENO}) >> [11]  redis をインストール"
+  echoG "(${LINENO}) >> [11]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
   return 0
@@ -255,7 +235,7 @@ FNC_11(){
 ########################################################
 #  [12]
 FNC_12(){
-  echoGreen "(${LINENO}) >> [12]  GIT をアップデート"
+  echoG "(${LINENO}) >> [12]  GIT をアップデート"
   RUN_CHECK
   GIT_INSTALL
   return 0
@@ -264,7 +244,7 @@ FNC_12(){
 ########################################################
 #  [80]
 FNC_80(){
-  echoGreen "(${LINENO}) >> [80]  python をインストール"
+  echoG "(${LINENO}) >> [80]  python をインストール"
   RUN_CHECK
   PYTHON_INSTALL_CHECK
   return 0
@@ -273,7 +253,7 @@ FNC_80(){
 ########################################################
 #  [81]
 FNC_81(){
-  echoGreen "(${LINENO}) >> [81]  tensorflow をインストール"
+  echoG "(${LINENO}) >> [81]  tensorflow をインストール"
   RUN_CHECK
   # PYTHON_INSTALL_CHECK
   TENSORFLOW_INSTALL
@@ -284,7 +264,7 @@ FNC_81(){
 ########################################################
 #  [82]
 FNC_82(){
-  echoGreen "(${LINENO}) >> [82]  jupyter をインストール"
+  echoG "(${LINENO}) >> [82]  jupyter をインストール"
   RUN_CHECK
   # PYTHON_INSTALL_CHECK
   JUPYTER_INSTALL
@@ -331,7 +311,7 @@ EOF
 
 # 必要パッケージのインストール処理
 DEVELOP_PACKAGE_INSTALL(){
-  echoGreen 'パッケージを最新にします。パスワードを聞かれることがあります。'
+  echoG 'パッケージを最新にします。パスワードを聞かれることがあります。'
   sudo -v
   sudo yum update -y
   sudo yum install -y zlib
@@ -356,7 +336,7 @@ DEVELOP_PACKAGE_INSTALL(){
 GIT_INSTALL(){
   if type git >/dev/null 2>&1; then
     # echo 'git install OK'
-    echoGreen '現在、以下のGITのバージョンがインストールされています'
+    echoG '現在、以下のGITのバージョンがインストールされています'
     git --version
 
     read -p "バージョンを変更しますか？（yes or no） >> " KEY
@@ -366,13 +346,13 @@ GIT_INSTALL(){
         GIT_VERSION_INSTALL ;;
         # break ;;
       "n" | "no")
-        echoYellow "インストールを行わず、次のステップに移ります" ;;
+        echoY "インストールを行わず、次のステップに移ります" ;;
         # break ;;
       *)
-        echoRed "(${LINENO})  >> キーが違います。" ;;
+        echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   else
-    echoGreen 'gitがインストールされていませんでした'
+    echoG 'gitがインストールされていませんでした'
     GIT_VERSION_INSTALL
   fi
 }
@@ -397,12 +377,12 @@ EOF
         yum install -y git2u
         git clone git://git.kernel.org/pub/scm/git/git.git
 
-        echoGreen 'git のバージョンは以下となります'
+        echoG 'git のバージョンは以下となります'
         git --version
         break ;;
       "2")
         yum install -y git
-        echoGreen 'git のバージョンは以下となります'
+        echoG 'git のバージョンは以下となります'
         git --version
         break ;;
       *)   echo "(${LINENO})  >> キーが違います。" ;;
@@ -426,7 +406,7 @@ EOF
     read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1")
-        echoGreen "(${LINENO}) >> [2]  rvm で rubyをインストール"
+        echoG "(${LINENO}) >> [2]  rvm で rubyをインストール"
         RUN_CHECK
         DEVELOP_PACKAGE_INSTALL
         RVM_INSTALL
@@ -434,14 +414,14 @@ EOF
         RVM_RUBY_INSTALL
         break ;;
       "2")
-        echoGreen "(${LINENO}) >> [3]  rbenv で rubyをインストール"
+        echoG "(${LINENO}) >> [3]  rbenv で rubyをインストール"
         RUN_CHECK
         DEVELOP_PACKAGE_INSTALL
         RBENV_INSTALL
         RBENV_RUBY_VERSION_CHECK
         RBENV_RUBY_INSTALL
         break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -477,7 +457,7 @@ EOF
   case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
     "1") rvm list known ;;
     "2") break ;;
-    *) echoRed "(${LINENO})  >> キーが違います。" ;;
+    *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -488,7 +468,7 @@ RVM_RUBY_INSTALL(){
   rvm install $ans
   rvm use $ans --default
 
-  echoGreen 'ruby のバージョンは以下となります'
+  echoG 'ruby のバージョンは以下となります'
   ruby -v
 }
 
@@ -505,7 +485,7 @@ RBENV_INSTALL(){
   git clone git://github.com/sstephenson/ruby-build.git /usr/local/src/rbenv/plugins/ruby-build
   ls /usr/local/src/rbenv/plugins/ruby-build/bin/
 
-  echoGreen 'rbenv のバージョンは以下となります'
+  echoG 'rbenv のバージョンは以下となります'
   rbenv -v
 }
 
@@ -524,7 +504,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") rbenv install --list ;;
       "2") break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -536,7 +516,7 @@ RBENV_RUBY_INSTALL(){
   rbenv rehash
   rbenv global $ans
 
-  echoGreen 'ruby のバージョンは以下となります'
+  echoG 'ruby のバージョンは以下となります'
   ruby -v
 }
 
@@ -569,7 +549,7 @@ EOF
         break ;;
       "4")
         gem install rails --pre
-        echoGreen 'rails のバージョンは以下となります'
+        echoG 'rails のバージョンは以下となります'
         rails -v
         break ;;
       "5")
@@ -583,7 +563,7 @@ EOF
       "e")
         break ;;
       *)
-        echoRed "(${LINENO})  >> キーが違います。" ;;
+        echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -592,7 +572,7 @@ RAILS_INSTALL(){
   gem install rack
   gem install rails -v  $1
 
-  echoGreen 'rails のバージョンは以下となります'
+  echoG 'rails のバージョンは以下となります'
   rails -v
 }
 
@@ -623,7 +603,7 @@ EOF
         NODEBLEW_RUBY_VERSION_CHECK
         NODEBLEW_RUBY_INSTALL
         break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -672,7 +652,7 @@ EOF
         yum install -y gcc-c++ make
         yum install -y nodejs
         break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -701,7 +681,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") nvm ls-remote ;;
       "2") break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -713,7 +693,7 @@ NVM_RUBY_INSTALL(){
   nvm alias default v$ans
   # yum install -y npm
 
-  echoGreen 'node のバージョンは以下となります'
+  echoG 'node のバージョンは以下となります'
   node -v
 }
 
@@ -739,7 +719,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") nodebrew ls-remote ;;
       "2") break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -751,7 +731,7 @@ NODEBLEW_RUBY_INSTALL(){
   nodebrew use v$ans
   # yum install -y npm
 
-  echoGreen 'node のバージョンは以下となります'
+  echoG 'node のバージョンは以下となります'
   node -v
 }
 
@@ -762,7 +742,7 @@ FFMPEG_INSTALL(){
   sudo yum update -y
   sudo rpm -Uvh http://li.nux.ro/download/nux/dextop/el6/x86_64/nux-dextop-release-0-2.el6.nux.noarch.rpm
   sudo yum install ffmpeg ffmpeg-devel -y
-  echoGreen 'FFmpeg  インストール  完了'
+  echoG 'FFmpeg  インストール  完了'
 
   echo 'ffmpeg のバージョンは以下となります'
   ffmpeg -version
@@ -784,7 +764,7 @@ REDIS_INSTALL(){
   sudo /etc/init.d/redis start
   sudo chkconfig redis on
 
-  echoGreen 'redis のバージョンは以下となります'
+  echoG 'redis のバージョンは以下となります'
   redis-server --version
 }
 
@@ -869,7 +849,7 @@ MYSQL_57_INSTALL(){
     "n" | "no"| "N")
       MYSQL_ROOT_PASS_SEKYURY=0 ;;
     *)
-      echoRed "(${LINENO})  >> キーが違います。"
+      echoR "(${LINENO})  >> キーが違います。"
   esac
 
   read -p "MYSQLの設定で、文字コードをutf8mb4にしても宜しいですか？（yes or no） >> " KEY
@@ -879,7 +859,7 @@ MYSQL_57_INSTALL(){
     "n" | "no")
       MYSQL_UTF8_ENCODE=0 ;;
     *)
-      echoRed "(${LINENO})  >> キーが違います。"
+      echoR "(${LINENO})  >> キーが違います。"
   esac
 
   # 実行
@@ -912,9 +892,9 @@ MYSQL_57_INSTALL(){
   service mysqld restart
 
   DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
-  echoRed "初期パスワードは、「${DB_PASSWORD}」です。"
-  echoRed "このパスワードは、場合によっては必要となりますので、"
-  echoRed "メモしておくことをお勧めします"
+  echoR "初期パスワードは、「${DB_PASSWORD}」です。"
+  echoR "このパスワードは、場合によっては必要となりますので、"
+  echoR "メモしておくことをお勧めします"
   echo ""
 
   if [ ${MYSQL_ROOT_PASS_SEKYURY} = 0 ]; then
@@ -926,11 +906,11 @@ MYSQL_57_INSTALL(){
       "n" | "no")
         break ;;
       *)
-        echoRed "(${LINENO})  >> キーが違います。" ;;
+        echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   else
-    echoRed "パスワードがOFFとなっています"
-    echoRed "※本番時の利用では注意してください"
+    echoR "パスワードがOFFとなっています"
+    echoR "※本番時の利用では注意してください"
   fi
 
   chkconfig mysqld on
@@ -941,7 +921,7 @@ MYSQL_57_INSTALL(){
 PYTHON_INSTALL_CHECK(){
   if type python >/dev/null 2>&1; then
     # echo 'git install OK'
-    echoGreen '現在、以下のpythonのバージョンがインストールされています'
+    echoG '現在、以下のpythonのバージョンがインストールされています'
     python --version
 
     read -p "バージョンを変更しますか？（yes or no） >> " KEY
@@ -949,12 +929,12 @@ PYTHON_INSTALL_CHECK(){
       "y" | "yes")
         PYTHON_INSTALL_PATTERN ;;
       "n" | "no")
-        echoYellow "インストールを行わず、次のステップに移ります" ;;
+        echoY "インストールを行わず、次のステップに移ります" ;;
       *)
-        echoRed "(${LINENO})  >> キーが違います。" ;;
+        echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   else
-    echoGreen 'gitがインストールされていませんでした'
+    echoG 'gitがインストールされていませんでした'
     PYTHON_INSTALL_PATTERN
   fi
 }
@@ -986,7 +966,7 @@ EOF
       #   NODEBLEW_RUBY_VERSION_CHECK
       #   NODEBLEW_RUBY_INSTALL
       #   break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -1009,7 +989,7 @@ PYENV_INSTALL(){
   echo 'fi'                                      >> /root/.bashrc
   source ~/.bashrc
 
-  echoGreen 'pyenv のバージョンは以下となります'
+  echoG 'pyenv のバージョンは以下となります'
   pyenv --version
 }
 
@@ -1028,7 +1008,7 @@ EOF
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "1") pyenv install --list ;;
       "2") break ;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
@@ -1039,10 +1019,10 @@ PYENV_PYTHON_INSTALL(){
   pyenv global  ${install_version}
   pyenv rehash
 
-  echoGreen 'python のバージョンは以下となります'
+  echoG 'python のバージョンは以下となります'
   python --version
 
-  echoGreen 'pip のバージョンは以下となります'
+  echoG 'pip のバージョンは以下となります'
   pip -V
 }
 
@@ -1071,14 +1051,14 @@ EOF
       "2")
         pip install tensorflow-gpu
         break;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+      *) echoR "(${LINENO})  >> キーが違います。" ;;
     esac
   done
 }
 
 SWAP_SETTING(){
-  echoGreen "(${LINENO})  >> スワップ領域を自動で割り当てます"
-  echoGreen "現在のスワップ領域は以下の通りです"
+  echoG "(${LINENO})  >> スワップ領域を自動で割り当てます"
+  echoG "現在のスワップ領域は以下の通りです"
   free
 
   SWAPFILENAME=/swap.img
@@ -1096,13 +1076,13 @@ SWAP_SETTING(){
 
   fallocate -l $SIZE $SWAPFILENAME && mkswap $SWAPFILENAME && swapon $SWAPFILENAME
 
-  echoGreen "スワップ領域を以下に設定しました"
+  echoG "スワップ領域を以下に設定しました"
   free
 }
 
 
 JUPYTER_INSTALL(){
-  echoGreen "(${LINENO})  >> jupyterの開発環境を準備します"
+  echoG "(${LINENO})  >> jupyterの開発環境を準備します"
 
   yum -y update
   yum -y groupinstall 'Development tools'
@@ -1128,44 +1108,56 @@ JUPYTER_INSTALL(){
   conda update conda
   conda --version
 
-  echoYellow "(${LINENO})  >> jupyterの開発環境の準備が整いました"
-  echoYellow "(${LINENO})  >> 「jupyter notebook --allow-root --ip=[IPアドレス]」を入力して起動してください"
-  echoYellow "(${LINENO})  >> URLは、コマンド起動後にコンソール上に表示されます"
+  echoY "(${LINENO})  >> jupyterの開発環境の準備が整いました"
+  echoY "(${LINENO})  >> 「jupyter notebook --allow-root --ip=[IPアドレス]」を入力して起動してください"
+  echoY "(${LINENO})  >> URLは、コマンド起動後にコンソール上に表示されます"
 }
 
 ################################################################################
 # 日本語解析 関係
 ################################################################################
+#  [9]
+FNC_9(){
+  echoG "(${LINENO}) >> [ 9]  mecab をインストール"
+  RUN_CHECK
+  sudo yum update -y
+
+  MECAB_INSTALL
+
+  # # echoY 'mecab の動作検証'
+  # echoY 'mecab の動作検証' -d /usr/lib64/mecab/dic/ipadic
+  # echo 'すもももももももものうち' | mecab
+
+  # echoY 'mecab の動作検証' -d /usr/lib64/mecab/dic/jumandic
+  # echo 'すもももももももものうち' | mecab
+
+  # MECAB_IPADIC_INSTALL
+  return 0
+}
+
 MECAB_INSTALL(){
-  MECAB_INSTALL_CHECK
-
-  MECAB_YAM_INSTALL
   if type mecab >/dev/null 2>&1; then
-    echoGreen "yum からの mecab のインストール完了！"
-  else
-    echoRed "yum からの mecab のインストールに失敗しました"
-    echoRed "その為、ソースからインストールします"
-    MECAB_MAKE_INSTALL
+    MECAB_YAM_INSTALL
+    if type mecab >/dev/null 2>&1; then
+      echoG "yum からの mecab のインストール完了！"
+    else
+      echoR "yum からの mecab のインストールに失敗しました"
+      echoR "その為、ソースからインストールします"
+      MECAB_MAKE_INSTALL
+    fi
+    echoG 'mecab のバージョンは以下となります'
+    mecab --version
   fi
-
-  echoGreen 'mecab のバージョンは以下となります'
-  mecab --version
-
   MECAB_DIC_MENU
 }
 
-MECAB_INSTALL_CHECK(){
-  if type mecab >/dev/null 2>&1; then
-    MECAB_DIC_MENU
-  fi
-}
 
 MECAB_YAM_INSTALL(){
   sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
   # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.3.0-1.noarch.rpm
   # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.4.0-1.noarch.rpm
 
-  sudo yum install -y mecab mecab-devel
+  sudo yum install -y mecab mecab-devel mecab-ipadic
 }
 
 MECAB_MAKE_INSTALL(){
@@ -1175,7 +1167,7 @@ MECAB_MAKE_INSTALL(){
   # echo 'timeout=500' >> /etc/yum.conf
   # sudo yum install -y mecab mecab-devel
 
-  echoGreen "(${LINENO})  >> mecab 本体をインストール"
+  echoG "(${LINENO})  >> mecab 本体をインストール"
     sudo yum install -y git make curl xz
     sudo yum install -y gcc-c++
     # yumによるインストールを失敗した場合
@@ -1201,41 +1193,41 @@ MECAB_MAKE_INSTALL(){
 
 
 MECAB_DIC_MENU(){
-    while true; do
-    cat << EOF
-+----------------------------------+
-| どの辞書をインストールしますか？ |
-+----------------------------------+
-| > [1] IPADIC                      |
-| > [2] JUMAN                      |
-| > [3] JUMANDIC                      |
-| > [4] JUMANPP                      |
-| > [5] KYTEA                      |
-| > [6] NEOLOG                      |
-| > [7] SNOW                      |
-| > [8] GPU版                      |
-| > [e] UNIDIC                      |
-+----------------------------------+
-EOF
+  echoW '+----------------------------------+'
+  echoW '| どの辞書をインストールしますか？ |'
+  echoW '+----------------------------------+'
+  echoW '| > [1] JUMAN                      |'
+  echoW '| > [2] JUMANDIC                   |'
+  echoW '| > [3] JUMANPP                    |'
+  echoW '| > [4] KYTEA                      |'
+  echoW '| > [5] NEOLOG                     |'
+  echoW '| > [6] SNOW                       |'
+  echoW '| > [7] GPU版                      |'
+  echoW '| > [8] UNIDIC                     |'
+  echoW '| > [e] end                        |'
+  echoW '+----------------------------------+'
 
     read -p "項目を選択してください >> " KEY
-    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-      "1")
-        pip install tensorflow
-        break;;
-      "2")
-        pip install tensorflow-gpu
-        break;;
-      *) echoRed "(${LINENO})  >> キーが違います。" ;;
+    case ${KEY} in  #変数KEYに合った内容でコマンドが実行される
+      '1') break;;
+      '2') break;;
+      '3') break;;
+      '4') break;;
+      '5') break;;
+      '6') break;;
+      '7') break;;
+      '8') break;;
+      'e') break;;
+      *)
+        echoR "(${LINENO})  >> キーが違います。" ;;
     esac
-  done
 }
 
 
 MECAB_DIC_INSTALL(){
 
 
-  echoGreen "(${LINENO})  >> ipadic(初期)をインストール"
+  echoG "(${LINENO})  >> ipadic(初期)をインストール"
   wget -O mecab-ipadic-2.7.0-20070801.tar.gz "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7MWVlSDBCSXZMTXM"
   tar zxfv mecab-ipadic-2.7.0-20070801.tar.gz
   cd mecab-ipadic-2.7.0-20070801
@@ -1258,7 +1250,7 @@ EOF
     read -p "項目を選択してください >> " KEY
     case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
       "y")
-        echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
+        echoY '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
         #path 登録
         echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
         source ~/.bash_profile
@@ -1282,23 +1274,23 @@ EOF
         cd mecab-ipadic-neologd
         ./bin/install-mecab-ipadic-neologd -n
 
-        echoGreen 'mecab のバージョンは以下となります'
+        echoG 'mecab のバージョンは以下となります'
         mecab --version
 
-        echoGreen 'mecab の動作テスト'
+        echoG 'mecab の動作テスト'
         echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
 
-        echoYellow '---------------------------------------------------------------------------------'
-        echoYellow 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
+        echoY '---------------------------------------------------------------------------------'
+        echoY 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
         sudo find / -name libmecab.so*
-        echoYellow ''
-        echoYellow 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
-        echoYellow '                                    ------------------------'
-        echoYellow '                                    ここを書き換えてください'
-        echoYellow 'コマンド②：source ~/.bash_profile'
-        echoYellow '---------------------------------------------------------------------------------'
-        echoYellow ''
-        echoYellow 'mecab-ipadic-neologd のインストール先は、以下の通りです'
+        echoY ''
+        echoY 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+        echoY '                                    ------------------------'
+        echoY '                                    ここを書き換えてください'
+        echoY 'コマンド②：source ~/.bash_profile'
+        echoY '---------------------------------------------------------------------------------'
+        echoY ''
+        echoY 'mecab-ipadic-neologd のインストール先は、以下の通りです'
         echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
 
         break ;;
@@ -1312,12 +1304,12 @@ EOF
 
 
 CABOCHA_INSTALL(){
-  echoGreen "(${LINENO})  >> cabochaのインストールを行います"
+  echoG "(${LINENO})  >> cabochaのインストールを行います"
   sudo yum install -y git make curl xz gcc-c++ wget
 
   MECAB_INSTALL
 
-  echoGreen "(${LINENO})  >> CRF++"
+  echoG "(${LINENO})  >> CRF++"
   yum install -y wget
   wget "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7QVR6VXJ5dWExSTQ" -O CRF++-0.58.tar.gz
   tar zxfv CRF++-0.58.tar.gz
@@ -1326,7 +1318,7 @@ CABOCHA_INSTALL(){
   make
   sudo make install
 
-  echoGreen "(${LINENO})  >> cabocha"
+  echoG "(${LINENO})  >> cabocha"
   wget "https://googledrive.com/host/0B4y35FiV1wh7cGRCUUJHVTNJRnM/cabocha-0.69.tar.bz2" -O cabocha-0.69.tar.bz2
   bzip2 -dc cabocha-0.69.tar.bz2 | tar xvf -
   cd cabocha-0.69
@@ -1335,7 +1327,7 @@ CABOCHA_INSTALL(){
   make check
   sudo make install
 
-  echoYellow "(${LINENO})  >> cabochaのバージョンは以下の通りです"
+  echoY "(${LINENO})  >> cabochaのバージョンは以下の通りです"
   cabocha --version
 
 
