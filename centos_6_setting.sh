@@ -42,7 +42,7 @@ FNC_MENU(){
   while true; do
     cat << EOF
 +------------------------------------------+
-|                【 MENU 】          v 6.1 |
+|                【 MENU 】          v 7.0 |
 +------------------------------------------+
 | [ 1]  開発用としてiptableとselinuxを解除 |
 | [ 2]  ruby をインストール                |
@@ -53,8 +53,9 @@ FNC_MENU(){
 | [ 7]  ffmpeg（のみ） をインストール      |
 | [ 8]  ImageMagick をインストール         |
 | [ 9]  mecab をインストール               |（検証中）
-| [10]  redis をインストール               |（検証中）
-| [11]  GIT をアップデート                 |（検証中）
+| [10]  cabocha をアップデート             |（検証中）
+| [11]  redis をインストール               |（検証中）
+| [12]  GIT をアップデート                 |（検証中）
 | [80]  python をインストール              |（検証中）
 | [81]  tensorflow をインストール          |（検証中）
 | [82]  jupyter をインストール             |（検証中）
@@ -77,6 +78,7 @@ EOF
       "9") FNC_ACTION ;;
       "10") FNC_ACTION ;;
       "11") FNC_ACTION ;;
+      "12") FNC_ACTION ;;
       "80") FNC_ACTION ;;
       "81") FNC_ACTION ;;
       "82") FNC_ACTION ;;
@@ -216,45 +218,16 @@ FNC_9(){
   echoGreen "(${LINENO}) >> [ 9]  mecab をインストール"
   RUN_CHECK
   sudo yum update -y
-  sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.3.0-1.noarch.rpm
-  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.4.0-1.noarch.rpm
 
-  # タイムアウトする為、１次的にタイムアウト時間を変更
-  echo '# 通信速度が遅いためtimeout時間を変更' >> /etc/yum.conf
-  echo 'minrate=1' >> /etc/yum.conf
-  echo 'timeout=500' >> /etc/yum.conf
-  sudo yum install -y mecab mecab-ipadic mecab-jumandic mecab-devel
+  MECAB_INSTALL
 
-  if type mecab >/dev/null 2>&1; then
-    echoGreen "yum からの mecab のインストール完了！"
-  else
-    echoRed "yum からの mecab のインストールに失敗しました"
-    echoRed "その為、ソースからインストールします"
-    sudo yum install -y git make curl xz
-    sudo yum install -y gcc-c++
-    # yumによるインストールを失敗した場合
-    git clone https://github.com/taku910/mecab.git
-    cd mecab/mecab
-    ./configure --enable-utf8-only
-    make
-    sudo make install
-  fi
 
-  # # 後処理(元の状態に戻す)
-  # sed -e '/# 通信速度が遅いためtimeout時間を変更/d' /etc/yum.conf
-  # sed -e '/minrate=1/d' /etc/yum.conf
-  # sed -i -e '/timeout=500/d' /etc/yum.conf
-
-  echoGreen 'mecab のバージョンは以下となります'
-  mecab --version
   # echoYellow 'mecab の動作検証'
   echoYellow 'mecab の動作検証' -d /usr/lib64/mecab/dic/ipadic
   echo 'すもももももももものうち' | mecab
 
   echoYellow 'mecab の動作検証' -d /usr/lib64/mecab/dic/jumandic
   echo 'すもももももももものうち' | mecab
-
 
   MECAB_IPADIC_INSTALL
   return 0
@@ -263,16 +236,26 @@ FNC_9(){
 ########################################################
 #  [10]
 FNC_10(){
-  echoGreen "(${LINENO}) >> [10]  redis をインストール"
+  echoGreen "(${LINENO}) >> [10]  cabocha をインストール"
+  RUN_CHECK
+  CABOCHA_INSTALL
+  return 0
+}
+
+
+########################################################
+#  [11]
+FNC_11(){
+  echoGreen "(${LINENO}) >> [11]  redis をインストール"
   RUN_CHECK
   REDIS_INSTALL
   return 0
 }
 
 ########################################################
-#  [11]
-FNC_11(){
-  echoGreen "(${LINENO}) >> [11]  GIT をアップデート"
+#  [12]
+FNC_12(){
+  echoGreen "(${LINENO}) >> [12]  GIT をアップデート"
   RUN_CHECK
   GIT_INSTALL
   return 0
@@ -789,69 +772,6 @@ FFMPEG_INSTALL(){
 }
 
 
-MECAB_IPADIC_INSTALL(){
-  while true; do
-    cat << EOF
-+------------------------------------------+
-|  ipadic-neologdをインストールしますか？  |
-+------------------------------------------+
-| > [y] yes                                |
-| > [e] 終了する                           |
-+------------------------------------------+
-EOF
-
-    read -p "項目を選択してください >> " KEY
-    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
-      "y")
-        echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
-        #path 登録
-        echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
-        source ~/.bash_profile
-        sudo ./configure --with-charset=utf8
-
-        # 必要パッケージのインストール
-        sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-        sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
-        # sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
-        # GIT_INSTALL
-
-        git clone git://git.kernel.org/pub/scm/git/git.git
-
-        # 辞書の取得
-        WORKING=/tmp/mecabdic
-        mkdir -p $WORKING
-        cd $WORKING
-        git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
-
-        # インストール
-        cd mecab-ipadic-neologd
-        ./bin/install-mecab-ipadic-neologd -n
-
-        echoGreen 'mecab のバージョンは以下となります'
-        mecab --version
-
-        echoGreen 'mecab の動作テスト'
-        echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
-
-        echoYellow '---------------------------------------------------------------------------------'
-        echoYellow 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
-        sudo find / -name libmecab.so*
-        echoYellow ''
-        echoYellow 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
-        echoYellow '                                    ------------------------'
-        echoYellow '                                    ここを書き換えてください'
-        echoYellow 'コマンド②：source ~/.bash_profile'
-        echoYellow '---------------------------------------------------------------------------------'
-        echoYellow ''
-        echoYellow 'mecab-ipadic-neologd のインストール先は、以下の通りです'
-        echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
-
-        break ;;
-      "e")  break ;;
-      *) echo "(${LINENO})  >> キーが違います。" ;;
-    esac
-  done
-}
 
 REDIS_INSTALL(){
   # 旧
@@ -1212,6 +1132,172 @@ JUPYTER_INSTALL(){
   echoYellow "(${LINENO})  >> jupyterの開発環境の準備が整いました"
   echoYellow "(${LINENO})  >> 「jupyter notebook --allow-root --ip=[IPアドレス]」を入力して起動してください"
   echoYellow "(${LINENO})  >> URLは、コマンド起動後にコンソール上に表示されます"
+}
+
+MECAB_INSTALL(){
+  sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.3.0-1.noarch.rpm
+  # sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.4.0-1.noarch.rpm
+
+  # タイムアウトする為、１次的にタイムアウト時間を変更
+  echo '# 通信速度が遅いためtimeout時間を変更' >> /etc/yum.conf
+  echo 'minrate=1' >> /etc/yum.conf
+  echo 'timeout=500' >> /etc/yum.conf
+  sudo yum install -y mecab mecab-ipadic mecab-jumandic mecab-devel
+
+  if type mecab >/dev/null 2>&1; then
+    echoGreen "yum からの mecab のインストール完了！"
+  else
+    echoRed "yum からの mecab のインストールに失敗しました"
+    echoRed "その為、ソースからインストールします"
+    MECAB_INSTALL_FOR_MAKE
+  fi
+
+  # 後処理(元の状態に戻す)
+  sed -e '/# 通信速度が遅いためtimeout時間を変更/d' /etc/yum.conf
+  sed -e '/minrate=1/d' /etc/yum.conf
+  sed -i -e '/timeout=500/d' /etc/yum.conf
+
+  echoGreen 'mecab のバージョンは以下となります'
+  mecab --version
+}
+
+MECAB_INSTALL_FOR_MAKE(){
+  echoGreen "(${LINENO})  >> mecab 本体をインストール"
+    sudo yum install -y git make curl xz
+    sudo yum install -y gcc-c++
+    # yumによるインストールを失敗した場合
+    git clone https://github.com/taku910/mecab.git
+    cd mecab/mecab
+    ./configure --enable-utf8-only
+    make
+    sudo make install
+
+  # wget -O mecab-0.996.tar.gz "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7cENtOXlicTFaRUE"
+  # tar zxfv mecab-0.996.tar.gz
+  # cd mecab-0.996
+  # ./configure
+  # make
+  # make install
+  echoGreen "(${LINENO})  >> ipadic(初期)をインストール"
+  wget -O mecab-ipadic-2.7.0-20070801.tar.gz "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7MWVlSDBCSXZMTXM"
+  tar zxfv mecab-ipadic-2.7.0-20070801.tar.gz
+  cd mecab-ipadic-2.7.0-20070801
+  ./configure --with-charset=utf8
+  make
+  make install
+}
+
+
+
+MECAB_IPADIC_INSTALL(){
+  while true; do
+    cat << EOF
++------------------------------------------+
+|  ipadic-neologdをインストールしますか？  |
++------------------------------------------+
+| > [y] yes                                |
+| > [e] 終了する                           |
++------------------------------------------+
+EOF
+    read -p "項目を選択してください >> " KEY
+    case "${KEY}" in  #変数KEYに合った内容でコマンドが実行される
+      "y")
+        echoYellow '決められた設定に沿ってインストールを行いますが、centOSの設定によっては失敗します'
+        #path 登録
+        echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2' >> ~/.bash_profile
+        source ~/.bash_profile
+        sudo ./configure --with-charset=utf8
+
+        # 必要パッケージのインストール
+        sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+        sudo yum install -y mecab mecab-devel mecab-ipadic git make curl xz
+        # sudo yum install -y mecab mecab-devel mecab-ipadic make curl xz
+        # GIT_INSTALL
+
+        git clone git://git.kernel.org/pub/scm/git/git.git
+
+        # 辞書の取得
+        WORKING=/tmp/mecabdic
+        mkdir -p $WORKING
+        cd $WORKING
+        git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+
+        # インストール
+        cd mecab-ipadic-neologd
+        ./bin/install-mecab-ipadic-neologd -n
+
+        echoGreen 'mecab のバージョンは以下となります'
+        mecab --version
+
+        echoGreen 'mecab の動作テスト'
+        echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
+
+        echoYellow '---------------------------------------------------------------------------------'
+        echoYellow 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
+        sudo find / -name libmecab.so*
+        echoYellow ''
+        echoYellow 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+        echoYellow '                                    ------------------------'
+        echoYellow '                                    ここを書き換えてください'
+        echoYellow 'コマンド②：source ~/.bash_profile'
+        echoYellow '---------------------------------------------------------------------------------'
+        echoYellow ''
+        echoYellow 'mecab-ipadic-neologd のインストール先は、以下の通りです'
+        echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
+
+        break ;;
+      "e")  break ;;
+      *) echo "(${LINENO})  >> キーが違います。" ;;
+    esac
+  done
+}
+
+
+
+
+CABOCHA_INSTALL(){
+  echoGreen "(${LINENO})  >> cabochaのインストールを行います"
+  sudo yum install -y git make curl xz gcc-c++ wget
+
+  MECAB_INSTALL
+
+  echoGreen "(${LINENO})  >> CRF++"
+  yum install -y wget
+  wget "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7QVR6VXJ5dWExSTQ" -O CRF++-0.58.tar.gz
+  tar zxfv CRF++-0.58.tar.gz
+  cd CRF++-0.58
+  ./configure
+  make
+  sudo make install
+
+  echoGreen "(${LINENO})  >> cabocha"
+  wget "https://googledrive.com/host/0B4y35FiV1wh7cGRCUUJHVTNJRnM/cabocha-0.69.tar.bz2" -O cabocha-0.69.tar.bz2
+  bzip2 -dc cabocha-0.69.tar.bz2 | tar xvf -
+  cd cabocha-0.69
+  ./configure --with-mecab-config=`which mecab-config` --with-charset=UTF8
+  make
+  make check
+  sudo make install
+
+  echoYellow "(${LINENO})  >> cabochaのバージョンは以下の通りです"
+  cabocha --version
+
+
+
+# rpm -Uvh http://rtilabs.net/files/repos/yum/rh/6/x86_64/rtilabs-release-1-0.noarch.rpm
+# yum install --enablerepo=rtilabs cabocha mecab-ipadic
+# cabocha
+# 魅音ちゃんと亜麻音ちんがチューしていたのをセッちゃんが見ていた。
+
+#                  魅音ちゃんと---D
+#                    亜麻音ちんが-D
+#                チューしていたのを---D
+#       <PERSON>セッ</PERSON>ちゃんが-D
+#                            見ていた。
+# EOS
+
+
 }
 
 ########################################################
