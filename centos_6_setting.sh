@@ -12,31 +12,31 @@ COLOR_OFF=${ESC}${ESCEND}
 
 echoW() {
   # 文字色：Black Bold(灰色)
-  echo -en "${ESC}37${ESCEND}"
+  echo -en "${ESC}37;5${ESCEND}"
   echo "${1}"
   echo -en "${COLOR_OFF}"
 }
 echoG() {
   # 文字色：green
-  echo -en "${ESC}32${ESCEND}"
+  echo -en "${ESC}32;5${ESCEND}"
   echo "${1}" | tee -a ${LOG}
   echo -en "${COLOR_OFF}"
 }
 echoR() {
   # 文字色：Red
-  echo -en "${ESC}31${ESCEND}"
+  echo -en "${ESC}31;5${ESCEND}"
   echo "${1}" | tee -a ${LOG}
   echo -en "${COLOR_OFF}"
 }
 echoY() {
   # 文字色：Yellow
-  echo -en "${ESC}33${ESCEND}"
+  echo -en "${ESC}33;5${ESCEND}"
   echo "${1}" | tee -a ${LOG}
   echo -en "${COLOR_OFF}"
 }
 echoB() {
   # 文字色：Yellow
-  echo -en "${ESC}36${ESCEND}"
+  echo -en "${ESC}36;5${ESCEND}"
   echo "${1}" | tee -a ${LOG}
   echo -en "${COLOR_OFF}"
 }
@@ -219,14 +219,6 @@ FNC_8(){
 }
 
 
-########################################################
-#  [10]
-FNC_10(){
-  echoG "(${LINENO}) >> [10]  cabocha をインストール"
-  RUN_CHECK
-  CABOCHA_INSTALL
-  return 0
-}
 
 
 ########################################################
@@ -1120,7 +1112,7 @@ JUPYTER_INSTALL(){
 }
 
 ################################################################################
-# 日本語解析 関係
+# mecab 関係
 ################################################################################
 #  [9]
 FNC_9(){
@@ -1202,13 +1194,13 @@ MECAB_DIC_MENU(){
   echoW '| > [1] IPA                        |'
   echoW '| > [2] JUMAN                      |'
   echoW '| > [3] NEOLOGD                    |'
-  echoW '| > [?] NAIST                      |'
-  echoW '| > [?] JUMANPP                    |'
-  echoW '| > [?] KYTEA                      |'
-  echoW '| > [?] NEOLOG                     |'
-  echoW '| > [?] SNOW                       |'
-  echoW '| > [?] GPU版                      |'
-  echoW '| > [?] UNIDIC                     |'
+  echoW '| > [?] NAIST                      |(準備中)'
+  echoW '| > [?] JUMANPP                    |(準備中)'
+  echoW '| > [?] KYTEA                      |(準備中)'
+  echoW '| > [?] NEOLOG                     |(準備中)'
+  echoW '| > [?] SNOW                       |(準備中)'
+  echoW '| > [?] GPU版                      |(準備中)'
+  echoW '| > [?] UNIDIC                     |(準備中)'
   echoW '| > [e] end                        |'
   echoW '+----------------------------------+'
 
@@ -1217,11 +1209,11 @@ MECAB_DIC_MENU(){
     '1')
       echoY 'IPA辞書のインストールを行います'
       sudo yum install -y mecab-ipadic
-      # MECAB_DIC_IPADIC_INSTALL
+      # MECAB_DIC_IPADIC_MAKE_INSTALL
       install_dic_path=/usr/lib64/mecab/dic/ipadic
       ;;
     '2')
-      echoY 'NEOLOGD辞書のインストールを行います'
+      echoY 'juman辞書のインストールを行います'
       sudo yum install -y mecab-jumandic
       install_dic_path=/usr/lib64/mecab/dic/jumandic
       ;;
@@ -1230,33 +1222,40 @@ MECAB_DIC_MENU(){
       MECAB_DIC_NEOLOGD_INSTALL
       install_dic_path=/usr/lib64/mecab/dic/mecab-ipadic-neologd
       ;;
-    '4') break;;
-    '5') break;;
-    '6') break;;
-    '7') break;;
-    '8') break;;
     'e')  ;;
     *)
-      echoR "(${LINENO})  >> キーが違います。" ;;
+      echoR "(${LINENO})  >> キーが違います。"
+      ;;
   esac
 
-      echoY '以下のディレクトリにインストールされています'
-      echoB ${install_dic_path}
-      echo ''
+  echoY '以下のディレクトリにインストールされています'
+  echoB ${install_dic_path}
+  echo ''
 
   echoY 'mecab の動作検証を行います'
   echo 'すもももももももものうち' | mecab  -d ${install_dic_path}
-      echo ''
+  echo ''
 
   echoY 'mecab デフォルト辞書は、以下のとおり'
   mecab -D
-      echo ''
+  echo ''
 
   echoY 'また、今存在する辞書は以下のとおり'
-  ll echo `mecab-config --dicdir`
+  ls echo `mecab-config --dicdir`
+
+  echoY '---------------------------------------------------------------------------------'
+  echoY 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
+  sudo find / -name libmecab.so*
+  echoY ''
+  echoY 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+  echoY '                                    ------------------------'
+  echoY '                                    ここを書き換えてください'
+  echoY 'コマンド②：source ~/.bash_profile'
+  echoY '---------------------------------------------------------------------------------'
+  echoY ''
 }
 
-MECAB_DIC_IPADIC_INSTALL(){
+MECAB_DIC_IPADIC_MAKE_INSTALL(){
   echoG "(${LINENO})  >> ipadic(初期)をインストール"
   wget -O mecab-ipadic-2.7.0-20070801.tar.gz "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7MWVlSDBCSXZMTXM"
   tar zxfv mecab-ipadic-2.7.0-20070801.tar.gz
@@ -1286,7 +1285,7 @@ MECAB_DIC_NEOLOGD_INSTALL(){
   # インストール
   cd mecab-ipadic-neologd
   ./bin/install-mecab-ipadic-neologd -n
-
+  cd ~
   # echoG 'mecab のバージョンは以下となります'
   # mecab --version
 
@@ -1307,8 +1306,22 @@ MECAB_DIC_NEOLOGD_INSTALL(){
   # echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
 }
 
-
-
+################################################################################
+# cabocha 関係
+################################################################################
+#  [10]
+FNC_10(){
+  echoY "(${LINENO}) >> [10]  cabocha をインストール"
+  RUN_CHECK
+  if type mecab >/dev/null 2>&1; then
+    CABOCHA_INSTALL
+  else
+    echoY "mecab がインストールされていません。インストールを行います"
+    MECAB_INSTALL
+    CABOCHA_INSTALL
+  fi
+  return 0
+}
 
 CABOCHA_INSTALL(){
   echoG "(${LINENO})  >> cabochaのインストールを行います"
