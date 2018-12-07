@@ -1337,15 +1337,8 @@ CABOCHA_INSTALL(){
   sudo make install
 
   echoG "(${LINENO})  >> cabocha"
-  # wget "https://googledrive.com/host/0B4y35FiV1wh7cGRCUUJHVTNJRnM/cabocha-0.69.tar.bz2" -O cabocha-0.69.tar.bz2
-  # bzip2 -dc cabocha-0.69.tar.bz2 | tar xvf -
-  # cd cabocha-0.69
-  # ./configure --with-mecab-config=`which mecab-config` --with-charset=UTF8
-  # make
-  # make check
-  # sudo make install
-
-  wget
+  # HP記載の物は、ダウンロードできない為、ダウンロードしたものを用意する
+  wget "https://gitlab.ai-q.biz/public-project/shell/raw/develop/cabocha-0.69.tar.bz2" -O cabocha-0.69.tar.bz2
   tar jxvf cabocha-0.69.tar.bz2
   cd cabocha-0.69
   ./configure --with-charset=utf8
@@ -1356,21 +1349,8 @@ CABOCHA_INSTALL(){
   echoY "(${LINENO})  >> cabochaのバージョンは以下の通りです"
   cabocha --version
 
-
-
-# rpm -Uvh http://rtilabs.net/files/repos/yum/rh/6/x86_64/rtilabs-release-1-0.noarch.rpm
-# yum install --enablerepo=rtilabs cabocha mecab-ipadic
-# cabocha
-# 魅音ちゃんと亜麻音ちんがチューしていたのをセッちゃんが見ていた。
-
-#                  魅音ちゃんと---D
-#                    亜麻音ちんが-D
-#                チューしていたのを---D
-#       <PERSON>セッ</PERSON>ちゃんが-D
-#                            見ていた。
-# EOS
-
-
+  cabocha
+  echo '部屋が蒸し風呂のように暑い。'
 }
 
 ########################################################
