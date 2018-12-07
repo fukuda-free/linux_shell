@@ -1327,8 +1327,6 @@ CABOCHA_INSTALL(){
   echoG "(${LINENO})  >> cabochaのインストールを行います"
   sudo yum install -y git make curl xz gcc-c++ wget
 
-  MECAB_INSTALL
-
   echoG "(${LINENO})  >> CRF++"
   yum install -y wget
   wget "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7QVR6VXJ5dWExSTQ" -O CRF++-0.58.tar.gz
@@ -1339,13 +1337,21 @@ CABOCHA_INSTALL(){
   sudo make install
 
   echoG "(${LINENO})  >> cabocha"
-  wget "https://googledrive.com/host/0B4y35FiV1wh7cGRCUUJHVTNJRnM/cabocha-0.69.tar.bz2" -O cabocha-0.69.tar.bz2
-  bzip2 -dc cabocha-0.69.tar.bz2 | tar xvf -
+  # wget "https://googledrive.com/host/0B4y35FiV1wh7cGRCUUJHVTNJRnM/cabocha-0.69.tar.bz2" -O cabocha-0.69.tar.bz2
+  # bzip2 -dc cabocha-0.69.tar.bz2 | tar xvf -
+  # cd cabocha-0.69
+  # ./configure --with-mecab-config=`which mecab-config` --with-charset=UTF8
+  # make
+  # make check
+  # sudo make install
+
+  wget
+  tar jxvf cabocha-0.69.tar.bz2
   cd cabocha-0.69
-  ./configure --with-mecab-config=`which mecab-config` --with-charset=UTF8
+  ./configure --with-charset=utf8
   make
-  make check
   sudo make install
+
 
   echoY "(${LINENO})  >> cabochaのバージョンは以下の通りです"
   cabocha --version
