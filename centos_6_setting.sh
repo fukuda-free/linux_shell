@@ -1349,8 +1349,7 @@ CABOCHA_INSTALL(){
   echoY "(${LINENO})  >> cabochaのバージョンは以下の通りです"
   cabocha --version
 
-  cabocha
-  echo '部屋が蒸し風呂のように暑い。'
+  echo 'すもももももももものうち' | cabocha
 }
 
 ########################################################
