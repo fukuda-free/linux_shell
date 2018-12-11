@@ -1,4 +1,8 @@
 #!/bin/sh
+read -p "AIQ用シェルV2を実行します。エンターを押してください"
+
+yum update -y
+
 echo "(${LINENO})  >> スワップ領域を自動で割り当てます"
 echo "現在のスワップ領域は以下の通りです"
 free
@@ -28,6 +32,7 @@ date
 # cp -rf /usr/share/zoneinfo/Japan /etc/localtime
 sudo ln -sf /usr/share/zoneinfo/Japan /etc/localtime
 date
+read -p "エンターを押してください"
 
 
 echo 'パッケージを最新にします。パスワードを聞かれることがあります。'
@@ -53,12 +58,10 @@ sudo yum -y install yum-cron
 
 
 echo 'gitのバージョンを２に上げます'
+sudo yum -y remove git
 curl -s https://setup.ius.io/ | bash
 yum install -y git2u
 git clone git://git.kernel.org/pub/scm/git/git.git
-
-echo 'git のバージョンは以下となります'
-git --version
 
 
 echo 'rbenvのインストール'
@@ -70,24 +73,16 @@ source /etc/profile.d/rbenv.sh
 git clone git://github.com/sstephenson/ruby-build.git /usr/local/src/rbenv/plugins/ruby-build
 ls /usr/local/src/rbenv/plugins/ruby-build/bin/
 
-echo 'rbenv のバージョンは以下となります'
-rbenv -v
-
 
 echo 'ruby(v2.4.5)のインストール'
 rbenv install -v 2.4.5
 rbenv rehash
 rbenv global 2.4.5
-echo 'ruby のバージョンは以下となります'
-ruby -v
 
 
 echo 'rails のインストール'
 gem install rack
 gem install rails -v  4.2.10
-
-echo 'rails のバージョンは以下となります'
-rails -v
 
 
 echo 'nodeのインストール'
@@ -96,12 +91,23 @@ yum install -y gcc-c++ make
 yum install -y nodejs
 yum -y install npm --enablerepo=epel
 npm install -g yarn
+
+
+echo 'git のバージョンは以下となります'
+git --version
+echo 'rbenv のバージョンは以下となります'
+rbenv -v
+echo 'ruby のバージョンは以下となります'
+ruby -v
+echo 'rails のバージョンは以下となります'
+rails -v
 echo 'node.js のバージョンは以下となります'
 node -v
 echo 'npm のバージョンは以下となります'
 npm -v
 echo 'yarn のバージョンは以下となります'
 yarn -v
+read -p "エンターを押してください"
 
 
 echo 'MySQL 5.7をインストール'
@@ -154,6 +160,7 @@ git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
 # インストール
 cd mecab-ipadic-neologd
 ./bin/install-mecab-ipadic-neologd -n
+# yes
 cd ~
 
 echo 'mecab のバージョンは以下となります'
@@ -166,12 +173,17 @@ read -p "エンターを押してください"
 
 
 
+echo ''
+echo ''
 echo 'AIQの設定'
+echo ''
+echo ''
 yum install -y file-devel
 yum install -y ImageMagick
+mkdir /var/www
 mkdir /var/www/rails
 cd /var/www/rails
-git clone http://gitlab.ai-q.biz/watson/ai_q.git
+git clone http://gitlab.ai-q.biz/ai-q/ai_q.git
 cd ai_q
 mv ai_q_env ..
 
@@ -182,7 +194,11 @@ echo 'if [ -f /var/www/rails/ai_q_env ]; then' >> /root/.bashrc
 echo '  . /var/www/rails/ai_q_env'             >> /root/.bashrc
 echo 'fi'                                      >> /root/.bashrc
 
+echo ''
+echo ''
 echo 'AIQのgem設定'
+echo ''
+echo ''
 bundle install --path vendor/bundle --jobs=4
 # bundle exec gem uninstall okuribito_rails
 # rm -rf config/okuribito.yml
