@@ -11,13 +11,13 @@ SWAPFILENAME=/swap.img
 MEMSIZE=`cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
 
 if [ $MEMSIZE -lt 2097152 ]; then
-SIZE=$((MEMSIZE * 2))k
+  SIZE=$((MEMSIZE * 2))k
 elif [ $MEMSIZE -lt 8388608 ]; then
-SIZE=${MEMSIZE}k
+  SIZE=${MEMSIZE}k
 elif [ $MEMSIZE -lt 67108864 ]; then
-SIZE=$((MEMSIZE / 2))k
+  SIZE=$((MEMSIZE / 2))k
 else
-SIZE=4194304k
+  SIZE=4194304k
 fi
 
 fallocate -l $SIZE $SWAPFILENAME && mkswap $SWAPFILENAME && swapon $SWAPFILENAME
@@ -67,8 +67,8 @@ git clone git://git.kernel.org/pub/scm/git/git.git
 echo 'rbenvのインストール'
 git clone git://github.com/sstephenson/rbenv.git /usr/local/src/rbenv
 echo 'export RBENV_ROOT="/usr/local/src/rbenv"' >> /etc/profile.d/rbenv.sh
-echo 'export PATH="${RBENV_ROOT}/bin:${PATH}"' >> /etc/profile.d/rbenv.sh
-echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh
+echo 'export PATH="${RBENV_ROOT}/bin:${PATH}"'  >> /etc/profile.d/rbenv.sh
+echo 'eval "$(rbenv init -)"'                   >> /etc/profile.d/rbenv.sh
 source /etc/profile.d/rbenv.sh
 git clone git://github.com/sstephenson/ruby-build.git /usr/local/src/rbenv/plugins/ruby-build
 ls /usr/local/src/rbenv/plugins/ruby-build/bin/
@@ -93,6 +93,34 @@ yum -y install npm --enablerepo=epel
 npm install -g yarn
 
 
+echo 'MySQL 5.7をインストール'
+# 古いバージョンを削除
+yum -y remove mysql*
+
+# インストール
+yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
+yum -y install mysql-community-server
+yum -y install mysql-devel
+
+echo ''                              >> /etc/my.cnf
+echo 'skip-grant-tables'             >> /etc/my.cnf
+echo 'character-set-server=utf8mb4'  >> /etc/my.cnf
+echo ''                              >> /etc/my.cnf
+echo ''                              >> /etc/my.cnf
+echo ''                              >> /etc/my.cnf
+echo '[client]'                      >> /etc/my.cnf
+echo 'default-character-set=utf8mb4' >> /etc/my.cnf
+echo ''                              >> /etc/my.cnf
+echo ''                              >> /etc/my.cnf
+service mysqld restart
+
+DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
+echo "初期パスワードは、「${DB_PASSWORD}」です。"
+echo "このパスワードは、場合によっては必要となりますので、"
+echo "メモしておくことをお勧めします"
+echo ""
+
+
 echo 'git のバージョンは以下となります'
 git --version
 echo 'rbenv のバージョンは以下となります'
@@ -107,37 +135,5 @@ echo 'npm のバージョンは以下となります'
 npm -v
 echo 'yarn のバージョンは以下となります'
 yarn -v
-read -p "エンターを押してください"
-
-
-echo 'MySQL 5.7をインストール'
-# 古いバージョンを削除
-yum -y remove mysql*
-
-# インストール
-yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
-yum -y install mysql-community-server
-yum -y install mysql-devel
-
-echo '' >> /etc/my.cnf
-echo 'skip-grant-tables' >> /etc/my.cnf
-echo 'character-set-server=utf8mb4' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-echo '[client]' >> /etc/my.cnf
-echo 'default-character-set=utf8mb4' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-service mysqld restart
-# バージョン確認
+echo 'MYSQL のバージョンは以下となります'
 mysqld --version
-
-DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
-echo "初期パスワードは、「${DB_PASSWORD}」です。"
-echo "このパスワードは、場合によっては必要となりますので、"
-echo "メモしておくことをお勧めします"
-echo ""
-read -p "エンターを押してください"
-
-
