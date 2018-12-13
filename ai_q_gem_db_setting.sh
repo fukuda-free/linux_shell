@@ -63,8 +63,8 @@ echo '  #charset koi8-r;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo '  access_log /var/log/nginx/ai_q.log;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo ''  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo '  ssl on;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
-echo '  ssl_certificate ssl/ai-q.biz.pem;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
-echo '  ssl_certificate_key ssl/ai-q.biz20161207-023732.key;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
+echo '  ssl_certificate ssl_cert/ai-q.biz.pem;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
+echo '  ssl_certificate_key ssl_cert/ai-q.biz.key;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo ''  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo '  # IPアドレスをアクセス元にする'  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo '  proxy_set_header Host               $host;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
@@ -151,6 +151,9 @@ echo '  location = /50x.html {'  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo '    root   /usr/share/nginx/html;'  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo '  }'  >> /etc/nginx/conf.d/ssl_ai_q.conf
 echo '}'  >> /etc/nginx/conf.d/ssl_ai_q.conf
+cd /etc/nginx
+git clone https://gitlab.ai-q.biz/watson/ssl_cert.git
+
 
 
 echo '---------------------------------------------------------------------------------'
