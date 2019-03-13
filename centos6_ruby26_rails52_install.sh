@@ -7,30 +7,6 @@
 # 更新日  2018/03/20
 ########################################################
 
-echoG "開発用パッケージをインストールします"
-DEVELOP_PACKAGE_INSTALL
-
-echoG "時間軸を日本にします"
-sudo ln -sf /usr/share/zoneinfo/Japan /etc/localtime
-date
-sudo yum -y install ntp
-sudo ntpdate ntp.nict.jp
-
-echoG "rbenvのインストール"
-RBENV_INSTALL
-
-echoG 'ruby 2.6.1 install'
-rbenv install -v 2.6.1
-rbenv rehash
-rbenv global 2.6.1
-
-echoG 'ruby のバージョンは以下となります'
-ruby -v
-
-echoG 'rails 5.2.2 install'
-RAILS_INSTALL 5.2.2
-
-
 ########################################################
 # メソッド群（TODO：基本弄らない）
 ########################################################
@@ -120,3 +96,27 @@ echoB() {
   echo -en "${COLOR_OFF}"
 }
 ########################################################
+
+echoG "開発用パッケージをインストールします"
+DEVELOP_PACKAGE_INSTALL
+
+echoG "時間軸を日本にします"
+sudo ln -sf /usr/share/zoneinfo/Japan /etc/localtime
+date
+sudo yum -y install ntp
+sudo ntpdate ntp.nict.jp
+
+echoG "rbenvのインストール"
+RBENV_INSTALL
+
+echoG 'ruby 2.6.1 install'
+rbenv install -v 2.6.1
+rbenv rehash
+rbenv global 2.6.1
+
+echoG 'ruby のバージョンは以下となります'
+ruby -v
+
+echoG 'rails 5.2.2 install'
+RAILS_INSTALL 5.2.2
+
