@@ -14,9 +14,6 @@
 RAILS_INSTALL(){
   gem install rack
   gem install rails -v  $1
-
-  echoG 'rails のバージョンは以下となります'
-  rails -v
 }
 
 # rbenvのインストール
@@ -106,6 +103,14 @@ date
 sudo yum -y install ntp
 sudo ntpdate ntp.nict.jp
 
+echoG 'git 2 install'
+curl -s https://setup.ius.io/ | bash
+yum install -y git2u
+git clone git://git.kernel.org/pub/scm/git/git.git
+
+echoY 'git のバージョンは以下となります'
+git --version
+
 echoG "rbenvのインストール"
 RBENV_INSTALL
 
@@ -114,9 +119,23 @@ rbenv install -v 2.6.1
 rbenv rehash
 rbenv global 2.6.1
 
-echoG 'ruby のバージョンは以下となります'
-ruby -v
-
 echoG 'rails 5.2.2 install'
 RAILS_INSTALL 5.2.2
 
+echoG 'node 9 install'
+curl -sL https://rpm.nodesource.com/setup_9.x | bash -
+yum install -y gcc-c++ make
+yum install -y nodejs
+yum -y install npm --enablerepo=epel
+npm install -g yarn
+
+echoY 'ruby のバージョンは以下となります'
+ruby -v
+echoY 'rails のバージョンは以下となります'
+rails -v
+echoY 'node.js のバージョンは以下となります'
+node -v
+echoY 'npm のバージョンは以下となります'
+npm -v
+echoY 'yarn のバージョンは以下となります'
+yarn -v
