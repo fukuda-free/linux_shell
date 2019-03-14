@@ -104,14 +104,12 @@ sudo yum -y install ntp
 sudo ntpdate ntp.nict.jp
 
 echoG 'git 2 install'
+sudo yum -y remove git
 curl -s https://setup.ius.io/ | bash
 yum install -y git2u
 git clone git://git.kernel.org/pub/scm/git/git.git
 
-echoY 'git のバージョンは以下となります'
-git --version
-
-echoG "rbenvのインストール"
+echoG "rbenv install"
 RBENV_INSTALL
 
 echoG 'ruby 2.6.1 install'
@@ -129,6 +127,9 @@ yum install -y nodejs
 yum -y install npm --enablerepo=epel
 npm install -g yarn
 
+
+echoY 'git のバージョンは以下となります'
+git --version
 echoY 'ruby のバージョンは以下となります'
 ruby -v
 echoY 'rails のバージョンは以下となります'
