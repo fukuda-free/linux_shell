@@ -49,33 +49,31 @@ echoB() {
 ########################################################
 
 case "${1}" in
-  "2.4" ) 
-    node_version='2.4.6';;
-  "2.5" ) 
-    node_version='2.4.6';;
-  "2.6" ) 
-    node_version='2.4.6';;
+  "8" ) 
+    node_version='8.16.0';;
+  "9" ) 
+    node_version='9.11.2';;
+  "10" ) 
+    node_version='10.15.3';;
+  "11" ) 
+    node_version='11.14.0';;
+  "12" ) 
+    node_version='12.0.0';;
   * ) 
-    node_version='2.4.6';;
+    node_version='12.0.0';;
 esac
 
-echoG "node ${node_version} install"
-curl -sL https://rpm.nodesource.com/setup_9.x | bash -
-yum install -y gcc-c++ make
-yum install -y nodejs
-yum -y install npm --enablerepo=epel
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
+nvm install ${node_version}
+nvm use ${node_version}
+yum install -y npm --enablerepo=epel
 npm install -g yarn
 
 
-echoY 'git のバージョンは以下となります'
-git --version
-echoY 'ruby のバージョンは以下となります'
-ruby -v
-echoY 'rails のバージョンは以下となります'
-rails -v
 echoY 'node.js のバージョンは以下となります'
 node -v
 echoY 'npm のバージョンは以下となります'
 npm -v
 echoY 'yarn のバージョンは以下となります'
 yarn -v
+

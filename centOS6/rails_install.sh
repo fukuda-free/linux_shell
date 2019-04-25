@@ -54,14 +54,14 @@ echoB() {
 ########################################################
 
 case "${1}" in
-  "2.4" ) 
-    rails_version='2.4.6';;
-  "2.5" ) 
-    rails_version='2.4.6';;
-  "2.6" ) 
-    rails_version='2.4.6';;
+  "4.2" ) 
+    rails_version='4.2.11.1';;
+  "5.1" ) 
+    rails_version='5.1.7';;
+  "5.2" ) 
+    rails_version='5.2.3';;
   * ) 
-    rails_version='2.4.6';;
+    rails_version='5.2.3';;
 esac
 
 echoG "rails ${rails_version} install"
