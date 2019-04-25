@@ -63,9 +63,11 @@ case "${1}" in
     node_version='12.0.0';;
 esac
 
-curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
-nvm install ${node_version}
-nvm use ${node_version}
+# curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
+curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+source ~/.bashrc
+nvm install v${node_version}
+nvm use v${node_version}
 yum install -y npm --enablerepo=epel
 npm install -g yarn
 
@@ -76,4 +78,5 @@ echoY 'npm のバージョンは以下となります'
 npm -v
 echoY 'yarn のバージョンは以下となります'
 yarn -v
+
 
