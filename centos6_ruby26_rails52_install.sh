@@ -54,7 +54,7 @@ DEVELOP_PACKAGE_INSTALL(){
   sudo yum install -y libxslt-devel
   sudo yum install -y libyaml-devel
   sudo yum install -y make
-  sudo yum -y install yum-cron
+  sudo yum install -y yum-cron
 }
 
 # echoの装飾用
