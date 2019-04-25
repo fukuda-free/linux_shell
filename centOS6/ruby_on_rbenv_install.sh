@@ -67,11 +67,11 @@ case "${1}" in
   "2.4" ) 
     ruby_version='2.4.6';;
   "2.5" ) 
-    ruby_version='2.4.6';;
+    ruby_version='2.5.5';;
   "2.6" ) 
-    ruby_version='2.4.6';;
+    ruby_version='2.6.3';;
   * ) 
-    ruby_version='2.4.6';;
+    ruby_version='2.5.5';;
 esac
 
 echoG "ruby ${ruby_version} install"
