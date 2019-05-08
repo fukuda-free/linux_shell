@@ -1,8 +1,6 @@
 #!/bin/sh
 ########################################################
-# 環境構築用シェル
-# 作成者  fukuda
-# 更新日  2019/05/07
+# 開発用パッケージ 用シェル
 ########################################################
 
 ########################################################
@@ -26,6 +24,9 @@ sudo yum install -y libxslt-devel
 sudo yum install -y libyaml-devel
 sudo yum install -y make
 sudo yum install -y yum-cron
+sudo yum install -y curl
+sudo yum install -y wget
+sudo yum install -y git
 
 echo "時間軸を日本にします"
 sudo ln -sf /usr/share/zoneinfo/Japan /etc/localtime

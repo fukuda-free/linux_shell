@@ -1,49 +1,7 @@
 #!/bin/sh
 ########################################################
-# 環境構築用シェル
-# MySQL 5.7
-# 作成者  fukuda
-# 更新日  2019/03/13
+# MySQL 5.7 用シェル
 ########################################################
-
-########################################################
-# メソッド群（TODO：基本弄らない）
-########################################################
-# echoの装飾用
-ESC="\e["
-ESCEND=m
-COLOR_OFF=${ESC}${ESCEND}
-
-echoW() {
-  # 文字色：Black Bold(灰色)
-  echo -en "${ESC}37;5${ESCEND}"
-  echo "${1}"
-  echo -en "${COLOR_OFF}"
-}
-echoG() {
-  # 文字色：green
-  echo -en "${ESC}32;5${ESCEND}"
-  echo "${1}" | tee -a ${LOG}
-  echo -en "${COLOR_OFF}"
-}
-echoR() {
-  # 文字色：Red
-  echo -en "${ESC}31;5${ESCEND}"
-  echo "${1}" | tee -a ${LOG}
-  echo -en "${COLOR_OFF}"
-}
-echoY() {
-  # 文字色：Yellow
-  echo -en "${ESC}33;5${ESCEND}"
-  echo "${1}" | tee -a ${LOG}
-  echo -en "${COLOR_OFF}"
-}
-echoB() {
-  # 文字色：Yellow
-  echo -en "${ESC}36;5${ESCEND}"
-  echo "${1}" | tee -a ${LOG}
-  echo -en "${COLOR_OFF}"
-}
 
 ########################################################
 
@@ -81,7 +39,8 @@ echoR "このパスワードは、場合によっては必要となりますの�
 echoR "メモしておくことをお勧めします"
 echo ""
 
-chkconfig mysqld on
+systemctl enable mysqld.service
+systemctl start mysqld.service
 
 echoG "現在のMYSQLのバージョンは、以下の通りです"
 mysqld --version
