@@ -11,7 +11,7 @@ echo "rbenv install"
 echo ""
 
 # GIT_INSTALL(予備)
-yum install -y git
+yum install -y git bzip2 gcc openssl-devel readline-devel zlib-devel
 
 git clone git://github.com/sstephenson/rbenv.git /usr/local/src/rbenv
 echo 'export RBENV_ROOT="/usr/local/src/rbenv"' >> /etc/profile.d/rbenv.sh
