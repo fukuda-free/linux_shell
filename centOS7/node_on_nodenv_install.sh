@@ -1,6 +1,8 @@
 #!/bin/sh
 ########################################################
 # node シェル
+# 作成者  fukuda
+# 更新日  2018/05/07
 ########################################################
 
 ########################################################
@@ -19,11 +21,21 @@ case "${1}" in
     node_version='12.0.0';;
 esac
 
-# curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
-curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
-source ~/.bashrc
-nvm install v${node_version}
-nvm use v${node_version}
+echo 'nodenv install'
+# 対象物ダウンロード
+git clone https://github.com/nodenv/nodenv.git ~/.nodenv
+git clone https://github.com/nodenv/node-build.git ~/.nodenv/plugins/node-build
+# パスを通す
+echo 'export PATH="HOME/.nodenv/bin:HOME/.nodenv/bin:PATH"' >> ~/.bash_profile
+echo 'eval "$(nodenv init -)"' >> ~/.bash_profile
+source ~/.bash_profile
+# バージョン確認
+nodenv -v
+
+echo "${node_version} install"
+nodenv install ${node_version}
+nodenv global ${node_version}
+
 yum install -y npm --enablerepo=epel
 npm install -g yarn
 
@@ -36,3 +48,5 @@ echo ''
 echo 'yarn のバージョンは以下となります'
 yarn -v
 echo ''
+
+

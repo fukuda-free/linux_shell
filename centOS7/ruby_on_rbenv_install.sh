@@ -1,12 +1,14 @@
 #!/bin/sh
 ########################################################
-# ruby シェル
+# ruby インストール
 # 作成者  fukuda
+# 更新日  2018/05/07
 ########################################################
 
 ########################################################
 # rbenvのインストール
 echo "rbenv install"
+echo ""
 
 # GIT_INSTALL(予備)
 yum install -y git bzip2 gcc openssl-devel readline-devel zlib-devel
@@ -21,7 +23,7 @@ ls /usr/local/src/rbenv/plugins/ruby-build/bin/
 
 echo 'rbenv のバージョンは以下となります'
 rbenv -v
-echo ''
+echo ""
 
 case "${1}" in
   "2.4" )
@@ -38,7 +40,8 @@ echo "ruby ${ruby_version} install"
 rbenv install -v ${ruby_version}
 rbenv rehash
 rbenv global ${ruby_version}
+echo ""
 
 echo 'ruby のバージョンは以下となります'
 ruby -v
-echo ''
+echo ""
