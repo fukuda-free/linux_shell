@@ -95,11 +95,10 @@ sed -i -e '/^baseurl/d' /etc/yum.repos.d/groonga.repo
 echo 'baseurl=http://packages.groonga.org/centos/7/$basearch/' >> /etc/yum.repos.d/groonga.repo
 
 # yum makecache
-install "mecab" mecab mecab-devel mecab-ipadic
+sudo yum -y install "mecab" mecab mecab-devel mecab-ipadic
 git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
 mecab-ipadic-neologd/bin/install-mecab-ipadic-neologd -y -n -a
 sed -i -e '/^dicdir/c\dicdir = /usr/lib64/mecab/dic/mecab-ipadic-neologd' /etc/mecabrc
-
 
 echo 'mecab のバージョンは以下となります'
 mecab --version

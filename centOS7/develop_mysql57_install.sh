@@ -6,12 +6,12 @@
 ########################################################
 
 # 古いバージョンを削除
-yum -y remove mysql*
+sudo yum -y remove mysql*
+sudo yum -y remove mariadb-libs
 
 # インストール
-yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
-yum -y install mysql-community-server
-yum -y install mysql-devel
+sudo yum -y localinstall https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+sudo yum -y install mysql-community-server
 
 # バージョン確認
 mysqld --version
@@ -34,13 +34,13 @@ echo '' >> /etc/my.cnf
 service mysqld restart
 
 DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
-echoR "初期パスワードは、「${DB_PASSWORD}」です。"
-echoR "このパスワードは、場合によっては必要となりますので、"
-echoR "メモしておくことをお勧めします"
+echo "初期パスワードは、「${DB_PASSWORD}」です。"
+echo "このパスワードは、場合によっては必要となりますので、"
+echo "メモしておくことをお勧めします"
 echo ""
 
-systemctl enable mysqld.service
-systemctl start mysqld.service
+sudo systemctl start mysqld.service
+sudo systemctl enable mysqld.service
 
-echoG "現在のMYSQLのバージョンは、以下の通りです"
+echo "現在のMYSQLのバージョンは、以下の通りです"
 mysqld --version
