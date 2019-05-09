@@ -30,7 +30,13 @@ case "${1}" in
   "2.6" )
     ruby_version='2.6.3';;
   * )
-    ruby_version='2.5.5';;
+    if [ -n "${1}"] ; then
+      # 空で無ければ、それを利用
+      ruby_version=${1};;
+    else
+      # 空なら、2.5.5を利用
+      ruby_version='2.5.5';;
+    fi
 esac
 
 echo "ruby ${ruby_version} install"

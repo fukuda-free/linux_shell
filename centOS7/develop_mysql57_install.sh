@@ -10,8 +10,15 @@ sudo yum -y remove mysql*
 sudo yum -y remove mariadb-libs
 
 # インストール
-sudo yum -y localinstall https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
-sudo yum -y install mysql-community-server
+# sudo yum -y localinstall https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+# sudo yum -y install mysql-community-server
+yum install -y https://dev.mysql.com/get/mysql80-community-release-el7-2.noarch.rpm >/dev/null 2>&1
+yum-config-manager --disable mysql80-community
+yum-config-manager --enable mysql57-community
+yum install -y "mysql" mysql-community-server mysql-community-devel
+
+    systemctl enable mysqld.service
+    systemctl start mysqld.service
 
 # バージョン確認
 mysqld --version
@@ -44,3 +51,4 @@ sudo systemctl enable mysqld.service
 
 echo "現在のMYSQLのバージョンは、以下の通りです"
 mysqld --version
+
