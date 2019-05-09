@@ -31,12 +31,12 @@ case "${1}" in
   "2.6" )
     ruby_version='2.6.3';;
   * )
-    if [ -n "${1}"] ; then
+    if [ -n "${1}" ]; then
       # 空で無ければ、それを利用
-      ruby_version=${1};;
+      ruby_version=${1}
     else
       # 空なら、2.5.5を利用
-      ruby_version='2.5.5';;
+      ruby_version='2.5.5'
     fi
 esac
 
@@ -46,6 +46,7 @@ rbenv rehash
 rbenv global ${ruby_version}
 echo ""
 
+echo "--------------------------------------"
 echo 'ruby のバージョンは以下となります'
 ruby -v
-echo ""
+echo "--------------------------------------"

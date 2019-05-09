@@ -40,5 +40,7 @@ curl -s https://setup.ius.io/ | bash
 yum install -y git2u
 git clone git://git.kernel.org/pub/scm/git/git.git
 
-echoY 'git のバージョンは以下となります'
+echo 'git のバージョンは以下となります'
 git --version
+echo ''
+echo ''

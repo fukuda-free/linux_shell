@@ -16,7 +16,13 @@ case "${1}" in
   "12" )
     node_version='12.0.0';;
   * )
-    node_version='12.0.0';;
+    if [ -n "${1}" ]; then
+      # 空で無ければ、それを利用
+      node_version=${1}
+    else
+      # 空なら、2.5.5を利用
+      node_version='12.0.0'
+    fi
 esac
 
 # curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
