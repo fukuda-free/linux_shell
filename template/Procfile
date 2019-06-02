@@ -1,0 +1,2 @@
+web: bundle exec rails server -p 80 -b 0.0.0.0  # rails 起動($PORTは5000がデフォ)
+guard: bundle exec guard -i
