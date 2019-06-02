@@ -22,13 +22,15 @@ end
 
 Vagrant.configure('2') do |config|
   # インストールするOSを設定
-  config.vm.box = 'bento/centos-6.10'
+  config.vm.box = 'centos/7'
 
   # IPアドレス割り当ての自動化(DHCP)
-  config.vm.network :private_network, id: 'default-network', type: 'dhcp', ip: '192.168.34.0'
+  config.vm.network :private_network, ip: '192.168.33.10'
 
   # ポートフォワードの自動化
-  config.vm.network :forwarded_port, guest: 22, host: 2222, id: 'ssh', auto_correct: true
+  # config.vm.network :forwarded_port, guest: 22, host: 22, id: 'ssh', auto_correct: true
+  # config.vm.network :forwarded_port, guest: 80, host: 80
+  # config.vm.network :forwarded_port, guest: 443, host: 443
 
   # ブリッジアダプター（DHCPによってIPアドレスを割当）=>他からも見れるように
   config.vm.network :public_network
@@ -39,7 +41,7 @@ Vagrant.configure('2') do |config|
   config.vm.provider 'virtualbox' do |vb|
     vb.gui = false
     # vb.name = 'test_vm'
-    vb.cpus = 2
+    vb.cpus = 1
     vb.memory = 2048
     vb.customize [
       'modifyvm', :id,
@@ -55,77 +57,60 @@ Vagrant.configure('2') do |config|
   end
 
   # 共有フォルダ
-  config.vm.synced_folder "./rails", "/var/www/rails", mount_options: ['dmode=777','fmode=755']
-
-  # config.vm.synced_folder "./rails", "/var/www/rails", type: "nfs", nfs_export: true, nfs_version: 3
-  # config.vm.synced_folder ".", "/vagrant", mount_options: ['dmode=777','fmode=755']
-  # config.vm.synced_folder "D:\\vagrant\\aiq", "/vagrant", mount_options: ['dmode=777','fmode=755']
-  # config.vm.synced_folder "./", "/vagrant", owner: "root", group: "root"
-  # config.vm.synced_folder 'C:\\Users\\KITM7581\\Downloads', '/mnt/Downloads',
-  #                         type: 'virtualbox',
-  #                         mount_options: ['dmode=775,fmode=644']
-
-  # その１
-  # ローカルマシンの Vagrantfile があるディレクトリ内の data フォルダと
-  # 仮想マシン内の /vagrant_data ディレクトリを共有する
-  # config.vm.synced_folder {host_path}, {guest_path}, option...
-  # config.vm.synced_folder "./data", "/vagrant_data"
-  # Vagrantfile上 Windows で絶対パスで指定するときバックスラッシュはエスケープする必要がある
-  # config.vm.synced_folder "C:\\Vagrant\\centos7\\public_html", "/vagrant_data", owner: "vagrant", group: "www", type: "virtualbox"
-  #
-  # その２（NFS）
-  # Windows で NFS の共有をする
-  # Windows の場合、共有フォルダのタイプで NFS が指定できません……が、
-  # vagrant-winnfsd というプラグインを追加することで対応できます。
-  # 共有フォルダのタイプを nfs にする場合、owner と group は指定できないので注意
-  # 次のようにエラーが出る
-  # * Shared folders that have NFS enabled do not support owner/group
-  # config.vm.synced_folder "./data/mysql", "/var/lib/mysql", type: "nfs", nfs_export: true, nfs_version: 3
-  #
-  # その３（rsync）
-  #  config.vm.synced_folder "./data", "/vagrant_data", type: "rsync", rsync__exclude: [".git/"]
-  #
-  # その４（smb）
-  # Windows で利用する場合は PowerShell v3 以上が必須
-  # config.vm.synced_folder "./data", "/vagrant_data", type: "smb", smb_host: "192.168.0.15", smb_password: hogehoge, smb_username: "fugafuga"
-
+  config.vm.synced_folder "./rails", "/var/www/rails",
+      create: true,
+      disabled: false ,
+      mount_options: ['dmode=777','fmode=755']
   config.winnfsd.uid = 1000
   config.winnfsd.gid = 1000
 
   # shell
   config.vm.provision 'shell', inline: <<-SHELL
+    # vim install
+    sudo yum -y install vim wget "ImageMagick" ImageMagick ImageMagick-devel
+
+    # timezoneをAsia/Tokyoに変更
+    sudo timedatectl set-timezone Asia/Tokyo
+
     # 開発パッケージ
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS6/develop_package_install.sh
+    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_package_install.sh
     . develop_package_install.sh
 
-    # mysql
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS6/develop_mysql57_install.sh
-    . develop_mysql57_install.sh
+    # 開発環境として利用する場合、ファイアウォールを無効
+    sudo systemctl stop firewalld
+    sudo systemctl disable firewalld
 
-    # ruby install(2.4 or 2.5 or 2.6)
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS6/ruby_on_rbenv_install.sh
-    . ruby_on_rbenv_install.sh 2.4
+    # yum管理の各種ソフトウェアをアップデート
+    yum -y update
 
-    # rails insltall(4.2 or 5.1 or 5.2)
-    # wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS6/rails_install.sh
-    # . rails_install.sh 4.2
+    # 鍵なしでSSHできるように
+    sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+    service ssh restart
+    systemctl status sshd.service
+    sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
-    # node install(8 or 9 or 10 or 11 or 12)
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS6/node_on_nvm_install.sh
-    . node_on_nvm_install.sh 10
+    # mysql install(57 or 80)
+    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_mysql_install.sh
+    . develop_mysql_install.sh 80
 
     # mecab
-    # https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS6/mecab_on_ipadic_neologd_install.sh
-    # . mecab_on_ipadic_neologd_install.sh
+    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/mecab_on_ipadic_neologd_install.sh
+    . mecab_on_ipadic_neologd_install.sh
 
+    # ruby install(2.4 or 2.5 or 2.6 or 自由)
+    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/ruby_on_rbenv_install.sh
+    . ruby_on_rbenv_install.sh 2.5.5
+
+    # node install(8 or 9 or 10 or 11 or 12)
+    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/node_on_nvm_install.sh
+    . node_on_nvm_install.sh 10
+
+    echo ''
     echo 'git のバージョンは以下となります'
     git --version
     echo ''
     echo 'ruby のバージョンは以下となります'
     ruby -v
-    echo ''
-    echo 'rails のバージョンは以下となります'
-    rails -v
     echo ''
     echo 'node.js のバージョンは以下となります'
     node -v
@@ -136,5 +121,7 @@ Vagrant.configure('2') do |config|
     echo 'yarn のバージョンは以下となります'
     yarn -v
     echo ''
+
+    reboot
   SHELL
 end
