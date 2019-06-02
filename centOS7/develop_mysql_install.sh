@@ -34,24 +34,28 @@ case "${mysql_version}" in
     yum install -y mysql-community-devel
     yum install -y mysql-community-server
 
-    echo '' >> /etc/my.cnf
-    echo '# ログのタイムゾーンの設定（初期値：UTC）' >> /etc/my.cnf
-    echo 'log_timestamps=SYSTEM' >> /etc/my.cnf
-    echo '' >> /etc/my.cnf
-    echo '# クライアントの文字セットの設定を無視する' >> /etc/my.cnf
-    echo 'skip-character-set-client-handshake' >> /etc/my.cnf
-    echo '' >> /etc/my.cnf
-    echo '# デフォルトの文字セット（初期値：utf8mb4 >= 8.0.1）' >> /etc/my.cnf
-    echo 'character-set-server=utf8mb4' >> /etc/my.cnf
-    echo '' >> /etc/my.cnf
-    echo '# タイムスタンプのデフォルト値に関する設定（初期値：ON >= 8.0.2）' >> /etc/my.cnf
-    echo 'explicit_defaults_for_timestamp=ON' >> /etc/my.cnf
-    echo '' >> /etc/my.cnf
-    echo '# 権限スキップの設定' >> /etc/my.cnf
-    echo 'skip-grant-tables' >> /etc/my.cnf
+    echo ''                                                        >> /etc/my.cnf
+    echo '# デフォルトの文字セット（初期値：utf8mb4 >= 8.0.1）'    >> /etc/my.cnf
+    echo '# character-set-server=utf8mb4'                          >> /etc/my.cnf
+    echo ''                                                        >> /etc/my.cnf
+    echo '# 権限スキップの設定'                                    >> /etc/my.cnf
+    echo 'skip-grant-tables'                                       >> /etc/my.cnf
+    echo ''                                                        >> /etc/my.cnf
+    echo '# 旧 MySQL (5.7) との互換性確保 => 以前の認証方式に変更' >> /etc/my.cnf
+    echo 'default_authentication_plugin=mysql_native_password'     >> /etc/my.cnf
+    echo 'explicit_defaults_for_timestamp = true'                  >> /etc/my.cnf
+    echo 'max_connections = 10000'                                 >> /etc/my.cnf
+    echo 'max_connect_errors = 10'                                 >> /etc/my.cnf
 
     systemctl start mysqld
     systemctl enable mysqld
     systemctl restart mysqld
 esac
 
+
+
+
+echo '-------------------------------------------'
+echo '現在のMYSQLのバージョンは、以下の通りです'
+mysqld --version
+echo '-------------------------------------------'
