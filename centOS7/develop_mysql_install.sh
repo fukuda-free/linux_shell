@@ -30,7 +30,7 @@ echo "ruby ${mysql_version} install"
 case "${mysql_version}" in
   "5.7" )
     # mysql_version='5.7';;
-    yum localinstall http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
+    yum localinstall -y http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
     yum info mysql-community-server
     yum -y install mysql-community-server
     echo ''                                                        >> /etc/my.cnf
