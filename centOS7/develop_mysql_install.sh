@@ -30,9 +30,9 @@ echo "ruby ${mysql_version} install"
 case "${mysql_version}" in
   "5.7" )
     # mysql_version='5.7';;
-    yum localinstall -y http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
-    yum info mysql-community-server
-    yum -y install mysql-community-server
+    sudo yum localinstall -y http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
+    sudo yum info mysql-community-server
+    sudo yum -y install mysql-community-server
     echo ''                                                        >> /etc/my.cnf
     echo '# デフォルトの文字セット（初期値：utf8mb4 >= 8.0.1）'    >> /etc/my.cnf
     echo '# character-set-server=utf8mb4'                          >> /etc/my.cnf
@@ -43,8 +43,8 @@ case "${mysql_version}" in
 
   "8" )
     rpm -ivh https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm
-    yum install -y mysql-community-devel
-    yum install -y mysql-community-server
+    sudo yum install -y mysql-community-devel
+    sudo yum install -y mysql-community-server
 
     echo ''                                                        >> /etc/my.cnf
     echo '# デフォルトの文字セット（初期値：utf8mb4 >= 8.0.1）'    >> /etc/my.cnf
