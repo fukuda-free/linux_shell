@@ -89,9 +89,9 @@ Vagrant.configure('2') do |config|
     systemctl status sshd.service
     sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
-    # mysql install(57 or 80)
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_mysql_install.sh
-    . develop_mysql_install.sh 80
+    # # mysql install(57 or 80)
+    # wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_mysql_install.sh
+    # . develop_mysql_install.sh 57
 
     # mecab
     wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/mecab_on_ipadic_neologd_install.sh
@@ -105,10 +105,13 @@ Vagrant.configure('2') do |config|
     wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/node_on_nvm_install.sh
     . node_on_nvm_install.sh 10
 
-    echo ''
+    echo '----------------------------------------------------'
     echo 'git のバージョンは以下となります'
     git --version
     echo ''
+    # echo '現在のMYSQLのバージョンは、以下の通りです'
+    # mysqld --version
+    # echo ''
     echo 'ruby のバージョンは以下となります'
     ruby -v
     echo ''
@@ -120,7 +123,7 @@ Vagrant.configure('2') do |config|
     echo ''
     echo 'yarn のバージョンは以下となります'
     yarn -v
-    echo ''
+    echo '----------------------------------------------------'
 
     reboot
   SHELL
