@@ -16,19 +16,31 @@ case "${1}" in
   "80" )
     mysql_version='8';;
   * )
-    if [ -n "${1}" ]; then
-      # 空で無ければ、それを利用
-      mysql_version=${1}
-    else
-      # 空なら、2.5.5を利用
-      mysql_version='8'
-    fi
+    # if [ -n "${1}" ]; then
+    #   # 空で無ければ、それを利用
+    #   mysql_version=${1}
+    # else
+    #   # 空なら、2.5.5を利用
+    #   mysql_version='8'
+    # fi
+    mysql_version='5.7';;
 esac
 
 echo "ruby ${mysql_version} install"
 case "${mysql_version}" in
   "5.7" )
-    mysql_version='5.7';;
+    # mysql_version='5.7';;
+    yum localinstall http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
+    yum info mysql-community-server
+    yum -y install mysql-community-server
+    echo ''                                                        >> /etc/my.cnf
+    echo '# デフォルトの文字セット（初期値：utf8mb4 >= 8.0.1）'    >> /etc/my.cnf
+    echo '# character-set-server=utf8mb4'                          >> /etc/my.cnf
+    echo ''                                                        >> /etc/my.cnf
+    echo '# 権限スキップの設定'                                    >> /etc/my.cnf
+    echo 'skip-grant-tables'                                       >> /etc/my.cnf
+    echo ''                                                        >> /etc/my.cnf
+
   "8" )
     rpm -ivh https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm
     yum install -y mysql-community-devel
@@ -47,12 +59,12 @@ case "${mysql_version}" in
     echo 'max_connections = 10000'                                 >> /etc/my.cnf
     echo 'max_connect_errors = 10'                                 >> /etc/my.cnf
 
-    systemctl start mysqld
-    systemctl enable mysqld
-    systemctl restart mysqld
 esac
 
 
+systemctl start mysqld
+systemctl enable mysqld
+systemctl restart mysqld
 
 
 echo '-------------------------------------------'
