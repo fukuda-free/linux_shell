@@ -24,9 +24,9 @@ esac
 echo "msyql ${mysql_version} install"
 case "${mysql_version}" in
   "57" )
-    sudo yum localinstall -y http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
+    sudo yum localinstall -y http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm;;
   "80" )
-    rpm -ivh https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm
+    rpm -ivh https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm;;
 esac
 
 # インストール
@@ -44,6 +44,7 @@ case "${mysql_version}" in
     echo '# 権限スキップの設定'                                    >> /etc/my.cnf
     echo 'skip-grant-tables'                                       >> /etc/my.cnf
     echo ''                                                        >> /etc/my.cnf
+    ;;
   "80" )
     echo ''                                                        >> /etc/my.cnf
     echo '# デフォルトの文字セット（初期値：utf8mb4 >= 8.0.1）'    >> /etc/my.cnf
@@ -58,6 +59,7 @@ case "${mysql_version}" in
     echo 'max_connections = 10000'                                 >> /etc/my.cnf
     echo 'max_connect_errors = 10'                                 >> /etc/my.cnf
     echo ''                                                        >> /etc/my.cnf
+    ;;
 esac
 
 
