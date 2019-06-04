@@ -31,12 +31,16 @@ case "${mysql_version}" in
   "57" )
     # mysql_version='5.7';;
     sudo yum localinstall -y http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
-    sudo yum info mysql-community-server
-    sudo yum -y install mysql-community-server
-    sudo yum -y install mysql-devel
+    sudo yum -y install mysql-community-server mysql-devel
+    # 失敗時のキャッシュから、先に進めない場合が在る為、念の為に実施
+    yum clean all
+    cd /lib64
+    ln -s libsasl2.so.3.0.0 libsasl2.so.2
+    sudo yum -y install mysql-community-server mysql-devel
+
     echo ''                                                        >> /etc/my.cnf
     echo '# デフォルトの文字セット（初期値：utf8mb4 >= 8.0.1）'    >> /etc/my.cnf
-    echo '# character-set-server=utf8mb4'                          >> /etc/my.cnf
+    echo 'character-set-server=utf8mb4'                          >> /etc/my.cnf
     echo ''                                                        >> /etc/my.cnf
     echo '# 権限スキップの設定'                                    >> /etc/my.cnf
     echo 'skip-grant-tables'                                       >> /etc/my.cnf
