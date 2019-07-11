@@ -1,10 +1,12 @@
 # 使い方
-# rails plugin new my_engine \
+# rails plugin new engine \
 #     --mountable \
 #     -d mysql \
+#     - T \
 #     --skip-test \
 #     --dummy-path=spec/dummy \
 #     -m rails_engine_template.rb
+
 
 
 # add to Gemfile
@@ -17,10 +19,13 @@ group :development, :test do
   gem 'rack-mini-profiler', require: false
   gem 'hamlit'
   gem 'erb2haml'
+  gem 'bullet'
+  gem "rails_best_practices"
 
   # コード整理
   gem 'rubocop', require: false
   gem 'erb_lint', require: false
+  gem 'haml_lint', require: false
 
   # guard
   gem 'guard'
@@ -32,7 +37,7 @@ group :development, :test do
 
   # test
   gem 'rspec-rails'
-  gem 'factory_girl_rails'
+  gem 'factory_bot_rails'
   gem 'faker'
   gem "simplecov"
 end
@@ -103,7 +108,14 @@ puts '################################################################'
 #      「require File.expand_path('../dummy/config/environment.rb', __FILE__)」 に修正
 #
 ###############################################################
-
+# rails app:haml:replace_erbs
+###############################################################
+# DB
+#
+# bundle exec rake db:drop:all
+# bundle exec rake db:create:all
+# bundle exec rake db:migrate
+###############################################################
 # https://www.codementor.io/mohnishjadwani/how-to-setup-rspec-factory-bot-and-spring-for-a-rails-5-engine-qjdpthfb1
 #
 # bundle exec rake db:create:all
