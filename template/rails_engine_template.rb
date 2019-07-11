@@ -1,9 +1,10 @@
 # 使い方
-# rails plugin new my_engine --mountable
-#                             -d mysql
-#                             -m rails_engine_template.rb
-#                             --skip-test-unit
-#                             --dummy-path=spec/dummy
+# rails plugin new my_engine \
+#     --mountable \
+#     -d mysql \
+#     --skip-test \
+#     --dummy-path=spec/dummy \
+#     -m rails_engine_template.rb
 
 
 # add to Gemfile
@@ -13,6 +14,9 @@ append_file 'Gemfile', <<-CODE
 group :development, :test do
   gem 'foreman'
   gem 'annotate'
+  gem 'rack-mini-profiler', require: false
+  gem 'hamlit'
+  gem 'erb2haml'
 
   # コード整理
   gem 'rubocop', require: false
@@ -29,6 +33,8 @@ group :development, :test do
   # test
   gem 'rspec-rails'
   gem 'factory_girl_rails'
+  gem 'faker'
+  gem "simplecov"
 end
 
 CODE
@@ -38,14 +44,17 @@ CODE
 # Bundler.with_clean_env do
   # run 'bundle install --path vendor/bundle --jobs=4 --without production'
 # end
+# run 'bundle install --path vendor/bundle --jobs=4'
 
 
 # Checker
 # ----------------------------------------------------------------
-get 'https://gitlab.ai-q.biz/public-project/rails_template/raw/master/setting_file/.rubocop.yml', '.rubocop.yml'
-get 'https://gitlab.ai-q.biz/public-project/rails_template/raw/master/setting_file/Guardfile', 'Guardfile'
-get 'https://gitlab.ai-q.biz/public-project/rails_template/raw/master/setting_file/Procfile', 'Procfile'
+# yum install -y wget
+# wget 'https://github.com/fukuda-free/linux_shell/blob/develop/template/.rubocop.yml'
+# wget 'https://github.com/fukuda-free/linux_shell/blob/develop/template/Guardfile'
+# wget 'https://github.com/fukuda-free/linux_shell/blob/develop/template/Procfile'
 # run "bundle exec rake db:create:all"
+
 
 puts ''
 puts '################################################################'
@@ -58,12 +67,13 @@ puts '#  「gem install foreman」                                     #'
 puts '#                                                              #'
 puts '################################################################'
 
+# bundle exec rails g rack_profiler:install
 ###############################################################
 #  Rspecの設定の場合方法
 #
 #  step.1
 #    XXX.gemspec 内に記載されているTODO 部分を修正後、
-#   「s.add_development_dependency 'rspec-rails'」を追加
+#   「spec.add_development_dependency 'rspec-rails'」を追加
 #
 #  step.2
 #    lib/engine_name/engine.rb に  、以下を追加
