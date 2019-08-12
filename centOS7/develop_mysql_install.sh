@@ -24,9 +24,11 @@ esac
 echo "msyql ${mysql_version} install"
 case "${mysql_version}" in
   "57" )
-    sudo yum localinstall -y http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm;;
+    sudo yum localinstall -y http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
+    ;;
   "80" )
-    rpm -ivh https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm;;
+    rpm -ivh https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm
+    ;;
 esac
 
 # インストール
