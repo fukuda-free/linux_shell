@@ -89,9 +89,9 @@ Vagrant.configure('2') do |config|
     systemctl status sshd.service
     sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
-    # # mysql install(57 or 80)
-    # wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_mysql_install.sh
-    # . develop_mysql_install.sh 57
+    # mysql install(57 or 80)
+    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_mysql_install.sh
+    . develop_mysql_install.sh 57
 
     # mecab
     wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/mecab_on_ipadic_neologd_install.sh

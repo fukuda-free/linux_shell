@@ -118,3 +118,138 @@ echo '--------------------------------------------------------------------------
 echo ''
 echo 'mecab-ipadic-neologd のインストール先は、以下の通りです'
 echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
+
+
+
+
+
+
+
+
+
+
+
+
+# --------------------------------
+# # vim install
+# sudo yum -y install vim wget "ImageMagick" ImageMagick ImageMagick-devel
+
+# # timezoneをAsia/Tokyoに変更
+# sudo timedatectl set-timezone Asia/Tokyo
+
+# # 開発パッケージ
+# wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_package_install.sh
+# . develop_package_install.sh
+
+# # yum管理の各種ソフトウェアをアップデート
+# sudo yum update -y
+
+# # swap設定
+# SWAPFILENAME=/swap.img
+# MEMSIZE=`cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
+
+# if [ $MEMSIZE -lt 2097152 ]; then
+#   SIZE=$((MEMSIZE * 2))k
+# elif [ $MEMSIZE -lt 8388608 ]; then
+#   SIZE=${MEMSIZE}k
+# elif [ $MEMSIZE -lt 67108864 ]; then
+#   SIZE=$((MEMSIZE / 2))k
+# else
+#   SIZE=4194304k
+# fi
+
+# fallocate -l $SIZE $SWAPFILENAME && mkswap $SWAPFILENAME && swapon $SWAPFILENAME
+
+# echo "スワップ領域を以下に設定しました"
+# free
+
+# # mysql install(57 or 80)
+# wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_mysql_install.sh
+# . develop_mysql_install.sh 57
+
+
+# # # mecab
+# # wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/mecab_on_ipadic_neologd_install.sh
+# # . mecab_on_ipadic_neologd_install.sh
+
+# # ruby install(2.4 or 2.5 or 2.6 or 自由)
+# wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/ruby_on_rbenv_install.sh
+# . ruby_on_rbenv_install.sh 2.4
+# gem install bundler
+
+# # node install(8 or 9 or 10 or 11 or 12)
+# wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/node_on_nvm_install.sh
+# . node_on_nvm_install.sh 9
+
+# echo 'rails のインストール'
+# gem install rack
+# gem install rails -v  4.2.10
+
+# echo '----------------------------------------------------'
+# echo 'git のバージョンは以下となります'
+# git --version
+# echo 'rbenv のバージョンは以下となります'
+# rbenv -v
+# echo 'ruby のバージョンは以下となります'
+# ruby -v
+# echo 'rails のバージョンは以下となります'
+# rails -v
+# echo 'node.js のバージョンは以下となります'
+# node -v
+# echo 'npm のバージョンは以下となります'
+# npm -v
+# echo 'yarn のバージョンは以下となります'
+# yarn -v
+# echo 'MYSQL のバージョンは以下となります'
+# mysqld --version
+# echo '----------------------------------------------------'
+
+
+# # mecab インストール
+
+# ## インストール
+# {{{
+# # パターン１(コンパイル)
+# yum install -y gcc-c++
+# git clone https://github.com/taku910/mecab.git
+# cd mecab/mecab
+# ./configure  --enable-utf8-only
+# make & make check
+# make install
+
+# # パターン２(コンパイル)
+# # sudo yum install -y  bzip2 bzip2-devel gcc gcc-c++ git make wget curl openssl-devel readline-devel zlib-devel
+# # sudo mkdir -p /tmp/install_mecab
+# # cd /tmp/install_mecab
+# # wget 'https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7cENtOXlicTFaRUE' -O mecab-0.996.tar.gz
+# # tar zxvf mecab-0.996.tar.gz && cd mecab-0.996 && ./configure --with-charset=utf8 --enable-utf8-only &&  make && sudo make install
+
+# # パターン３（yum）
+# sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+# sed -i -e '/^baseurl/d' /etc/yum.repos.d/groonga.repo
+# echo 'baseurl=http://packages.groonga.org/centos/7/$basearch/' >> /etc/yum.repos.d/groonga.repo
+# sudo yum install -y mecab mecab-devel mecab-ipadic
+# }}}
+
+# ## 確認
+# {{{
+# echo 'mecab のバージョンは以下となります'
+# mecab -v
+# echo 'mecab のパスは以下の通り'
+# sudo find / -name libmecab.so*
+# }}}
+
+# # mecab-ipadic インストール
+# # パターン１
+# tar zxfv mecab-ipadic-2.7.0-20070801.tar.gz
+# cd mecab-ipadic-2.7.0-20070801
+# ./configure --with-charset=utf8
+# make
+# make install
+
+
+
+# {{{
+# sudo find /usr | grep mecab-config
+# /usr/bin/mecab-config
+# }}}
