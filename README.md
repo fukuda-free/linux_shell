@@ -4,11 +4,19 @@
 ```
 wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_package_install.sh
 . develop_package_install.sh
+
+# 開発版を使う場合
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/develop_package_install.sh
+. develop_package_install.sh
 ```
 
 ## mysql install(57 or 80)
 ```
 wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_mysql_install
+. develop_mysql_install 57
+
+# 開発版を使う場合
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/develop_mysql_install
 . develop_mysql_install 57
 ```
 
@@ -16,11 +24,19 @@ wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/de
 ```
 wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/ruby_on_rbenv_install.sh
 . ruby_on_rbenv_install.sh 2.6
+
+# 開発版を使う場合
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/ruby_on_rbenv_install.sh
+. ruby_on_rbenv_install.sh 2.6
 ```
 
 ## rails insltall(4.2 or 5.1 or 5.2)
 ```
 wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/rails_install.sh
+. rails_install.sh 5.2
+
+# 開発版を使う場合
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/rails_install.sh
 . rails_install.sh 5.2
 ```
 
@@ -28,16 +44,28 @@ wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/ra
 ```
 wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/node_on_nvm_install.sh
 . node_on_nvm_install.sh 12
+
+# 開発版を使う場合
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/node_on_nvm_install.sh
+. node_on_nvm_install.sh 12
 ```
 
 ## mecab install(作成中なので、自己責任でご利用ください)
 ```
 wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/mecab_on_ipadic_neologd_install.sh
 . mecab_on_ipadic_neologd_install.sh
+
+# 開発版を使う場合
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/mecab_on_ipadic_neologd_install.sh
+. mecab_on_ipadic_neologd_install.sh
 ```
 
 ## docker install(作成中なので、自己責任でご利用ください)
 ```
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/docker_install.sh
+. docker_install.sh
+
+# 開発版を使う場合
 wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/docker_install.sh
 . docker_install.sh
 ```

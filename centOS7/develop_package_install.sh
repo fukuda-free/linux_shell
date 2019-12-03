@@ -33,3 +33,10 @@ echo 'git のバージョンは以下となります'
 git --version
 echo ''
 echo ''
+
+echo 'swap拡張 (4G)'
+sudo dd if=/dev/zero of=/Swapfile bs=1M count=4096
+sudo chmod 600 /Swapfile
+sudo mkswap /Swapfile
+sudo swapon /Swapfile
+sh -c "echo '/swapfile swap swap defaults 0 0' >> /etc/fstab"
