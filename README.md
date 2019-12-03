@@ -32,12 +32,12 @@ wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/no
 
 ## mecab install(作成中なので、自己責任でご利用ください)
 ```
-https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/mecab_on_ipadic_neologd_install.sh
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/mecab_on_ipadic_neologd_install.sh
 . mecab_on_ipadic_neologd_install.sh
 ```
 
 ## docker install(作成中なので、自己責任でご利用ください)
 ```
-https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/docker_install.sh
+wget https://raw.githubusercontent.com/fukuda-free/linux_shell/develop/centOS7/docker_install.sh
 . docker_install.sh
 ```
