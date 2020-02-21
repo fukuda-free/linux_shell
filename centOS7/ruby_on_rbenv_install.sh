@@ -25,18 +25,20 @@ echo ""
 
 case "${1}" in
   "2.4" )
-    ruby_version='2.4.6';;
+    ruby_version='2.4.9';;
   "2.5" )
-    ruby_version='2.5.5';;
+    ruby_version='2.5.7';;
   "2.6" )
-    ruby_version='2.6.3';;
+    ruby_version='2.6.5';;
+  "2.7" )
+    ruby_version='2.7.0';;
   * )
     if [ -n "${1}" ]; then
       # 空で無ければ、それを利用
       ruby_version=${1}
     else
       # 空なら、2.5.5を利用
-      ruby_version='2.5.5'
+      ruby_version='2.7.0'
     fi
 esac
 
