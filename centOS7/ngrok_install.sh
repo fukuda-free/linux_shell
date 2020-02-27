@@ -3,8 +3,9 @@
 # ngrok 用シェル
 ########################################################
 
-yum install -y wget
+# yum install -y wget
 wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+sudo yum install -y unzip
 unzip ngrok-stable-linux-amd64.zip
 sudo mv ngrok /usr/local/bin
 
