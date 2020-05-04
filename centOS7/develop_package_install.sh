@@ -9,7 +9,7 @@ sudo yum update -y
 yum -y groupinstall "Base" "Development tools" "Japanese Support"
 yum -y install "development tools" gcc gdbm-devel libffi-devel
 yum -y install  make glibc-headers openssl-devel readline libyaml-devel
-yum -y install  readline-devel zlib zlib-devel bzip2-devel curl
+yum -y install  readline-devel zlib zlib-devel bzip2-devel curl unzip
 
 echo "時間軸を日本にします"
 timedatectl set-timezone Asia/Tokyo
