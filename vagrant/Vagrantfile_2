@@ -1,0 +1,162 @@
+# frozen_string_literal: true
+
+unless Vagrant.has_plugin?('vagrant-multiplug')
+  system 'vagrant plugin install vagrant-multiplug'
+end
+
+# 仮想環境を利用するツールを設定
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+
+Vagrant.configure('2') do |config|
+  # config.vm.box = 'centos7/novartis/v3'
+  # config.vm.box = 'centos/7'
+  config.vm.box = 'centos7/ai-brid/v2' # ai-brit用を作ったので、そちらを利用。ない場合は上を利用
+
+  # 他で使うプラグインをインストール（「vagrant-multiplug」が無いと動かない）
+  if Vagrant.has_plugin?('vagrant-multiplug')
+    config.plugin.add_dependency  'vagrant-vbguest'
+    config.plugin.add_dependency  'vagrant-disksize' # HDDの容量を変更できる
+    config.plugin.add_dependency  'vagrant-winnfsd' # WindowsでNFS機能が使用できる
+    config.plugin.add_dependency  'vagrant-bindfs'
+    config.plugin.add_dependency  'vagrant-rsync-back'
+    config.plugin.add_dependency  'vagrant-unison2'
+    config.plugin.add_dependency  'vagrant-cachier'
+    # config.plugin.add_dependency  'vagrant-hostsupdater' # hosts設定ができる（ホストOSのみ）
+    config.plugin.add_dependency  'vagrant-hostmanager' # hosts設定ができる（ホストOS、ゲストOS できる）
+    config.plugin.add_dependency  'vagrant-docker-compose' # docker関係をインストールしてくれる
+    config.plugin.add_dependency  'vagrant-gatling-rsync' # rsyncを高速化するプラグインvagrant-gatling-rsync
+    config.plugin.add_dependency  'vagrant-auto_network' # ネットワークを自動割り当てに
+
+    # プラグイン別の設定
+    # config.cache.scope = :box if Vagrant.has_plugin?('vagrant-cachier')
+    config.cache.scope = :machine if Vagrant.has_plugin?('vagrant-cachier')
+    if Vagrant.has_plugin?('vagrant-gatling-rsync')
+      config.gatling.latency = 0.2
+      config.gatling.time_format = '%H:%M:%S'
+      config.gatling.rsync_on_startup = false
+    end
+    # if Vagrant.has_plugin?('vagrant-hostmanager') || Vagrant.has_plugin?('vagrant-hostsupdater')
+    #   if Vagrant.has_plugin?('vagrant-hostmanager')
+    #     config.hostmanager.enabled = true
+    #     config.hostmanager.manage_host = true
+    #     config.hostmanager.ignore_private_ip = false
+    #     config.hostmanager.include_offline = false
+    #   end
+    #   # if Vagrant.has_plugin?('vagrant-hostsupdater')
+    #   # end
+    #   config.vm.hostname = 'fjets.local'
+    # end
+
+    if Vagrant.has_plugin?('vagrant-hostmanager')
+      config.hostmanager.enabled = true
+      config.hostmanager.manage_host = true
+      config.hostmanager.ignore_private_ip = false
+      config.hostmanager.include_offline = false
+      config.vm.hostname = 'fai-brid.local'
+    end
+  end
+
+  # IPアドレス割り当ての自動化(DHCP)
+  config.vm.network :private_network, auto_network: true, auto_correct: true
+
+  # ポートフォワードの自動化(ポート開放)
+  config.vm.network :forwarded_port, guest: 22, host: 2222, id: 'ssh', auto_correct: true
+  config.vm.network :forwarded_port, guest: 80, host: 80, auto_correct: true
+  config.vm.network :forwarded_port, guest: 443, host: 443, auto_correct: true
+  config.vm.network :forwarded_port, guest: 8080, host: 8080, auto_correct: true
+
+  # ブリッジアダプター（DHCPによってIPアドレスを割当）=>他からも見れるように
+  config.vm.network :public_network, bridge: 'Realtek USB GbE Family Controller', auto_correct: true
+  # config.vm.network :public_network, bridge: 'Realtek USB GbE Family Controller'
+  # config.vm.network :public_network, bridge: 'Intel(R) Wireless-AC 9260 160MHz'
+
+  # docker用ネットワーク（Dockerのdaemonを全てのIPから接続可能とするためにPortを開放）
+  # config.vm.network :forwarded_port, guest: 2375, host: 2375, host_ip: '127.0.0.1', auto_correct: true
+  # config.vm.network :forwarded_port, guest: 2375, host: 2375, id: "docker", host_ip: "127.0.0.1", auto_correct: true
+  # docker install
+  config.vm.provision :docker
+  config.vm.provision :docker_compose
+  # config.vm.provision 'shell', inline: <<-DOCKER_SHELL
+  #     chmod +x /usr/local/bin/docker-compose
+  #     find /usr/lib/systemd/system/docker.service -type f -print | xargs sed -i -e "s*ExecStart=/usr/bin/dockerd*ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375*g"
+  #     echo export DOCKER_HOST=tcp://127.0.0.1:2375 >> .bashrc
+  #     systemctl start docker
+  #     systemctl enable docker
+  # DOCKER_SHELL
+
+  config.winnfsd.uid = 1000
+  config.winnfsd.gid = 1000
+  config.vm.synced_folder ".", "/vagrant", type:"nfs"
+  # config.vm.synced_folder "v-root", "/vagrant", :nfs => true
+  # config.vm.synced_folder ".", "/vagrant", :nfs => true
+  # config.vm.synced_folder ".", "/vagrant", type:"nfs",mount_options: ['actimeo=2']
+  # デフォで同期するのを解除
+  # config.vm.synced_folder ".", "/vagrant", disabled: true
+  # 遅かったため、コメント化
+  # config.vm.synced_folder "./rails",
+  #                         "/var/www/rails",
+
+  # create: true,
+  #                           :nfs => { :mount_options => ["dmode=777","fmode=777"] }
+
+  #   config.vm.synced_folder "/Volumes/dev", "/Volumes/dev", type: "nfs",
+  # mount_options: ['rw', 'vers=3', 'tcp'],
+  # linux__nfs_options: ['rw','no_subtree_check','all_squash','async']
+
+  # config.vm.synced_folder "./rails",
+  #                         "/var/www/rails",
+  #                         create: true,
+  #                         nfs: {
+  #                           :mount_options => ['rw', 'async' , 'fsc','nolock','vers=3', 'tcp'] ,
+  #                           linux__nfs_options: ['rw','no_subtree_check','all_squash','async']
+  #                         }
+
+  # 動かない？
+  # config.vm.synced_folder "./rails",
+  #                         "/var/www/rails",
+  #                         create: true,
+  #                         type: "rsync"
+  #                         # type: "rsync",
+  #                         # rsync__exclude: [".git/", "vendor/"]
+
+  # サーバー設定
+  config.disksize.size = '80GB'
+  config.vm.boot_timeout = 300
+  config.vm.provider 'virtualbox' do |vb|
+    vb.name = 'ai-brid'
+    vb.gui = false
+    vb.customize ['modifyvm', :id, '--cpus', '4'] # CPUの数
+    vb.customize ['modifyvm', :id, '--memory', '6000'] # メモリ
+
+    # ここからは、あれば早いという記事で追加
+    # vb.customize ['modifyvm', :id, '--hwvirtex', 'off']  # ハードウェア仮想化の使用を有効または無効にします
+    # vb.customize ['modifyvm', :id, '--nestedpaging', 'on']
+    # vb.customize ['modifyvm', :id, '--largepages', 'on']
+    # vb.customize ['modifyvm', :id, '--ioapic', 'on']
+    # vb.customize ['modifyvm', :id, '--pae', 'on']
+    # ここまで
+
+    # vb.customize ['modifyvm', :id, '--nictype1', 'virtio']
+    # vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
+    # vb.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
+    # vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+    # vb.customize ['modifyvm', :id, '--paravirtprovider', 'kvm']
+
+    # ssh用
+    vb.customize ['modifyvm', :id, '--cableconnected1', 'on']
+    # Virtualbox 上でNATしていてゲストOS上で名前解決ができない場合にVagrant ファイルでする設定
+    vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+    # vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+    vb.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
+    # vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+    # ホストマシンのCPUをどれぐらいの利用制限率
+    vb.customize ['modifyvm', :id, '--cpuexecutioncap', '50']
+  end
+
+  config.vm.provision 'shell', inline: <<-SETTING_CHECK
+    clear
+    echo 'IPは以下となります'
+    ip a
+    echo ''
+  SETTING_CHECK
+end
