@@ -4,127 +4,79 @@
 # 仮想環境を利用するツールを設定
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
-# vagrant up時にVagrantのプラグインを自動でインストール
-required_plugins = %w[vagrant-vbguest vagrant-disksize vagrant-winnfsd vagrant-bindfs vagrant-rsync-back vagrant-unison2]
-_retry = false
-required_plugins.each do |plugin|
-  unless Vagrant.has_plugin? plugin
-    system "vagrant plugin install #{plugin} --plugin-clean-sources --plugin-source http://rubygems.org/"
-    _retry = true
-  end
-end
-
-if _retry
-  exec 'vagrant ' + ARGV.join(' ')
-else
-  puts 'All Plugin Dependencies already installed'
+# Vagrantのプラグインを自動でインストール
+unless Vagrant.has_plugin?('vagrant-multiplug')
+  system 'vagrant plugin install vagrant-multiplug'
 end
 
 Vagrant.configure('2') do |config|
   # インストールするOSを設定
-  config.vm.box = 'centos/7'
+  config.vm.box = 'centos/6'
+  # config.vm.box = 'centos/7'
+
+  # 他で使うプラグインをインストール（「vagrant-multiplug」が無いと動かない）
+  if Vagrant.has_plugin?('vagrant-multiplug')
+    config.plugin.add_dependency  'vagrant-vbguest'
+    config.plugin.add_dependency  'vagrant-disksize' # HDDの容量を変更できる
+    config.plugin.add_dependency  'vagrant-winnfsd' # WindowsでNFS機能が使用できる
+    config.plugin.add_dependency  'vagrant-bindfs'
+    config.plugin.add_dependency  'vagrant-rsync-back'
+    config.plugin.add_dependency  'vagrant-unison2'
+    config.plugin.add_dependency  'vagrant-cachier'
+    config.plugin.add_dependency  'vagrant-hostmanager' # hosts設定ができる（ホストOS、ゲストOS できる）
+    config.plugin.add_dependency  'vagrant-docker-compose' # docker関係をインストールしてくれる
+    config.plugin.add_dependency  'vagrant-gatling-rsync' # rsyncを高速化するプラグインvagrant-gatling-rsync
+    config.plugin.add_dependency  'vagrant-auto_network' # ネットワークを自動割り当てに
+
+    # プラグイン別の設定
+    # config.cache.scope = :box if Vagrant.has_plugin?('vagrant-cachier')
+    config.cache.scope = :machine if Vagrant.has_plugin?('vagrant-cachier')
+    config.vbguest.auto_update = false if Vagrant.has_plugin?('vagrant-vbguest')
+    if Vagrant.has_plugin?('vagrant-gatling-rsync')
+      config.gatling.latency = 0.2
+      config.gatling.time_format = '%H:%M:%S'
+      config.gatling.rsync_on_startup = false
+    end
+
+    if Vagrant.has_plugin?('vagrant-hostmanager')
+      config.hostmanager.enabled = true
+      config.hostmanager.manage_host = true
+      config.hostmanager.ignore_private_ip = false
+      config.hostmanager.include_offline = false
+      config.vm.hostname = 'test.local'
+    end
+  end
 
   # IPアドレス割り当ての自動化(DHCP)
-  config.vm.network :private_network, ip: '192.168.33.10'
-
-  # ポートフォワードの自動化
-  # config.vm.network :forwarded_port, guest: 22, host: 22, id: 'ssh', auto_correct: true
-  # config.vm.network :forwarded_port, guest: 80, host: 80
-  # config.vm.network :forwarded_port, guest: 443, host: 443
+  config.vm.network :private_network, auto_network: true, auto_correct: true
 
   # ブリッジアダプター（DHCPによってIPアドレスを割当）=>他からも見れるように
-  config.vm.network :public_network
+  config.vm.network :public_network, auto_correct: true
+
+  # docker設定をインストール
+  config.vm.provision :docker
+  config.vm.provision :docker_compose
 
   # サーバー設定
+  config.vm.box_check_update = true
   config.disksize.size = '50GB'
   config.vm.boot_timeout = 600
   config.vm.provider 'virtualbox' do |vb|
+    vb.name = 'test'
     vb.gui = false
-    # vb.name = 'test_vm'
-    vb.cpus = 1
-    vb.memory = 2048
-    vb.customize [
-      'modifyvm', :id,
-      '--hwvirtex', 'on',
-      '--nestedpaging', 'on',
-      '--largepages', 'on',
-      '--ioapic', 'on',
-      '--pae', 'on',
-      '--natdnsproxy1', 'off',
-      '--natdnshostresolver1', 'off',
-      '--paravirtprovider', 'kvm'
-    ]
+    vb.customize ['modifyvm', :id, '--cpus', '1'] # CPUの数
+    vb.customize ['modifyvm', :id, '--memory', '2000'] # メモリ
+    vb.customize ['modifyvm', :id, '--cableconnected1', 'on']
+    vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+    vb.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
+    vb.customize ['modifyvm', :id, '--cpuexecutioncap', '50']
   end
 
-  # 共有フォルダ
-  config.vm.synced_folder "./rails", "/var/www/rails",
-      create: true,
-      disabled: false ,
-      mount_options: ['dmode=777','fmode=755']
-  config.winnfsd.uid = 1000
-  config.winnfsd.gid = 1000
-
   # shell
-  config.vm.provision 'shell', inline: <<-SHELL
-    # vim install
-    sudo yum -y install vim wget "ImageMagick" ImageMagick ImageMagick-devel
-
-    # timezoneをAsia/Tokyoに変更
-    sudo timedatectl set-timezone Asia/Tokyo
-
-    # 開発パッケージ
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_package_install.sh
-    . develop_package_install.sh
-
-    # 開発環境として利用する場合、ファイアウォールを無効
-    sudo systemctl stop firewalld
-    sudo systemctl disable firewalld
-
-    # yum管理の各種ソフトウェアをアップデート
-    yum -y update
-
-    # 鍵なしでSSHできるように
-    sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-    service ssh restart
-    systemctl status sshd.service
-    sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-
-    # mysql install(57 or 80)
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/develop_mysql_install.sh
-    . develop_mysql_install.sh 57
-
-    # mecab
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/mecab_on_ipadic_neologd_install.sh
-    . mecab_on_ipadic_neologd_install.sh
-
-    # ruby install(2.4 or 2.5 or 2.6 or 自由)
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/ruby_on_rbenv_install.sh
-    . ruby_on_rbenv_install.sh 2.5.5
-
-    # node install(8 or 9 or 10 or 11 or 12)
-    wget https://raw.githubusercontent.com/fukuda-free/linux_shell/master/centOS7/node_on_nvm_install.sh
-    . node_on_nvm_install.sh 10
-
-    echo '----------------------------------------------------'
-    echo 'git のバージョンは以下となります'
-    git --version
-    echo ''
-    # echo '現在のMYSQLのバージョンは、以下の通りです'
-    # mysqld --version
-    # echo ''
-    echo 'ruby のバージョンは以下となります'
-    ruby -v
-    echo ''
-    echo 'node.js のバージョンは以下となります'
-    node -v
-    echo ''
-    echo 'npm のバージョンは以下となります'
-    npm -v
-    echo ''
-    echo 'yarn のバージョンは以下となります'
-    yarn -v
-    echo '----------------------------------------------------'
-
-    reboot
-  SHELL
+  config.vm.provision 'shell', inline: <<-SETTING_CHECK
+  clear
+  echo 'IPは以下となります'
+  ip a
+  echo ''
+  SETTING_CHECK
 end
