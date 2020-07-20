@@ -59,7 +59,10 @@ sudo ntpdate ntp.nict.jp
 
 echo 'git v2 install'
 sudo yum -y remove git
-curl -s https://setup.ius.io/ | bash
+# curl -s https://setup.ius.io/ | bash
+yum install \
+  https://repo.ius.io/ius-release-el6.rpm \
+  https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 yum install -y git2u
 git clone git://git.kernel.org/pub/scm/git/git.git
 
