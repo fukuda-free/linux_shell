@@ -57,12 +57,25 @@ date
 sudo yum -y install ntp
 sudo ntpdate ntp.nict.jp
 
-# echo 'git v2 install'
-# sudo yum -y remove git
-# curl -s https://setup.ius.io/ | bash
-# yum install -y git2u
-# git clone git://git.kernel.org/pub/scm/git/git.git
+echo 'git v2 install'
+sudo yum -y remove git
+yum install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
+sudo yum install -y git
 
 echo 'git のバージョンは以下となります'
 git --version
 echo ''
+
+
+# echo 'anyenv install'
+# git clone https://github.com/riywo/anyenv ~/.anyenv
+# echo 'export PATH="$HOME/.anyenv/bin:$PATH"' >> .bashrc
+# echo 'eval "$(anyenv init -)"' >> .bashrc
+# exec $SHELL -l
+# mkdir -p $(anyenv root)/plugins
+# git clone https://github.com/znz/anyenv-update.git $(anyenv root)/plugins/anyenv-update
+# anyenv update
+
+# echo 'anyenv のバージョンは以下となります'
+# anyenv versions
+# echo ''

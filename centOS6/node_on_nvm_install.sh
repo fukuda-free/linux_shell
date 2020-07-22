@@ -20,7 +20,8 @@ case "${1}" in
 esac
 
 # curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
-curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+# curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
 source ~/.bashrc
 nvm install v${node_version}
 nvm use v${node_version}

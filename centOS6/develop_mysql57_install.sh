@@ -44,32 +44,32 @@ echoB() {
 
 ########################################################
 # 古いバージョンを削除
-yum -y remove mysql*
+sudo yum -y remove mysql*
 
 # インストール
-yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
-yum -y install mysql-community-server
-yum -y install mysql-devel
+sudo yum -y install https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm
+sudo yum -y install mysql-community-server
+sudo yum -y install mysql-devel
 
 # バージョン確認
-mysqld --version
+sudo mysqld --version
 
 # MYSQLの設定で、rootのパスワードを「なし」に
-echo '' >> /etc/my.cnf
-echo 'skip-grant-tables' >> /etc/my.cnf
+sudo echo '' >> /etc/my.cnf
+sudo echo 'skip-grant-tables' >> /etc/my.cnf
 
 # MYSQLの設定で、文字コードをutf8mb4に
-echo 'character-set-server=utf8mb4' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-echo '[client]' >> /etc/my.cnf
-echo 'default-character-set=utf8mb4' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
-echo '' >> /etc/my.cnf
+sudo echo 'character-set-server=utf8mb4' >> /etc/my.cnf
+sudo echo '' >> /etc/my.cnf
+sudo echo '' >> /etc/my.cnf
+sudo echo '' >> /etc/my.cnf
+sudo echo '[client]' >> /etc/my.cnf
+sudo echo 'default-character-set=utf8mb4' >> /etc/my.cnf
+sudo echo '' >> /etc/my.cnf
+sudo echo '' >> /etc/my.cnf
 
 # 再起動
-service mysqld restart
+sudo service mysqld restart
 
 DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
 echoR "初期パスワードは、「${DB_PASSWORD}」です。"
@@ -77,8 +77,8 @@ echoR "このパスワードは、場合によっては必要となりますの�
 echoR "メモしておくことをお勧めします"
 echo ""
 
-chkconfig mysqld on
+sudo chkconfig mysqld on
 
 echoG "現在のMYSQLのバージョンは、以下の通りです"
-mysqld --version
+sudo mysqld --version
 echoG ""

@@ -89,17 +89,42 @@ sudo yum update -y
 
 
 
-# mecab & ipadic-neologd
-rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
-sed -i -e '/^baseurl/d' /etc/yum.repos.d/groonga.repo
-echo 'baseurl=http://packages.groonga.org/centos/7/$basearch/' >> /etc/yum.repos.d/groonga.repo
+# # mecab & ipadic-neologd
+# rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+# sed -i -e '/^baseurl/d' /etc/yum.repos.d/groonga.repo
+# echo 'baseurl=http://packages.groonga.org/centos/7/$basearch/' >> /etc/yum.repos.d/groonga.repo
 
-# yum makecache
-install "mecab" mecab mecab-devel mecab-ipadic
-git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
-mecab-ipadic-neologd/bin/install-mecab-ipadic-neologd -y -n -a
-sed -i -e '/^dicdir/c\dicdir = /usr/lib64/mecab/dic/mecab-ipadic-neologd' /etc/mecabrc
+# # yum makecache
+# install "mecab" mecab mecab-devel mecab-ipadic
+# git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+# mecab-ipadic-neologd/bin/install-mecab-ipadic-neologd -y -n -a
+# sed -i -e '/^dicdir/c\dicdir = /usr/lib64/mecab/dic/mecab-ipadic-neologd' /etc/mecabrc
 
+
+# echo 'mecab のバージョンは以下となります'
+# mecab --version
+
+# echo 'mecab の動作テスト'
+# echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
+
+# echo '---------------------------------------------------------------------------------'
+# echo 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
+# sudo find / -name libmecab.so*
+# echo ''
+# echo 'コマンド①：echo "export MECAB_PATH=/usr/lib64/libmecab.so.2" >> ~/.bash_profile'
+# echo '                                    ------------------------'
+# echo '                                    ここを書き換えてください'
+# echo 'コマンド②：source ~/.bash_profile'
+# echo '---------------------------------------------------------------------------------'
+# echo ''
+# echo 'mecab-ipadic-neologd のインストール先は、以下の通りです'
+# echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
+
+
+sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
+sudo yum install -y https://packages.groonga.org/centos/groonga-release-latest.noarch.rpm
+sudo yum makecache
+sudo yum install mecab mecab-ipadic
 
 echo 'mecab のバージョンは以下となります'
 mecab --version
