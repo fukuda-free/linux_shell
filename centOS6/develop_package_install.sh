@@ -59,7 +59,7 @@ sudo ntpdate ntp.nict.jp
 
 echo 'git v2 install'
 sudo yum -y remove git
-yum install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
+sudo yum install -y http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
 sudo yum install -y git
 
 echo 'git のバージョンは以下となります'
