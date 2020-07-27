@@ -58,12 +58,12 @@ echo '  . /var/www/rails/ai_q_env'             >> /root/.bashrc
 echo 'fi'                                      >> /root/.bashrc
 
 echo '- 以下の部分を環境に合わせて修正 ------------'
-echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2    ←  上記のフォルダと異なるなら設定が必要'
+echo 'export MECAB_PATH=/usr/lib64/libmecab.so.2    ←  mecabの設定と異なるなら設定が必要'
 echo ''
 echo '# AI-Qのホスト名 '
 echo 'export AIQ_HOSTNAME=192.168.30.106  ←  変更'
 echo ''
-echo '# データベースの設定  ←  変更'
+echo '# データベースの設定  ←  必要に応じて変更'
 echo 'export AIQ_DATABASE_HOSTNAME=localhost'
 echo 'export AIQ_DATABASE_NAME_DEVELOPMENT=ai_q_development'
 echo 'export AIQ_DATABASE_NAME_PRODUCTION=ai_q_production'
