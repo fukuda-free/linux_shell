@@ -124,7 +124,7 @@ sudo yum update -y
 sudo rpm -ivh http://packages.groonga.org/centos/groonga-release-1.1.0-1.noarch.rpm
 sudo yum install -y https://packages.groonga.org/centos/groonga-release-latest.noarch.rpm
 sudo yum makecache
-sudo yum install mecab mecab-ipadic
+sudo yum install -y mecab mecab-ipadic
 
 echo 'mecab のバージョンは以下となります'
 mecab --version
@@ -141,6 +141,4 @@ echo '                                    ------------------------'
 echo '                                    ここを書き換えてください'
 echo 'コマンド②：source ~/.bash_profile'
 echo '---------------------------------------------------------------------------------'
-echo ''
-echo 'mecab-ipadic-neologd のインストール先は、以下の通りです'
-echo `mecab-config --dicdir`"/mecab-ipadic-neologd"
+
