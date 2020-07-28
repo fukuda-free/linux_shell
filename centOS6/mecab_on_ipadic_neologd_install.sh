@@ -130,7 +130,8 @@ echo 'mecab のバージョンは以下となります'
 mecab --version
 
 echo 'mecab の動作テスト'
-echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
+# echo 'すもももももももものうち' | mecab -d /usr/lib64/mecab/dic/mecab-ipadic-neologd
+echo 'すもももももももものうち' | mecab
 
 echo '---------------------------------------------------------------------------------'
 echo 'もし、可動しなかった場合、下記で表示されたパスを以下のコマンドで登録し、再インストールしてください'
