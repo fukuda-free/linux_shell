@@ -26,11 +26,14 @@ sudo ntpdate ntp.nict.jp
 
 echo 'git v2 install'
 # sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-sudo yum -y remove git git-\*
-yum install \
-  https://repo.ius.io/ius-release-el7.rpm \
-  https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-sudo yum -y install git2u
+# sudo yum -y remove git git-\*
+# yum install \
+#   https://repo.ius.io/ius-release-el7.rpm \
+#   https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+# sudo yum -y install git2u
+sudo yum -y remove git*
+sudo yum -y install https://packages.endpoint.com/rhel/7/os/x86_64/endpoint-repo-1.7-1.x86_64.rpm
+sudo yum -y install git
 
 echo 'git のバージョンは以下となります'
 git --version
