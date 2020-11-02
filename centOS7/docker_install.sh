@@ -7,16 +7,18 @@ yum update -y
 yum upgrade -y
 
 # 旧バージョンのアンインストール
-yum remove -y docker docker-client docker-client-latest
-yum remove -y docker-common docker-latest docker-latest-logrotate
-yum remove -y docker-logrotate docker-engine
-
+sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
 # Docker のインストール
-yum install -y yum-utils device-mapper-persistent-data lvm2
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-
-# DOCKER CE のインストール
-yum install -y docker-ce docker-ce-cli containerd.io
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo systemctl start docker
 
 # Docker の起動
 systemctl start docker
@@ -31,11 +33,8 @@ echo '--------------------------------------'
 
 
 # docker-compose
-# curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-# chmod +x /usr/local/bin/docker-compose
-curl -L https://github.com/docker/compose/releases/download/1.25.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
-# ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
 echo '--------------------------------------'
 echo 'docker-compose のバージョンは以下となります'
