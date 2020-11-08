@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# 仮想環境を利用するツールを設定
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+
+Vagrant.configure("2") do |config|
+  # インストールするOSを設定
+  config.vm.box = 'centos/7'
+
+    # プラグイン別の設定
+    if Vagrant.has_plugin?('vagrant-hostmanager')
+      config.hostmanager.enabled = true
+      config.hostmanager.manage_host = true
+      config.hostmanager.ignore_private_ip = false
+      config.hostmanager.include_offline = false
+      config.vm.hostname = 'ansible.local'
+    end
+
+  # IPアドレス割り当ての自動化(DHCP)
+  config.vm.network :private_network, auto_network: true, auto_correct: true
+
+  # ブリッジアダプター（DHCPによってIPアドレスを割当）=>他からも見れるように
+  config.vm.network :public_network, auto_correct: true
+
+  # サーバー設定
+  # config.disksize.size = '100GB'
+  config.vm.boot_timeout = 600
+  config.vm.provider 'virtualbox' do |vb|
+    vb.name = 'ansible'
+    vb.gui = false
+    vb.customize ['modifyvm', :id, '--cpus', '2'] # CPUの数
+    vb.customize ['modifyvm', :id, '--memory', '2000'] # メモリ
+    vb.customize ['modifyvm', :id, '--cableconnected1', 'on']
+    vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+    vb.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
+    vb.customize ['modifyvm', :id, '--cpuexecutioncap', '50']
+  end
+
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "playbook.yml"
+  end
+end

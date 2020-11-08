@@ -1,0 +1,117 @@
+- name: provisioning
+  hosts: all
+  become: yes   # 全てのコマンドにsudoをつけて実施
+  gather_facts: False # プラットフォームの情報を取得しない
+  max_fail_percentage: 0 # 実行時に1台でも失敗した場合、すべての実施を停止する
+
+  vars:
+    # app_path: /vagrant
+    # home: /home/vagrant
+    # ruby_version: 2.5.1
+
+  tasks:
+    # - name: set timezone to Asia/Tokyo
+    #   timezone:
+    #     name: Asia/Tokyo
+
+    # - name: add epel
+    #   yum:
+    #     name: epel-release
+    #     state: latest
+
+    # - name: add mysql repo
+    #   yum:
+    #     name: http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
+    #     state: present
+
+    # - name: add nodejs repo
+    #   yum:
+    #     name: https://rpm.nodesource.com/setup_8.x
+    #     state: present
+
+    # - name: yum update
+    #   yum:
+    #     disablerepo: mysql57-community
+    #     name: "*"
+    #     state: latest
+    - name: ping
+      ping:
+
+    - name: Upgrade all packages
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Upgrade all packages, excluding kernel & foo related packages
+      yum:
+        name: '*'
+        state: latest
+        exclude: kernel*,foo*
+
+    - name: SELinuxの状態確認
+      command:
+        /usr/sbin/selinuxenabled
+      register:
+        result
+      changed_when: false
+      failed_when: result.rc not in [0, 1]
+
+    - name: 起動時にSELinux無効化 (/etc/sysconfig/selinux)
+      # sudo: yes
+      selinux: state=disabled
+      when: result.rc == 0
+
+    - name: SELinux無効化 (setenforce)
+      # sudo: yes
+      command: setenforce 0
+      when: result.rc == 0
+
+
+    # - name: [Git] Install a list of packages
+    #   yum:
+    #     name:
+    #       - autoconf
+    #       - gcc
+    #       - curl-devel
+    #       - expat-devel
+    #       - gettext-devel
+    #       - openssl-devel
+    #       - perl-ExtUtils-MakeMaker
+    #       - wget
+    #       - zlib-devel
+    #       - "@Development tools"
+    #     state: latest
+
+    # - name: [Git] Remove old git
+    #   yum:
+    #     name: git
+    #     state: absent
+
+    # - name: [Git] Unarchive a file that needs to be downloaded
+    #   unarchive:
+    #     src: https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.9.5.tar.gz
+    #     dest: /usr/local/src
+    #     remote_src: yes
+
+    # - name: [Git] Build 'all' target as root
+    #   make:
+    #     chdir: /usr/local/src/git-2.9.5
+    #     target: all
+    #   become: yes
+    #   become_user: root
+
+    # - name: [Git] Run 'install' target as root
+    #   make:
+    #     chdir: /usr/local/src/git-2.9.5
+    #     target: install
+    #   become: yes
+    #   become_user: root
+
+    # - name: [Git] Create a symbolic link
+    #   file:
+    #     src: /usr/local/src/git-2.9.5/git
+    #     dest: /bin/git
+    #     owner: root
+    #     group: root
+    #     state: link
+
