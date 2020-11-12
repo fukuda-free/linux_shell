@@ -1,7 +1,8 @@
 - name: provisioning
-  hosts: all
-  become: yes   # 全てのコマンドにsudoをつけて実施
-  gather_facts: False # プラットフォームの情報を取得しない
+
+  hosts: all             # vagrantで立てたサーバー全てを対象
+  become: yes            # 全てのコマンドにsudoをつけて実施
+  gather_facts: False    # プラットフォームの情報を取得しない
   max_fail_percentage: 0 # 実行時に1台でも失敗した場合、すべての実施を停止する
 
   vars:
@@ -10,108 +11,387 @@
     # ruby_version: 2.5.1
 
   tasks:
+    - name: ping テスト # 通信テスト
+      ping:
+
+    - name: (default) パッケージをアップデート(yum update -y)
+      yum:
+        name: '*'
+        state: latest
+
+
+    - name: (nodejs) remove nodejs
+      yum:
+        name: nodejs
+        state: absent
+
+    - name: (nodejs) install nodejs 10.3.0
+      shell: rpm -Uvh https://rpm.nodesource.com//pub_10.x/el/6/x86_64/nodejs-10.3.0-1nodesource.x86_64.rpm
+
+
+
+    # - name: (docker) creating a docker repository
+    #   yum_repository:
+    #     description: repo for docker
+    #     name: docker-ce
+    #     baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+    #     gpgcheck: no
+
+    # - name: (docker) installing docker
+    #   package:
+    #     name: docker-ce
+    #     state: present
+
+    # - name: (docker) starting docker services
+    #   service:
+    #     name: docker
+    #     state: started
+
+    # - name: (docker) installing docker SDK
+    #   command: "pip3 install docker"
+
+    # - name: (docker-compose) installing docker-compose
+    #   command: "pip3 install docker-compose"
+
+
+    # docker v 1.13がインストールされる（古い！！）
+    # - name: install Docker
+    #   yum:
+    #     name: docker
+    #     state: present
+    #     update_cache: true
+
+    # - name: start Docker
+    #   service:
+    #     name: docker
+    #     state: started
+
+
+    # # 公式の手順で最新が入るか実験中 -> インストール失敗
+    # - name: (docker) remove the docker package
+    #   yum:
+    #     name: "{{ packages }}"
+    #     state: absent # removeの意味
+    #   vars:
+    #     packages:
+    #       - docker
+    #       - docker-client
+    #       - docker-client-latest
+    #       - docker-common
+    #       - docker-latest
+    #       - docker-latest-logrotate
+    #       - docker-logrotate
+    #       - docker-engine
+
+    # - name: (docker) docker install
+    #   # shell: 'curl -fsSL https://get.docker.com -o get-docker.sh | sh get-docker.sh'
+    #   shell: 'curl -fsSL https://get.docker.com -o get-docker.sh | sh'
+
+    # - name: (docker) start Docker
+    #   service:
+    #     name: docker
+    #     state: started
+
+
+    # OK！！！
+    # - name: (docker) install yum-utils
+    #   yum: name=yum-utils state=present
+
+    # - name: (docker) add docker repo
+    #   shell: "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo"
+    #   args:
+    #     chdir: "/etc/yum.repos.d"
+    #     creates: docker-ce.repo
+
+    # - name: (docker) install docker-ce
+    #   yum: name=docker-ce state=present
+
+    # - name: (docker) add group
+    #   user: name=vagrant groups=docker append=yes
+    #   tags: dockerhost
+    #   become: True
+
+    # - name: (docker) restart docker
+    #   systemd:
+    #     name: docker.service
+    #     state: restarted
+    #     daemon_reload: yes
+    #     enabled: yes
+
+    # - name: (docker) Start Docker service
+    #   service:
+    #     name: docker.service
+    #     state: started
+    #     enabled: yes
+    #   become: yes
+
+    # https://gist.github.com/yonglai/d4617d6914d5f4eb22e4e5a15c0e9a03
+    # - name: Install yum utils
+    #   yum:
+    #     name: yum-utils
+    #     state: latest
+
+    # - name: Install device-mapper-persistent-data
+    #   yum:
+    #     name: device-mapper-persistent-data
+    #     state: latest
+
+    # - name: Install lvm2
+    #   yum:
+    #     name: lvm2
+    #     state: latest
+
+    # - name: Add Docker repo
+    #   get_url:
+    #     url: https://download.docker.com/linux/centos/docker-ce.repo
+    #     dest: /etc/yum.repos.d/docer-ce.repo
+    #   become: yes
+
+    # - name: Enable Docker Edge repo
+    #   ini_file:
+    #     dest: /etc/yum.repos.d/docer-ce.repo
+    #     section: 'docker-ce-edge'
+    #     option: enabled
+    #     value: 0
+    #   become: yes
+
+    # - name: Enable Docker Test repo
+    #   ini_file:
+    #     dest: /etc/yum.repos.d/docer-ce.repo
+    #     section: 'docker-ce-test'
+    #     option: enabled
+    #     value: 0
+    #   become: yes
+
+    # - name: Install Docker
+    #   package:
+    #     name: docker-ce
+    #     state: latest
+    #   become: yes
+
+    # - name: Start Docker service
+    #   service:
+    #     name: docker
+    #     state: started
+    #     enabled: yes
+    #   become: yes
+
+    # - name: Add user vagrant to docker group
+    #   user:
+    #     name: vagrant
+    #     groups: docker
+    #     append: yes
+    #   become: yes
+
+
+    # https://qiita.com/sugiyasu-qr/items/1867ed354f66b00fa4be
+    # - name: (docker) install yum-utils
+    #   yum: name=yum-utils state=present
+
+    # - name: (docker) add docker repo
+    #   copy:
+    #     src: docker.repo
+    #     dest: /etc/yum.repos.d/docker.repo
+    #     owner: root
+    #     group: root
+    #     mode: 0755
+
+    # - name: (docker) install docker-ce
+    #   yum:
+    #     name: docker-engine
+    #     state: present
+
+    # - name: (docker) add group
+    #   user:
+    #     name: vagrant
+    #     groups: docker
+    #     append: yes
+    #   tags: dockerhost
+    #   become: True
+
+    # - name: (docker) restart docker
+    #   systemd:
+    #     name: docker.service
+    #     state: restarted
+    #     daemon_reload: yes
+    #     enabled: yes
+
+    # - name: (docker) Start Docker service
+    #   service:
+    #     name: docker.service
+    #     state: started
+    #     enabled: yes
+    #   become: yes
+
+    # - name: (docker-compose) Get docker-compose
+    #   # 1.27.3
+    #   get_url:
+    #     url: "https://github.com/docker/compose/releases/download/1.5.1/docker-compose-{{ansible_system}}-{{ansible_machine}}"
+    #     dest: /usr/local/bin/docker-compose
+    #   register: get_compose
+
+    # - name: (docker-compose) chmod docker-compose
+    #   file:
+    #     path: /usr/local/bin/docker-compose
+    #     mode: "a+x"
+    #   when: get_compose.changed
+
+
+    # https://hawksnowlog.blogspot.com/2017/05/install-docker-with-simple-ansible.html
+    # 動く！！！
+    # - name: Remove installed docker
+    #   yum:
+    #     name:
+    #       - docker
+    #       - docker-common
+    #       - container-selinux
+    #       - docker-selinux
+    #       - docker-engine
+    #     state: absent
+
+    # - name: Install yum-utils
+    #   yum:
+    #     name:
+    #       - yum-utils
+    #     state: present
+
+    # - name: Add docker yum repositry
+    #   command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+    # - name: Enable repo
+    #   command: yum-config-manager --enable docker-ce-edge
+
+    # - name: Make cache
+    #   command: yum makecache fast
+
+    # - name: Update
+    #   yum:
+    #     name: '*'
+    #     state: latest
+
+    # - name: Install newest docker
+    #   yum:
+    #     name:
+    #       - docker-ce
+
+    # - name: Install docker-compose
+    #   # shell: "curl -L https://github.com/docker/compose/releases/download/1.12.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose"
+    #   shell: "curl -L https://github.com/docker/compose/releases/download/1.27.3/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose"
+
+    # - name: Add execution permission
+    #   command: 'chmod +x /usr/local/bin/docker-compose'
+
+
+    # dockerの参考URLを元に実験中
+    - name: Remove installed docker
+      yum:
+        name:
+          - docker
+          - docker-client
+          - docker-client-latest
+          - docker-common
+          - docker-latest
+          - docker-latest-logrotate
+          - docker-logrotate
+          - docker-engine
+        state: absent
+
+    - name: (docker) yum install -y yum-utils device-mapper-persistent-data lvm2
+      yum:
+        name:
+         - yum-utils
+         - device-mapper-persistent-data
+         - lvm2
+
+    - name: (docker) add docker repo
+      shell: "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo"
+      args:
+        chdir: "/etc/yum.repos.d"
+        creates: docker-ce.repo
+
+
+    - name: (docker) sudo yum install docker-ce docker-ce-cli containerd.io
+      yum:
+        name:
+         - docker-ce
+         - docker-ce-cli
+         - containerd.io
+
+    - name: (docker) systemctl start docker && sudo systemctl enable docker
+      systemd:
+        name: docker
+        state: restarted
+        daemon_reload: yes
+        enabled: yes
+      become: yes
+
+    - name: (docker-compose) Install docker-compose
+      shell: "curl -L https://github.com/docker/compose/releases/download/1.27.3/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose"
+      args:
+        warn: no
+
+    - name: (docker-compose) Add execution permission
+      command: 'chmod +x /usr/local/bin/docker-compose'
+
+
+
+
+
+
+
+    # - name: (SELinux) disable SELinux
+    #   command: setenforce 0
+
+    # - name: (SELinux) disable SELinux on reboot
+    #   selinux:
+    #     state: disabled
+
+    # - name: (1) SELinux用のPythonモジュールをインストール
+    #   yum: name=libselinux-python state=installed
+    # - name: (2) SELinuxの無効化
+    #   selinux: state=disabled
+    #   register: selinux
+    # - name: (3) SSHのポート番号の取得
+    #   set_fact:
+    #     ssh_port: "{{ hostvars[inventory_hostname].ansible_port if 'ansible_port' in hostvars[inventory_hostname] else 22 }}"
+    #   when: selinux.reboot_required
+    # - name: (4) マシンのリブート
+    #   shell: "sleep 2 && reboot"
+    #   async: 1
+    #   poll: 0
+    #   when: selinux.reboot_required
+    # - name: (5) マシンの停止を待ち合わせ
+    #   local_action: wait_for host={{ inventory_hostname }} port={{ ssh_port }} state=stopped
+    #   when: selinux.reboot_required
+    # - name: (6) マシンの起動を待ち合わせ
+    #   local_action: wait_for host={{ inventory_hostname }} port={{ ssh_port }} state=started
+    #   when: selinux.reboot_required
+
+
+    # # ロケール設定
+    # - name: set locale
+    #   shell: localectl set-locale LANG=ja_JP.utf8
+    #   when: "'LANG=ja_JP.utf8' not in check_localectl_result.stdout"
+
+    # # タイムゾーン設定
     # - name: set timezone to Asia/Tokyo
     #   timezone:
     #     name: Asia/Tokyo
 
-    # - name: add epel
-    #   yum:
-    #     name: epel-release
-    #     state: latest
+    # SELinux無効化
+    - name: disable SELinux
+      selinux:
+        state: disabled
+      when: ansible_distribution == 'RedHat'
 
-    # - name: add mysql repo
-    #   yum:
-    #     name: http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm
-    #     state: present
+    - name: Reboot
+      reboot:
+      when: result.reboot_required
 
-    # - name: add nodejs repo
-    #   yum:
-    #     name: https://rpm.nodesource.com/setup_8.x
-    #     state: present
-
-    # - name: yum update
-    #   yum:
-    #     disablerepo: mysql57-community
-    #     name: "*"
-    #     state: latest
-    - name: ping
-      ping:
-
-    - name: Upgrade all packages
-      yum:
-        name: '*'
-        state: latest
-
-    - name: Upgrade all packages, excluding kernel & foo related packages
-      yum:
-        name: '*'
-        state: latest
-        exclude: kernel*,foo*
-
-    - name: SELinuxの状態確認
-      command:
-        /usr/sbin/selinuxenabled
-      register:
-        result
-      changed_when: false
-      failed_when: result.rc not in [0, 1]
-
-    - name: 起動時にSELinux無効化 (/etc/sysconfig/selinux)
-      # sudo: yes
-      selinux: state=disabled
-      when: result.rc == 0
-
-    - name: SELinux無効化 (setenforce)
-      # sudo: yes
-      command: setenforce 0
-      when: result.rc == 0
-
-
-    # - name: [Git] Install a list of packages
-    #   yum:
-    #     name:
-    #       - autoconf
-    #       - gcc
-    #       - curl-devel
-    #       - expat-devel
-    #       - gettext-devel
-    #       - openssl-devel
-    #       - perl-ExtUtils-MakeMaker
-    #       - wget
-    #       - zlib-devel
-    #       - "@Development tools"
-    #     state: latest
-
-    # - name: [Git] Remove old git
-    #   yum:
-    #     name: git
-    #     state: absent
-
-    # - name: [Git] Unarchive a file that needs to be downloaded
-    #   unarchive:
-    #     src: https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.9.5.tar.gz
-    #     dest: /usr/local/src
-    #     remote_src: yes
-
-    # - name: [Git] Build 'all' target as root
-    #   make:
-    #     chdir: /usr/local/src/git-2.9.5
-    #     target: all
-    #   become: yes
-    #   become_user: root
-
-    # - name: [Git] Run 'install' target as root
-    #   make:
-    #     chdir: /usr/local/src/git-2.9.5
-    #     target: install
-    #   become: yes
-    #   become_user: root
-
-    # - name: [Git] Create a symbolic link
-    #   file:
-    #     src: /usr/local/src/git-2.9.5/git
-    #     dest: /bin/git
-    #     owner: root
-    #     group: root
-    #     state: link
+    # firewalld無効化
+    - name: disable firewalld
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: false
 
