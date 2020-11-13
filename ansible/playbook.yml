@@ -237,7 +237,8 @@
     #   when: get_compose.changed
 
 
-    # https://hawksnowlog.blogspot.com/2017/05/install-docker-with-simple-ansible.html
+    # https://hawksnowlog.blogspot.com/2017/05/install-docker-with-simple-ansible.html
+
     # 動く！！！
     # - name: Remove installed docker
     #   yum:
@@ -283,7 +284,7 @@
 
 
     # dockerの参考URLを元に実験中
-    - name: Remove installed docker
+    - name: (docker) Remove installed docker
       yum:
         name:
           - docker
@@ -295,6 +296,8 @@
           - docker-logrotate
           - docker-engine
         state: absent
+        # args:
+        #   warn: no
 
     - name: (docker) yum install -y yum-utils device-mapper-persistent-data lvm2
       yum:
@@ -308,7 +311,6 @@
       args:
         chdir: "/etc/yum.repos.d"
         creates: docker-ce.repo
-
 
     - name: (docker) sudo yum install docker-ce docker-ce-cli containerd.io
       yum:
@@ -382,16 +384,29 @@
     - name: disable SELinux
       selinux:
         state: disabled
-      when: ansible_distribution == 'RedHat'
+      # when: ansible_distribution == 'RedHat'
+      # args:
+      #   warn: no
 
+    # - name: disable SELinux
+    #   selinux: state=disabled
+
+
+    # # firewalld無効化
+    # - name: disable firewalld
+    #   systemd:
+    #     name: firewalld
+    #     state: stopped
+    #     enabled: false
+
+
+    # - name: get remote host ip address
+    #   command: "echo {{ ansible_eth0.ipv4.address }}"
+
+    # 最後は、再起動
     - name: Reboot
-      reboot:
-      when: result.reboot_required
-
-    # firewalld無効化
-    - name: disable firewalld
-      systemd:
-        name: firewalld
-        state: stopped
-        enabled: false
-
+      - reboot:                   # rebootする
+      - shell: cat /etc/motd
+        register: r
+      - debug:
+          var: r.stdout_lines
